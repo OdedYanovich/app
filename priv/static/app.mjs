@@ -112,41 +112,41 @@ var BitArray = class _BitArray {
 function byteArrayToInt(byteArray, start3, end, isBigEndian, isSigned) {
   const byteSize = end - start3;
   if (byteSize <= 6) {
-    let value = 0;
+    let value2 = 0;
     if (isBigEndian) {
       for (let i = start3; i < end; i++) {
-        value = value * 256 + byteArray[i];
+        value2 = value2 * 256 + byteArray[i];
       }
     } else {
       for (let i = end - 1; i >= start3; i--) {
-        value = value * 256 + byteArray[i];
+        value2 = value2 * 256 + byteArray[i];
       }
     }
     if (isSigned) {
       const highBit = 2 ** (byteSize * 8 - 1);
-      if (value >= highBit) {
-        value -= highBit * 2;
+      if (value2 >= highBit) {
+        value2 -= highBit * 2;
       }
     }
-    return value;
+    return value2;
   } else {
-    let value = 0n;
+    let value2 = 0n;
     if (isBigEndian) {
       for (let i = start3; i < end; i++) {
-        value = (value << 8n) + BigInt(byteArray[i]);
+        value2 = (value2 << 8n) + BigInt(byteArray[i]);
       }
     } else {
       for (let i = end - 1; i >= start3; i--) {
-        value = (value << 8n) + BigInt(byteArray[i]);
+        value2 = (value2 << 8n) + BigInt(byteArray[i]);
       }
     }
     if (isSigned) {
       const highBit = 1n << BigInt(byteSize * 8 - 1);
-      if (value >= highBit) {
-        value -= highBit * 2n;
+      if (value2 >= highBit) {
+        value2 -= highBit * 2n;
       }
     }
-    return Number(value);
+    return Number(value2);
   }
 }
 function byteArrayToFloat(byteArray, start3, end, isBigEndian) {
@@ -168,9 +168,9 @@ var Result = class _Result extends CustomType {
   }
 };
 var Ok = class extends Result {
-  constructor(value) {
+  constructor(value2) {
     super();
-    this[0] = value;
+    this[0] = value2;
   }
   // @internal
   isOk() {
@@ -284,8 +284,8 @@ function to_result(option, e) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
-function insert(dict2, key, value) {
-  return map_insert(key, value, dict2);
+function insert(dict2, key, value2) {
+  return map_insert(key, value2, dict2);
 }
 function reverse_and_concat(loop$remaining, loop$accumulator) {
   while (true) {
@@ -505,10 +505,10 @@ function map_errors(result, f) {
   );
 }
 function field(name, inner_type) {
-  return (value) => {
+  return (value2) => {
     let missing_field_error = new DecodeError("field", "nothing", toList([]));
     return try$(
-      decode_field(value, name),
+      decode_field(value2, name),
       (maybe_inner) => {
         let _pipe = maybe_inner;
         let _pipe$1 = to_result(_pipe, toList([missing_field_error]));
@@ -1296,14 +1296,14 @@ function map_to_list(map4) {
   return List.fromArray(map4.entries());
 }
 function map_get(map4, key) {
-  const value = map4.get(key, NOT_FOUND);
-  if (value === NOT_FOUND) {
+  const value2 = map4.get(key, NOT_FOUND);
+  if (value2 === NOT_FOUND) {
     return new Error(Nil);
   }
-  return new Ok(value);
+  return new Ok(value2);
 }
-function map_insert(key, value, map4) {
-  return map4.set(key, value);
+function map_insert(key, value2, map4) {
+  return map4.set(key, value2);
 }
 function classify_dynamic(data) {
   if (typeof data === "string") {
@@ -1347,22 +1347,22 @@ function decode_string(data) {
 function decode_int(data) {
   return Number.isInteger(data) ? new Ok(data) : decoder_error("Int", data);
 }
-function decode_field(value, name) {
-  const not_a_map_error = () => decoder_error("Dict", value);
-  if (value instanceof Dict || value instanceof WeakMap || value instanceof Map) {
-    const entry = map_get(value, name);
+function decode_field(value2, name) {
+  const not_a_map_error = () => decoder_error("Dict", value2);
+  if (value2 instanceof Dict || value2 instanceof WeakMap || value2 instanceof Map) {
+    const entry = map_get(value2, name);
     return new Ok(entry.isOk() ? new Some(entry[0]) : new None());
-  } else if (value === null) {
+  } else if (value2 === null) {
     return not_a_map_error();
-  } else if (Object.getPrototypeOf(value) == Object.prototype) {
-    return try_get_field(value, name, () => new Ok(new None()));
+  } else if (Object.getPrototypeOf(value2) == Object.prototype) {
+    return try_get_field(value2, name, () => new Ok(new None()));
   } else {
-    return try_get_field(value, name, not_a_map_error);
+    return try_get_field(value2, name, not_a_map_error);
   }
 }
-function try_get_field(value, field2, or_else) {
+function try_get_field(value2, field2, or_else) {
   try {
-    return field2 in value ? new Ok(new Some(value[field2])) : or_else();
+    return field2 in value2 ? new Ok(new Some(value2[field2])) : or_else();
   } catch {
     return or_else();
   }
@@ -1384,8 +1384,19 @@ var Effect = class extends CustomType {
     this.all = all;
   }
 };
-function none() {
-  return new Effect(toList([]));
+function custom(run2) {
+  return new Effect(
+    toList([
+      (actions) => {
+        return run2(actions.dispatch, actions.emit, actions.select, actions.root);
+      }
+    ])
+  );
+}
+function from(effect) {
+  return custom((dispatch, _, _1, _2) => {
+    return effect(dispatch);
+  });
 }
 
 // build/dev/javascript/lustre/lustre/internals/vdom.mjs
@@ -1486,14 +1497,8 @@ function handlers(element2) {
 }
 
 // build/dev/javascript/lustre/lustre/attribute.mjs
-function property(name, value) {
-  return new Attribute(name, identity(value), true);
-}
 function on(name, handler) {
   return new Event("on" + name, handler);
-}
-function autofocus(should_autofocus) {
-  return property("autofocus", should_autofocus);
 }
 
 // build/dev/javascript/lustre/lustre/element.mjs
@@ -1709,15 +1714,15 @@ function createElementNode({ prev, next, dispatch, stack }) {
   const delegated = [];
   for (const attr of next.attrs) {
     const name = attr[0];
-    const value = attr[1];
+    const value2 = attr[1];
     if (attr.as_property) {
-      if (el[name] !== value)
-        el[name] = value;
+      if (el[name] !== value2)
+        el[name] = value2;
       if (canMorph)
         prevAttributes.delete(name);
     } else if (name.startsWith("on")) {
       const eventName = name.slice(2);
-      const callback = dispatch(value, eventName === "input");
+      const callback = dispatch(value2, eventName === "input");
       if (!handlersForEl.has(eventName)) {
         el.addEventListener(eventName, lustreGenericEventHandler);
       }
@@ -1731,25 +1736,25 @@ function createElementNode({ prev, next, dispatch, stack }) {
         el.addEventListener(eventName, lustreGenericEventHandler);
       }
       handlersForEl.set(eventName, callback);
-      el.setAttribute(name, value);
+      el.setAttribute(name, value2);
       if (canMorph) {
         prevHandlers.delete(eventName);
         prevAttributes.delete(name);
       }
     } else if (name.startsWith("delegate:data-") || name.startsWith("delegate:aria-")) {
-      el.setAttribute(name, value);
-      delegated.push([name.slice(10), value]);
+      el.setAttribute(name, value2);
+      delegated.push([name.slice(10), value2]);
     } else if (name === "class") {
-      className = className === null ? value : className + " " + value;
+      className = className === null ? value2 : className + " " + value2;
     } else if (name === "style") {
-      style2 = style2 === null ? value : style2 + value;
+      style2 = style2 === null ? value2 : style2 + value2;
     } else if (name === "dangerous-unescaped-html") {
-      innerHTML = value;
+      innerHTML = value2;
     } else {
-      if (el.getAttribute(name) !== value)
-        el.setAttribute(name, value);
+      if (el.getAttribute(name) !== value2)
+        el.setAttribute(name, value2);
       if (name === "value" || name === "selected")
-        el[name] = value;
+        el[name] = value2;
       if (canMorph)
         prevAttributes.delete(name);
     }
@@ -1776,9 +1781,9 @@ function createElementNode({ prev, next, dispatch, stack }) {
   if (next.tag === "slot") {
     window.queueMicrotask(() => {
       for (const child of el.assignedElements()) {
-        for (const [name, value] of delegated) {
+        for (const [name, value2] of delegated) {
           if (!child.hasAttribute(name)) {
-            child.setAttribute(name, value);
+            child.setAttribute(name, value2);
           }
         }
       }
@@ -1853,8 +1858,8 @@ function lustreServerEventHandler(event2) {
   return {
     tag,
     data: include.reduce(
-      (data2, property2) => {
-        const path = property2.split(".");
+      (data2, property) => {
+        const path = property.split(".");
         for (let i = 0, o = data2, e = event2; i < path.length; i++) {
           if (i === path.length - 1) {
             o[path[i]] = e[path[i]];
@@ -2213,15 +2218,6 @@ var NotABrowser = class extends CustomType {
 function application(init3, update2, view2) {
   return new App(init3, update2, view2, new None());
 }
-function simple(init3, update2, view2) {
-  let init$1 = (flags) => {
-    return [init3(flags), none()];
-  };
-  let update$1 = (model, msg) => {
-    return [update2(model, msg), none()];
-  };
-  return application(init$1, update$1, view2);
-}
 function start2(app, selector, flags) {
   return guard(
     !is_browser(),
@@ -2233,31 +2229,45 @@ function start2(app, selector, flags) {
 }
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
+function text2(content) {
+  return text(content);
+}
 function div(attrs, children2) {
   return element("div", attrs, children2);
-}
-function button(attrs, children2) {
-  return element("button", attrs, children2);
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
 function on2(name, handler) {
   return on(name, handler);
 }
-function on_mouse_enter(msg) {
-  return on2("mouseenter", (_) => {
-    return new Ok(msg);
-  });
+function value(event2) {
+  let _pipe = event2;
+  return field("target", field("value", decode_string))(
+    _pipe
+  );
 }
-function on_keypress(msg) {
+function on_input(msg) {
   return on2(
-    "keypress",
+    "input",
     (event2) => {
-      let _pipe = event2;
-      let _pipe$1 = field("key", decode_string)(_pipe);
-      return map2(_pipe$1, msg);
+      let _pipe = value(event2);
+      return map2(_pipe, msg);
     }
   );
+}
+
+// build/dev/javascript/app/event_listener.mjs
+var currentKey = "f";
+function initialize(combo_tracker, first_mod) {
+  window.addEventListener("keydown", async (event2) => {
+    if (event2.repeat)
+      return;
+    currentKey = event2.key.toLowerCase();
+    console.log(bar());
+  });
+}
+function getCurrentKey() {
+  return currentKey;
 }
 
 // build/dev/javascript/app/app.mjs
@@ -2265,20 +2275,28 @@ var Increment = class extends CustomType {
 };
 var Decrement = class extends CustomType {
 };
+function bar() {
+  return "foo";
+}
 function init2(_) {
-  return 0;
+  return [0, from(initialize)];
 }
 function update(model, msg) {
-  if (msg instanceof Increment) {
-    return model + 1;
-  } else {
-    return model - 1;
-  }
+  return [
+    (() => {
+      if (msg instanceof Increment) {
+        return model + 1;
+      } else {
+        return model - 1;
+      }
+    })(),
+    from(getCurrentKey)
+  ];
 }
 function view(model) {
   return div(
     toList([
-      on_keypress(
+      on_input(
         (key) => {
           if (key === "r") {
             return new Increment();
@@ -2286,11 +2304,10 @@ function view(model) {
             return new Decrement();
           }
         }
-      ),
-      on_mouse_enter(new Decrement())
+      )
     ]),
     toList([
-      button(toList([autofocus(true)]), toList([])),
+      text2("r"),
       (() => {
         let _pipe = to_string(model);
         return text(_pipe);
@@ -2300,14 +2317,14 @@ function view(model) {
 }
 function main() {
   let $ = (() => {
-    let _pipe = simple(init2, update, view);
+    let _pipe = application(init2, update, view);
     return start2(_pipe, "#app", void 0);
   })();
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "app",
-      9,
+      22,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
