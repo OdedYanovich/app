@@ -1019,6 +1019,9 @@ function pop_grapheme(string2) {
     return new Error(Nil);
   }
 }
+function lowercase(string2) {
+  return string2.toLowerCase();
+}
 function concat(xs) {
   let result = "";
   for (const x of xs) {
@@ -1105,6 +1108,9 @@ function decode_string(data) {
 }
 function decode_int(data) {
   return Number.isInteger(data) ? new Ok(data) : decoder_error("Int", data);
+}
+function decode_bool(data) {
+  return typeof data === "boolean" ? new Ok(data) : decoder_error("Bool", data);
 }
 function decode_field(value, name) {
   const not_a_map_error = () => decoder_error("Dict", value);
@@ -1301,6 +1307,9 @@ var DecodeError = class extends CustomType {
 function int(data) {
   return decode_int(data);
 }
+function bool(data) {
+  return decode_bool(data);
+}
 function any(decoders) {
   return (data) => {
     if (decoders.hasLength(0)) {
@@ -1384,20 +1393,6 @@ var Effect = class extends CustomType {
     this.all = all;
   }
 };
-function custom(run2) {
-  return new Effect(
-    toList([
-      (actions) => {
-        return run2(actions.dispatch, actions.emit, actions.select, actions.root);
-      }
-    ])
-  );
-}
-function from(effect) {
-  return custom((dispatch2, _, _1, _2) => {
-    return effect(dispatch2);
-  });
-}
 function none() {
   return new Effect(toList([]));
 }
@@ -1505,9 +1500,6 @@ function attribute(name, value) {
 }
 function on(name, handler) {
   return new Event("on" + name, handler);
-}
-function id(name) {
-  return attribute("id", name);
 }
 function src(uri) {
   return attribute("src", uri);
@@ -2244,9 +2236,6 @@ function start2(app, selector, flags) {
 }
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
-function body(attrs, children2) {
-  return element("body", attrs, children2);
-}
 function div(attrs, children2) {
   return element("div", attrs, children2);
 }
@@ -2268,78 +2257,40 @@ function on_click(msg) {
 }
 
 // build/dev/javascript/app/event_listener.mjs
-var currentKey = "t";
 function initialize(handler) {
   window.addEventListener("keydown", handler);
 }
-function getCurrentKey() {
-  return currentKey;
-}
 
 // build/dev/javascript/app/app.mjs
-var Increment = class extends CustomType {
-};
-var Decrement = class extends CustomType {
-};
 var Key = class extends CustomType {
 };
-function init2(_) {
-  return [0, none()];
-}
-function endpoint(dispatch2) {
-  let _pipe = (() => {
-    let $ = getCurrentKey();
-    if ($ === "r") {
-      return new Increment();
-    } else {
-      return new Decrement();
-    }
-  })();
-  return dispatch2(_pipe);
+function init2(flags) {
+  return [flags, none()];
 }
 function update(model, msg) {
-  if (msg instanceof Increment) {
-    return [model + 1, none()];
-  } else if (msg instanceof Decrement) {
-    return [model - 1, none()];
-  } else {
-    return [model, from(endpoint)];
-  }
+  return [
+    (() => {
+      {
+        return model + 1;
+      }
+    })(),
+    none()
+  ];
 }
 function view(model) {
-  return body(
+  return div(
     toList([]),
     toList([
-      div(
-        toList([id("app")]),
-        toList([
-          div(
-            toList([]),
-            toList([
-              img(
-                toList([
-                  src("https://cdn2.thecatapi.com/images/b7k.jpg")
-                ])
-              ),
-              (() => {
-                let _pipe = toList([on_click(new Increment())]);
-                return button(_pipe, toList([text("+")]));
-              })(),
-              (() => {
-                let _pipe = to_string(model);
-                return text(_pipe);
-              })(),
-              (() => {
-                let _pipe = toList([on_click(new Decrement())]);
-                return button(_pipe, toList([text("-")]));
-              })(),
-              (() => {
-                let _pipe = toList([on_click(new Key())]);
-                return button(_pipe, toList([text("temp")]));
-              })()
-            ])
-          )
-        ])
+      (() => {
+        let _pipe = toList([on_click(new Key())]);
+        return button(_pipe, toList([text("+")]));
+      })(),
+      (() => {
+        let _pipe = to_string(model);
+        return text(_pipe);
+      })(),
+      img(
+        toList([src("https://cdn2.thecatapi.com/images/b7k.jpg")])
       )
     ])
   );
@@ -2347,13 +2298,13 @@ function view(model) {
 function main() {
   let $ = (() => {
     let _pipe = application(init2, update, view);
-    return start2(_pipe, "#app", void 0);
+    return start2(_pipe, "#app", 0);
   })();
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "app",
-      27,
+      16,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -2365,15 +2316,18 @@ function main() {
       return try$(
         field("key", decode_string)(handler),
         (key) => {
-          if (key === "t") {
-            runtime(dispatch(new Increment()));
-            return new Ok(void 0);
-          } else if (key === "T") {
-            runtime(dispatch(new Increment()));
-            return new Ok(void 0);
-          } else {
-            return new Ok(void 0);
-          }
+          return try$(
+            field("repeat", bool)(handler),
+            (repeat2) => {
+              let key$1 = lowercase(key);
+              if (key$1 === "t" && !repeat2) {
+                runtime(dispatch(new Key()));
+                return new Ok(void 0);
+              } else {
+                return new Ok(void 0);
+              }
+            }
+          );
         }
       );
     }
