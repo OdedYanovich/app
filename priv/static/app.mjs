@@ -112,41 +112,41 @@ var BitArray = class _BitArray {
 function byteArrayToInt(byteArray, start3, end, isBigEndian, isSigned) {
   const byteSize = end - start3;
   if (byteSize <= 6) {
-    let value2 = 0;
+    let value = 0;
     if (isBigEndian) {
       for (let i = start3; i < end; i++) {
-        value2 = value2 * 256 + byteArray[i];
+        value = value * 256 + byteArray[i];
       }
     } else {
       for (let i = end - 1; i >= start3; i--) {
-        value2 = value2 * 256 + byteArray[i];
+        value = value * 256 + byteArray[i];
       }
     }
     if (isSigned) {
       const highBit = 2 ** (byteSize * 8 - 1);
-      if (value2 >= highBit) {
-        value2 -= highBit * 2;
+      if (value >= highBit) {
+        value -= highBit * 2;
       }
     }
-    return value2;
+    return value;
   } else {
-    let value2 = 0n;
+    let value = 0n;
     if (isBigEndian) {
       for (let i = start3; i < end; i++) {
-        value2 = (value2 << 8n) + BigInt(byteArray[i]);
+        value = (value << 8n) + BigInt(byteArray[i]);
       }
     } else {
       for (let i = end - 1; i >= start3; i--) {
-        value2 = (value2 << 8n) + BigInt(byteArray[i]);
+        value = (value << 8n) + BigInt(byteArray[i]);
       }
     }
     if (isSigned) {
       const highBit = 1n << BigInt(byteSize * 8 - 1);
-      if (value2 >= highBit) {
-        value2 -= highBit * 2n;
+      if (value >= highBit) {
+        value -= highBit * 2n;
       }
     }
-    return Number(value2);
+    return Number(value);
   }
 }
 function byteArrayToFloat(byteArray, start3, end, isBigEndian) {
@@ -168,9 +168,9 @@ var Result = class _Result extends CustomType {
   }
 };
 var Ok = class extends Result {
-  constructor(value2) {
+  constructor(value) {
     super();
-    this[0] = value2;
+    this[0] = value;
   }
   // @internal
   isOk() {
@@ -281,247 +281,6 @@ function to_result(option, e) {
   } else {
     return new Error(e);
   }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dict.mjs
-function insert(dict2, key, value2) {
-  return map_insert(key, value2, dict2);
-}
-function reverse_and_concat(loop$remaining, loop$accumulator) {
-  while (true) {
-    let remaining = loop$remaining;
-    let accumulator = loop$accumulator;
-    if (remaining.hasLength(0)) {
-      return accumulator;
-    } else {
-      let item = remaining.head;
-      let rest = remaining.tail;
-      loop$remaining = rest;
-      loop$accumulator = prepend(item, accumulator);
-    }
-  }
-}
-function do_keys_loop(loop$list, loop$acc) {
-  while (true) {
-    let list2 = loop$list;
-    let acc = loop$acc;
-    if (list2.hasLength(0)) {
-      return reverse_and_concat(acc, toList([]));
-    } else {
-      let first2 = list2.head;
-      let rest = list2.tail;
-      loop$list = rest;
-      loop$acc = prepend(first2[0], acc);
-    }
-  }
-}
-function keys(dict2) {
-  let list_of_pairs = map_to_list(dict2);
-  return do_keys_loop(list_of_pairs, toList([]));
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/list.mjs
-function reverse_loop(loop$remaining, loop$accumulator) {
-  while (true) {
-    let remaining = loop$remaining;
-    let accumulator = loop$accumulator;
-    if (remaining.hasLength(0)) {
-      return accumulator;
-    } else {
-      let item = remaining.head;
-      let rest$1 = remaining.tail;
-      loop$remaining = rest$1;
-      loop$accumulator = prepend(item, accumulator);
-    }
-  }
-}
-function reverse(list2) {
-  return reverse_loop(list2, toList([]));
-}
-function map_loop(loop$list, loop$fun, loop$acc) {
-  while (true) {
-    let list2 = loop$list;
-    let fun = loop$fun;
-    let acc = loop$acc;
-    if (list2.hasLength(0)) {
-      return reverse(acc);
-    } else {
-      let first$1 = list2.head;
-      let rest$1 = list2.tail;
-      loop$list = rest$1;
-      loop$fun = fun;
-      loop$acc = prepend(fun(first$1), acc);
-    }
-  }
-}
-function map(list2, fun) {
-  return map_loop(list2, fun, toList([]));
-}
-function fold(loop$list, loop$initial, loop$fun) {
-  while (true) {
-    let list2 = loop$list;
-    let initial = loop$initial;
-    let fun = loop$fun;
-    if (list2.hasLength(0)) {
-      return initial;
-    } else {
-      let x = list2.head;
-      let rest$1 = list2.tail;
-      loop$list = rest$1;
-      loop$initial = fun(initial, x);
-      loop$fun = fun;
-    }
-  }
-}
-function index_fold_loop(loop$over, loop$acc, loop$with, loop$index) {
-  while (true) {
-    let over = loop$over;
-    let acc = loop$acc;
-    let with$ = loop$with;
-    let index2 = loop$index;
-    if (over.hasLength(0)) {
-      return acc;
-    } else {
-      let first$1 = over.head;
-      let rest$1 = over.tail;
-      loop$over = rest$1;
-      loop$acc = with$(acc, first$1, index2);
-      loop$with = with$;
-      loop$index = index2 + 1;
-    }
-  }
-}
-function index_fold(list2, initial, fun) {
-  return index_fold_loop(list2, initial, fun, 0);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function drop_start(loop$string, loop$num_graphemes) {
-  while (true) {
-    let string2 = loop$string;
-    let num_graphemes = loop$num_graphemes;
-    let $ = num_graphemes > 0;
-    if (!$) {
-      return string2;
-    } else {
-      let $1 = pop_grapheme(string2);
-      if ($1.isOk()) {
-        let string$1 = $1[0][1];
-        loop$string = string$1;
-        loop$num_graphemes = num_graphemes - 1;
-      } else {
-        return string2;
-      }
-    }
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/result.mjs
-function map2(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return new Ok(fun(x));
-  } else {
-    let e = result[0];
-    return new Error(e);
-  }
-}
-function map_error(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return new Ok(x);
-  } else {
-    let error = result[0];
-    return new Error(fun(error));
-  }
-}
-function try$(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return fun(x);
-  } else {
-    let e = result[0];
-    return new Error(e);
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic.mjs
-var DecodeError = class extends CustomType {
-  constructor(expected, found, path) {
-    super();
-    this.expected = expected;
-    this.found = found;
-    this.path = path;
-  }
-};
-function int(data) {
-  return decode_int(data);
-}
-function any(decoders) {
-  return (data) => {
-    if (decoders.hasLength(0)) {
-      return new Error(
-        toList([new DecodeError("another type", classify_dynamic(data), toList([]))])
-      );
-    } else {
-      let decoder = decoders.head;
-      let decoders$1 = decoders.tail;
-      let $ = decoder(data);
-      if ($.isOk()) {
-        let decoded = $[0];
-        return new Ok(decoded);
-      } else {
-        return any(decoders$1)(data);
-      }
-    }
-  };
-}
-function push_path(error, name) {
-  let name$1 = identity(name);
-  let decoder = any(
-    toList([decode_string, (x) => {
-      return map2(int(x), to_string);
-    }])
-  );
-  let name$2 = (() => {
-    let $ = decoder(name$1);
-    if ($.isOk()) {
-      let name$22 = $[0];
-      return name$22;
-    } else {
-      let _pipe = toList(["<", classify_dynamic(name$1), ">"]);
-      let _pipe$1 = concat(_pipe);
-      return identity(_pipe$1);
-    }
-  })();
-  return error.withFields({ path: prepend(name$2, error.path) });
-}
-function map_errors(result, f) {
-  return map_error(
-    result,
-    (_capture) => {
-      return map(_capture, f);
-    }
-  );
-}
-function field(name, inner_type) {
-  return (value2) => {
-    let missing_field_error = new DecodeError("field", "nothing", toList([]));
-    return try$(
-      decode_field(value2, name),
-      (maybe_inner) => {
-        let _pipe = maybe_inner;
-        let _pipe$1 = to_result(_pipe, toList([missing_field_error]));
-        let _pipe$2 = try$(_pipe$1, inner_type);
-        return map_errors(
-          _pipe$2,
-          (_capture) => {
-            return push_path(_capture, name);
-          }
-        );
-      }
-    );
-  };
 }
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
@@ -1296,14 +1055,14 @@ function map_to_list(map4) {
   return List.fromArray(map4.entries());
 }
 function map_get(map4, key) {
-  const value2 = map4.get(key, NOT_FOUND);
-  if (value2 === NOT_FOUND) {
+  const value = map4.get(key, NOT_FOUND);
+  if (value === NOT_FOUND) {
     return new Error(Nil);
   }
-  return new Ok(value2);
+  return new Ok(value);
 }
-function map_insert(key, value2, map4) {
-  return map4.set(key, value2);
+function map_insert(key, value, map4) {
+  return map4.set(key, value);
 }
 function classify_dynamic(data) {
   if (typeof data === "string") {
@@ -1347,25 +1106,266 @@ function decode_string(data) {
 function decode_int(data) {
   return Number.isInteger(data) ? new Ok(data) : decoder_error("Int", data);
 }
-function decode_field(value2, name) {
-  const not_a_map_error = () => decoder_error("Dict", value2);
-  if (value2 instanceof Dict || value2 instanceof WeakMap || value2 instanceof Map) {
-    const entry = map_get(value2, name);
+function decode_field(value, name) {
+  const not_a_map_error = () => decoder_error("Dict", value);
+  if (value instanceof Dict || value instanceof WeakMap || value instanceof Map) {
+    const entry = map_get(value, name);
     return new Ok(entry.isOk() ? new Some(entry[0]) : new None());
-  } else if (value2 === null) {
+  } else if (value === null) {
     return not_a_map_error();
-  } else if (Object.getPrototypeOf(value2) == Object.prototype) {
-    return try_get_field(value2, name, () => new Ok(new None()));
+  } else if (Object.getPrototypeOf(value) == Object.prototype) {
+    return try_get_field(value, name, () => new Ok(new None()));
   } else {
-    return try_get_field(value2, name, not_a_map_error);
+    return try_get_field(value, name, not_a_map_error);
   }
 }
-function try_get_field(value2, field2, or_else) {
+function try_get_field(value, field2, or_else) {
   try {
-    return field2 in value2 ? new Ok(new Some(value2[field2])) : or_else();
+    return field2 in value ? new Ok(new Some(value[field2])) : or_else();
   } catch {
     return or_else();
   }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dict.mjs
+function insert(dict2, key, value) {
+  return map_insert(key, value, dict2);
+}
+function reverse_and_concat(loop$remaining, loop$accumulator) {
+  while (true) {
+    let remaining = loop$remaining;
+    let accumulator = loop$accumulator;
+    if (remaining.hasLength(0)) {
+      return accumulator;
+    } else {
+      let item = remaining.head;
+      let rest = remaining.tail;
+      loop$remaining = rest;
+      loop$accumulator = prepend(item, accumulator);
+    }
+  }
+}
+function do_keys_loop(loop$list, loop$acc) {
+  while (true) {
+    let list2 = loop$list;
+    let acc = loop$acc;
+    if (list2.hasLength(0)) {
+      return reverse_and_concat(acc, toList([]));
+    } else {
+      let first2 = list2.head;
+      let rest = list2.tail;
+      loop$list = rest;
+      loop$acc = prepend(first2[0], acc);
+    }
+  }
+}
+function keys(dict2) {
+  let list_of_pairs = map_to_list(dict2);
+  return do_keys_loop(list_of_pairs, toList([]));
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/list.mjs
+function reverse_loop(loop$remaining, loop$accumulator) {
+  while (true) {
+    let remaining = loop$remaining;
+    let accumulator = loop$accumulator;
+    if (remaining.hasLength(0)) {
+      return accumulator;
+    } else {
+      let item = remaining.head;
+      let rest$1 = remaining.tail;
+      loop$remaining = rest$1;
+      loop$accumulator = prepend(item, accumulator);
+    }
+  }
+}
+function reverse(list2) {
+  return reverse_loop(list2, toList([]));
+}
+function map_loop(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list2 = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list2.hasLength(0)) {
+      return reverse(acc);
+    } else {
+      let first$1 = list2.head;
+      let rest$1 = list2.tail;
+      loop$list = rest$1;
+      loop$fun = fun;
+      loop$acc = prepend(fun(first$1), acc);
+    }
+  }
+}
+function map(list2, fun) {
+  return map_loop(list2, fun, toList([]));
+}
+function fold(loop$list, loop$initial, loop$fun) {
+  while (true) {
+    let list2 = loop$list;
+    let initial = loop$initial;
+    let fun = loop$fun;
+    if (list2.hasLength(0)) {
+      return initial;
+    } else {
+      let x = list2.head;
+      let rest$1 = list2.tail;
+      loop$list = rest$1;
+      loop$initial = fun(initial, x);
+      loop$fun = fun;
+    }
+  }
+}
+function index_fold_loop(loop$over, loop$acc, loop$with, loop$index) {
+  while (true) {
+    let over = loop$over;
+    let acc = loop$acc;
+    let with$ = loop$with;
+    let index2 = loop$index;
+    if (over.hasLength(0)) {
+      return acc;
+    } else {
+      let first$1 = over.head;
+      let rest$1 = over.tail;
+      loop$over = rest$1;
+      loop$acc = with$(acc, first$1, index2);
+      loop$with = with$;
+      loop$index = index2 + 1;
+    }
+  }
+}
+function index_fold(list2, initial, fun) {
+  return index_fold_loop(list2, initial, fun, 0);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function drop_start(loop$string, loop$num_graphemes) {
+  while (true) {
+    let string2 = loop$string;
+    let num_graphemes = loop$num_graphemes;
+    let $ = num_graphemes > 0;
+    if (!$) {
+      return string2;
+    } else {
+      let $1 = pop_grapheme(string2);
+      if ($1.isOk()) {
+        let string$1 = $1[0][1];
+        loop$string = string$1;
+        loop$num_graphemes = num_graphemes - 1;
+      } else {
+        return string2;
+      }
+    }
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/result.mjs
+function map2(result, fun) {
+  if (result.isOk()) {
+    let x = result[0];
+    return new Ok(fun(x));
+  } else {
+    let e = result[0];
+    return new Error(e);
+  }
+}
+function map_error(result, fun) {
+  if (result.isOk()) {
+    let x = result[0];
+    return new Ok(x);
+  } else {
+    let error = result[0];
+    return new Error(fun(error));
+  }
+}
+function try$(result, fun) {
+  if (result.isOk()) {
+    let x = result[0];
+    return fun(x);
+  } else {
+    let e = result[0];
+    return new Error(e);
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dynamic.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
+function int(data) {
+  return decode_int(data);
+}
+function any(decoders) {
+  return (data) => {
+    if (decoders.hasLength(0)) {
+      return new Error(
+        toList([new DecodeError("another type", classify_dynamic(data), toList([]))])
+      );
+    } else {
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder(data);
+      if ($.isOk()) {
+        let decoded = $[0];
+        return new Ok(decoded);
+      } else {
+        return any(decoders$1)(data);
+      }
+    }
+  };
+}
+function push_path(error, name) {
+  let name$1 = identity(name);
+  let decoder = any(
+    toList([decode_string, (x) => {
+      return map2(int(x), to_string);
+    }])
+  );
+  let name$2 = (() => {
+    let $ = decoder(name$1);
+    if ($.isOk()) {
+      let name$22 = $[0];
+      return name$22;
+    } else {
+      let _pipe = toList(["<", classify_dynamic(name$1), ">"]);
+      let _pipe$1 = concat(_pipe);
+      return identity(_pipe$1);
+    }
+  })();
+  return error.withFields({ path: prepend(name$2, error.path) });
+}
+function map_errors(result, f) {
+  return map_error(
+    result,
+    (_capture) => {
+      return map(_capture, f);
+    }
+  );
+}
+function field(name, inner_type) {
+  return (value) => {
+    let missing_field_error = new DecodeError("field", "nothing", toList([]));
+    return try$(
+      decode_field(value, name),
+      (maybe_inner) => {
+        let _pipe = maybe_inner;
+        let _pipe$1 = to_result(_pipe, toList([missing_field_error]));
+        let _pipe$2 = try$(_pipe$1, inner_type);
+        return map_errors(
+          _pipe$2,
+          (_capture) => {
+            return push_path(_capture, name);
+          }
+        );
+      }
+    );
+  };
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/bool.mjs
@@ -1394,9 +1394,12 @@ function custom(run2) {
   );
 }
 function from(effect) {
-  return custom((dispatch, _, _1, _2) => {
-    return effect(dispatch);
+  return custom((dispatch2, _, _1, _2) => {
+    return effect(dispatch2);
   });
+}
+function none() {
+  return new Effect(toList([]));
 }
 
 // build/dev/javascript/lustre/lustre/internals/vdom.mjs
@@ -1497,8 +1500,17 @@ function handlers(element2) {
 }
 
 // build/dev/javascript/lustre/lustre/attribute.mjs
+function attribute(name, value) {
+  return new Attribute(name, identity(value), false);
+}
 function on(name, handler) {
   return new Event("on" + name, handler);
+}
+function id(name) {
+  return attribute("id", name);
+}
+function src(uri) {
+  return attribute("src", uri);
 }
 
 // build/dev/javascript/lustre/lustre/element.mjs
@@ -1651,7 +1663,7 @@ if (globalThis.customElements && !globalThis.customElements.get("lustre-fragment
     }
   );
 }
-function morph(prev, next, dispatch) {
+function morph(prev, next, dispatch2) {
   let out;
   let stack = [{ prev, next, parent: prev.parentNode }];
   while (stack.length) {
@@ -1676,7 +1688,7 @@ function morph(prev, next, dispatch) {
       const created = createElementNode({
         prev: prev2,
         next: next2,
-        dispatch,
+        dispatch: dispatch2,
         stack
       });
       if (!prev2) {
@@ -1689,7 +1701,7 @@ function morph(prev, next, dispatch) {
   }
   return out;
 }
-function createElementNode({ prev, next, dispatch, stack }) {
+function createElementNode({ prev, next, dispatch: dispatch2, stack }) {
   const namespace = next.namespace || "http://www.w3.org/1999/xhtml";
   const canMorph = prev && prev.nodeType === Node.ELEMENT_NODE && prev.localName === next.tag && prev.namespaceURI === (next.namespace || "http://www.w3.org/1999/xhtml");
   const el = canMorph ? prev : namespace ? document.createElementNS(namespace, next.tag) : document.createElement(next.tag);
@@ -1714,15 +1726,15 @@ function createElementNode({ prev, next, dispatch, stack }) {
   const delegated = [];
   for (const attr of next.attrs) {
     const name = attr[0];
-    const value2 = attr[1];
+    const value = attr[1];
     if (attr.as_property) {
-      if (el[name] !== value2)
-        el[name] = value2;
+      if (el[name] !== value)
+        el[name] = value;
       if (canMorph)
         prevAttributes.delete(name);
     } else if (name.startsWith("on")) {
       const eventName = name.slice(2);
-      const callback = dispatch(value2, eventName === "input");
+      const callback = dispatch2(value, eventName === "input");
       if (!handlersForEl.has(eventName)) {
         el.addEventListener(eventName, lustreGenericEventHandler);
       }
@@ -1731,30 +1743,30 @@ function createElementNode({ prev, next, dispatch, stack }) {
         prevHandlers.delete(eventName);
     } else if (name.startsWith("data-lustre-on-")) {
       const eventName = name.slice(15);
-      const callback = dispatch(lustreServerEventHandler);
+      const callback = dispatch2(lustreServerEventHandler);
       if (!handlersForEl.has(eventName)) {
         el.addEventListener(eventName, lustreGenericEventHandler);
       }
       handlersForEl.set(eventName, callback);
-      el.setAttribute(name, value2);
+      el.setAttribute(name, value);
       if (canMorph) {
         prevHandlers.delete(eventName);
         prevAttributes.delete(name);
       }
     } else if (name.startsWith("delegate:data-") || name.startsWith("delegate:aria-")) {
-      el.setAttribute(name, value2);
-      delegated.push([name.slice(10), value2]);
+      el.setAttribute(name, value);
+      delegated.push([name.slice(10), value]);
     } else if (name === "class") {
-      className = className === null ? value2 : className + " " + value2;
+      className = className === null ? value : className + " " + value;
     } else if (name === "style") {
-      style2 = style2 === null ? value2 : style2 + value2;
+      style2 = style2 === null ? value : style2 + value;
     } else if (name === "dangerous-unescaped-html") {
-      innerHTML = value2;
+      innerHTML = value;
     } else {
-      if (el.getAttribute(name) !== value2)
-        el.setAttribute(name, value2);
+      if (el.getAttribute(name) !== value)
+        el.setAttribute(name, value);
       if (name === "value" || name === "selected")
-        el[name] = value2;
+        el[name] = value;
       if (canMorph)
         prevAttributes.delete(name);
     }
@@ -1781,9 +1793,9 @@ function createElementNode({ prev, next, dispatch, stack }) {
   if (next.tag === "slot") {
     window.queueMicrotask(() => {
       for (const child of el.assignedElements()) {
-        for (const [name, value2] of delegated) {
+        for (const [name, value] of delegated) {
           if (!child.hasAttribute(name)) {
-            child.setAttribute(name, value2);
+            child.setAttribute(name, value);
           }
         }
       }
@@ -1990,14 +2002,14 @@ var LustreClientApplication = class _LustreClientApplication {
         this.#queue = [];
         this.#model = action[0][0];
         const vdom = this.#view(this.#model);
-        const dispatch = (handler, immediate = false) => (event2) => {
+        const dispatch2 = (handler, immediate = false) => (event2) => {
           const result = handler(event2);
           if (result instanceof Ok) {
             this.send(new Dispatch(result[0], immediate));
           }
         };
         const prev = this.root.firstChild ?? this.root.appendChild(document.createTextNode(""));
-        morph(prev, vdom, dispatch);
+        morph(prev, vdom, dispatch2);
       }
     } else if (action instanceof Dispatch) {
       const msg = action[0];
@@ -2047,14 +2059,14 @@ var LustreClientApplication = class _LustreClientApplication {
     this.#tickScheduled = void 0;
     this.#flush(effects);
     const vdom = this.#view(this.#model);
-    const dispatch = (handler, immediate = false) => (event2) => {
+    const dispatch2 = (handler, immediate = false) => (event2) => {
       const result = handler(event2);
       if (result instanceof Ok) {
         this.send(new Dispatch(result[0], immediate));
       }
     };
     const prev = this.root.firstChild ?? this.root.appendChild(document.createTextNode(""));
-    morph(prev, vdom, dispatch);
+    morph(prev, vdom, dispatch2);
   }
   #flush(effects = []) {
     while (this.#queue.length > 0) {
@@ -2065,7 +2077,7 @@ var LustreClientApplication = class _LustreClientApplication {
     }
     while (effects.length > 0) {
       const effect = effects.shift();
-      const dispatch = (msg) => this.send(new Dispatch(msg));
+      const dispatch2 = (msg) => this.send(new Dispatch(msg));
       const emit2 = (event2, data) => this.root.dispatchEvent(
         new CustomEvent(event2, {
           detail: data,
@@ -2076,7 +2088,7 @@ var LustreClientApplication = class _LustreClientApplication {
       const select = () => {
       };
       const root = this.root;
-      effect({ dispatch, emit: emit2, select, root });
+      effect({ dispatch: dispatch2, emit: emit2, select, root });
     }
     if (this.#queue.length > 0) {
       this.#flush(effects);
@@ -2176,7 +2188,7 @@ var LustreServerApplication = class _LustreServerApplication {
     }
     while (effects.length > 0) {
       const effect = effects.shift();
-      const dispatch = (msg) => this.send(new Dispatch(msg));
+      const dispatch2 = (msg) => this.send(new Dispatch(msg));
       const emit2 = (event2, data) => this.root.dispatchEvent(
         new CustomEvent(event2, {
           detail: data,
@@ -2187,7 +2199,7 @@ var LustreServerApplication = class _LustreServerApplication {
       const select = () => {
       };
       const root = null;
-      effect({ dispatch, emit: emit2, select, root });
+      effect({ dispatch: dispatch2, emit: emit2, select, root });
     }
     if (this.#queue.length > 0) {
       this.#flush(effects);
@@ -2218,6 +2230,9 @@ var NotABrowser = class extends CustomType {
 function application(init3, update2, view2) {
   return new App(init3, update2, view2, new None());
 }
+function dispatch(msg) {
+  return new Dispatch(msg);
+}
 function start2(app, selector, flags) {
   return guard(
     !is_browser(),
@@ -2229,42 +2244,33 @@ function start2(app, selector, flags) {
 }
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
-function text2(content) {
-  return text(content);
+function body(attrs, children2) {
+  return element("body", attrs, children2);
 }
 function div(attrs, children2) {
   return element("div", attrs, children2);
+}
+function img(attrs) {
+  return element("img", attrs, toList([]));
+}
+function button(attrs, children2) {
+  return element("button", attrs, children2);
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
 function on2(name, handler) {
   return on(name, handler);
 }
-function value(event2) {
-  let _pipe = event2;
-  return field("target", field("value", decode_string))(
-    _pipe
-  );
-}
-function on_input(msg) {
-  return on2(
-    "input",
-    (event2) => {
-      let _pipe = value(event2);
-      return map2(_pipe, msg);
-    }
-  );
+function on_click(msg) {
+  return on2("click", (_) => {
+    return new Ok(msg);
+  });
 }
 
 // build/dev/javascript/app/event_listener.mjs
-var currentKey = "f";
-function initialize(combo_tracker, first_mod) {
-  window.addEventListener("keydown", async (event2) => {
-    if (event2.repeat)
-      return;
-    currentKey = event2.key.toLowerCase();
-    console.log(bar());
-  });
+var currentKey = "t";
+function initialize(handler) {
+  window.addEventListener("keydown", handler);
 }
 function getCurrentKey() {
   return currentKey;
@@ -2275,43 +2281,66 @@ var Increment = class extends CustomType {
 };
 var Decrement = class extends CustomType {
 };
-function bar() {
-  return "foo";
-}
+var Key = class extends CustomType {
+};
 function init2(_) {
-  return [0, from(initialize)];
+  return [0, none()];
+}
+function endpoint(dispatch2) {
+  let _pipe = (() => {
+    let $ = getCurrentKey();
+    if ($ === "r") {
+      return new Increment();
+    } else {
+      return new Decrement();
+    }
+  })();
+  return dispatch2(_pipe);
 }
 function update(model, msg) {
-  return [
-    (() => {
-      if (msg instanceof Increment) {
-        return model + 1;
-      } else {
-        return model - 1;
-      }
-    })(),
-    from(getCurrentKey)
-  ];
+  if (msg instanceof Increment) {
+    return [model + 1, none()];
+  } else if (msg instanceof Decrement) {
+    return [model - 1, none()];
+  } else {
+    return [model, from(endpoint)];
+  }
 }
 function view(model) {
-  return div(
+  return body(
+    toList([]),
     toList([
-      on_input(
-        (key) => {
-          if (key === "r") {
-            return new Increment();
-          } else {
-            return new Decrement();
-          }
-        }
+      div(
+        toList([id("app")]),
+        toList([
+          div(
+            toList([]),
+            toList([
+              img(
+                toList([
+                  src("https://cdn2.thecatapi.com/images/b7k.jpg")
+                ])
+              ),
+              (() => {
+                let _pipe = toList([on_click(new Increment())]);
+                return button(_pipe, toList([text("+")]));
+              })(),
+              (() => {
+                let _pipe = to_string(model);
+                return text(_pipe);
+              })(),
+              (() => {
+                let _pipe = toList([on_click(new Decrement())]);
+                return button(_pipe, toList([text("-")]));
+              })(),
+              (() => {
+                let _pipe = toList([on_click(new Key())]);
+                return button(_pipe, toList([text("temp")]));
+              })()
+            ])
+          )
+        ])
       )
-    ]),
-    toList([
-      text2("r"),
-      (() => {
-        let _pipe = to_string(model);
-        return text(_pipe);
-      })()
     ])
   );
 }
@@ -2324,13 +2353,31 @@ function main() {
     throw makeError(
       "let_assert",
       "app",
-      22,
+      27,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
     );
   }
-  return void 0;
+  let runtime = $[0];
+  return initialize(
+    (handler) => {
+      return try$(
+        field("key", decode_string)(handler),
+        (key) => {
+          if (key === "t") {
+            runtime(dispatch(new Increment()));
+            return new Ok(void 0);
+          } else if (key === "T") {
+            runtime(dispatch(new Increment()));
+            return new Ok(void 0);
+          } else {
+            return new Ok(void 0);
+          }
+        }
+      );
+    }
+  );
 }
 
 // build/.lustre/entry.mjs
