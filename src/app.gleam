@@ -1,7 +1,6 @@
 import behavior.{Key, init, update}
 import gleam/dynamic.{type Dynamic}
 import gleam/result
-import gleam/string
 import lustre
 import view.{view}
 
@@ -15,7 +14,6 @@ pub fn main() {
   use handler <- initialize
   use key <- result.try(dynamic.field("key", dynamic.string)(handler))
   use repeat <- result.try(dynamic.field("repeat", dynamic.bool)(handler))
-  let key = string.lowercase(key)
   case key, repeat {
     _, False -> {
       runtime(lustre.dispatch(Key(key)))

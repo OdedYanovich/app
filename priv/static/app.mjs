@@ -1143,9 +1143,44 @@ function try_get_field(value, field2, or_else) {
   }
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/int.mjs
+function min(a, b) {
+  let $ = a < b;
+  if ($) {
+    return a;
+  } else {
+    return b;
+  }
+}
+function max(a, b) {
+  let $ = a > b;
+  if ($) {
+    return a;
+  } else {
+    return b;
+  }
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
 function insert(dict2, key, value) {
   return map_insert(key, value, dict2);
+}
+function from_list_loop(loop$list, loop$initial) {
+  while (true) {
+    let list2 = loop$list;
+    let initial = loop$initial;
+    if (list2.hasLength(0)) {
+      return initial;
+    } else {
+      let x = list2.head;
+      let rest = list2.tail;
+      loop$list = rest;
+      loop$initial = insert(initial, x[0], x[1]);
+    }
+  }
+}
+function from_list(list2) {
+  return from_list_loop(list2, new_map());
 }
 function reverse_and_concat(loop$remaining, loop$accumulator) {
   while (true) {
@@ -1536,9 +1571,6 @@ function style(properties) {
       }
     )
   );
-}
-function class$(name) {
-  return attribute("class", name);
 }
 
 // build/dev/javascript/lustre/lustre/element.mjs
@@ -2283,10 +2315,12 @@ function start2(app, selector, flags) {
 // build/dev/javascript/app/behavior.mjs
 var Hub = class extends CustomType {
 };
+var FightStart = class extends CustomType {
+};
 var Model2 = class extends CustomType {
-  constructor(x0, key, volume) {
+  constructor(mod, key, volume) {
     super();
-    this[0] = x0;
+    this.mod = mod;
     this.key = key;
     this.volume = volume;
   }
@@ -2297,28 +2331,62 @@ var Key = class extends CustomType {
     this[0] = x0;
   }
 };
-function init2(flags) {
-  return new Model2(new Hub(), flags, 50);
+function change_volume(model, change, key) {
+  return new Model2(
+    new Hub(),
+    key,
+    max(min(model.volume + change, 100), 0)
+  );
 }
 function update(model, msg) {
+  let action_buttons = from_list(
+    toList([
+      [
+        ["q", new Hub()],
+        [
+          0,
+          (model2, _, _1) => {
+            let _record = model2;
+            return new Model2(new FightStart(), _record.key, _record.volume);
+          }
+        ]
+      ],
+      [["l", new Hub()], [-25, change_volume]],
+      [["k", new Hub()], [-10, change_volume]],
+      [["j", new Hub()], [-5, change_volume]],
+      [["h", new Hub()], [-1, change_volume]],
+      [["y", new Hub()], [1, change_volume]],
+      [["u", new Hub()], [5, change_volume]],
+      [["i", new Hub()], [10, change_volume]],
+      [["o", new Hub()], [25, change_volume]],
+      [
+        ["a", new FightStart()],
+        [
+          0,
+          (model2, _, _1) => {
+            let _record = model2;
+            return new Model2(new Hub(), _record.key, _record.volume);
+          }
+        ]
+      ]
+    ])
+  );
   {
     let key = msg[0];
-    return new Model2(
-      new Hub(),
-      key,
-      model.volume + (() => {
-        if (key === "l") {
-          return 1;
-        } else if (key === "j") {
-          return 1;
-        } else if (key === "k") {
-          return 1;
-        } else {
-          return -1;
-        }
-      })()
-    );
+    let $ = (() => {
+      let _pipe = action_buttons;
+      return map_get(_pipe, [lowercase(key), model.mod]);
+    })();
+    if ($.isOk()) {
+      let t = $[0];
+      return t[1](model, t[0], key);
+    } else {
+      return model;
+    }
   }
+}
+function init2(flags) {
+  return new Model2(new Hub(), flags, 50);
 }
 
 // build/dev/javascript/app/event_listener.mjs
@@ -2336,53 +2404,120 @@ function div(attrs, children2) {
 
 // build/dev/javascript/app/view.mjs
 function view(model) {
-  return div(
-    toList([
-      style(
-        toList([
-          ["display", "grid"],
-          ["grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"],
-          ["place-items", "center;"],
-          ["grid-auto-flow", "column"],
-          ["height", "100vh"],
-          ["background-color", "black"],
-          ["color", "white"]
-        ])
-      )
-    ]),
-    (() => {
-      let _pipe = toList([
-        ["z start fight", "hub"],
-        ["x reset dungeon", "hub"],
-        ["c delete progress", "hub"],
-        ["x reset dungeon", "hub"],
-        ["v credits", "hub"],
-        ["made by Oded Yanovich", "hub"],
-        [to_string(model.volume), "hub"],
-        ["l -25 j -10 h -5 g -1 t +1 y +5 u +10 i +25", "hub"]
-      ]);
-      let _pipe$1 = map(
-        _pipe,
-        (x) => {
-          return element(
-            "state-dependent",
-            toList([class$(x[1])]),
-            toList([text2(x[0])])
-          );
-        }
-      );
-      let _pipe$2 = append(
-        _pipe$1,
-        toList([
-          (() => {
-            let _pipe$22 = model.key;
-            return text(_pipe$22);
-          })()
-        ])
-      );
-      return append(_pipe$2, toList([]));
-    })()
-  );
+  let $ = model.mod;
+  if ($ instanceof Hub) {
+    return div(
+      toList([
+        style(
+          toList([
+            ["display", "grid"],
+            ["grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"],
+            ["place-items", "center;"],
+            ["grid-auto-flow", "column"],
+            ["height", "100vh"],
+            ["background-color", "black"],
+            ["color", "white"],
+            ["font-size", "1.6rem"]
+          ])
+        )
+      ]),
+      (() => {
+        let _pipe = toList([
+          "q fight",
+          "w reset dungeon",
+          "v credits",
+          "made by Oded Yanovich",
+          model.key,
+          to_string(model.volume)
+        ]);
+        let _pipe$1 = map(
+          _pipe,
+          (text3) => {
+            return div(toList([]), toList([text2(text3)]));
+          }
+        );
+        return append(
+          _pipe$1,
+          toList([
+            div(
+              toList([
+                style(
+                  toList([
+                    ["display", "grid"],
+                    ["grid-template", "repeat(2, 1fr) / repeat(8, 1fr)"],
+                    ["place-items", "center;"],
+                    ["padding", "0"],
+                    ["border", "0"]
+                  ])
+                )
+              ]),
+              (() => {
+                let _pipe$2 = toList([
+                  "l",
+                  "k",
+                  "j",
+                  "h",
+                  "y",
+                  "u",
+                  "i",
+                  "o",
+                  "-25",
+                  "-10",
+                  "-5",
+                  "-1",
+                  "+1",
+                  "+5",
+                  "+10",
+                  "+25"
+                ]);
+                return map(
+                  _pipe$2,
+                  (text3) => {
+                    return div(toList([]), toList([text2(text3)]));
+                  }
+                );
+              })()
+            )
+          ])
+        );
+      })()
+    );
+  } else if ($ instanceof FightStart) {
+    return div(
+      toList([
+        style(
+          toList([
+            ["display", "grid"],
+            ["grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"],
+            ["place-items", "center;"],
+            ["grid-auto-flow", "column"],
+            ["height", "100vh"],
+            ["background-color", "black"],
+            ["color", "white"],
+            ["font-size", "1.6rem"]
+          ])
+        )
+      ]),
+      (() => {
+        let _pipe = toList(["a Hub"]);
+        return map(
+          _pipe,
+          (text3) => {
+            return div(toList([]), toList([text2(text3)]));
+          }
+        );
+      })()
+    );
+  } else {
+    throw makeError(
+      "todo",
+      "view",
+      75,
+      "view",
+      "`todo` expression evaluated. This code has not yet been implemented.",
+      {}
+    );
+  }
 }
 
 // build/dev/javascript/app/app.mjs
@@ -2395,7 +2530,7 @@ function main() {
     throw makeError(
       "let_assert",
       "app",
-      12,
+      11,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -2410,9 +2545,8 @@ function main() {
           return try$(
             field("repeat", bool)(handler),
             (repeat2) => {
-              let key$1 = lowercase(key);
               if (!repeat2) {
-                runtime(dispatch(new Key(key$1)));
+                runtime(dispatch(new Key(key)));
                 return new Ok(void 0);
               } else {
                 return new Ok(void 0);
