@@ -25,8 +25,6 @@ pub fn view(model: Model) -> element.Element(Msg) {
         #("padding", "1rem"),
         #("box-sizing", "border-box"),
       ]),
-    //   attribute.rel("stylesheet"),
-    // attribute.href("/priv/static/style.css"),
     ],
     case model.mod {
       Hub -> {
@@ -35,7 +33,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
           "x reset dungeon",
           "c credits",
           "made by Oded Yanovich",
-          model.key,
+          // model.player_combo,
           int.to_string(model.volume),
         ]
         |> list.map(fn(text) { html.div([], [html.text(text)]) })
@@ -62,10 +60,11 @@ pub fn view(model: Model) -> element.Element(Msg) {
         // ])
       }
       Fight -> {
-        todo
+        ["z Hub", model.player_combo, model.required_combo]
+        |> text_to_element
       }
       FightStart -> {
-        ["z Hub"]
+        ["z Hub", model.player_combo, model.required_combo]
         |> text_to_element
       }
     },

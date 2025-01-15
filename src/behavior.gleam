@@ -11,7 +11,7 @@ pub type Mods {
 }
 
 pub type Model {
-  Model(mod: Mods, key: String, volume: Int)
+  Model(mod: Mods, player_combo: String, required_combo: String, volume: Int)
 }
 
 pub type Msg {
@@ -19,7 +19,11 @@ pub type Msg {
 }
 
 fn change_volume(model: Model, change, key) {
-  Model(Hub, key, int.max(int.min(model.volume + change, 100), 0))
+  Model(
+    ..model,
+    player_combo: model.player_combo <> key,
+    volume: int.max(int.min(model.volume + change, 100), 0),
+  )
 }
 
 pub const volume_buttons = [
@@ -33,6 +37,13 @@ pub const volume_buttons = [
   #("i", 25),
 ]
 
+fn inside(list, combo) {
+  case list {
+    [first, ..rest] -> inside(rest, combo <> first)
+    [] -> combo
+  }
+}
+
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
     Key(key) -> {
@@ -42,7 +53,12 @@ pub fn update(model: Model, msg: Msg) -> Model {
             #(
               #("z", Hub),
               #(None, fn(model, _change, _key) {
-                Model(..model, mod: FightStart)
+                Model(
+                  ..model,
+                  required_combo: ["f", "g", "h"]
+                    |> fn(list) { inside(list |> list.shuffle, "") },
+                  mod: FightStart,
+                )
               }),
             ),
             #(
@@ -69,5 +85,5 @@ pub fn update(model: Model, msg: Msg) -> Model {
 }
 
 pub fn init(flags) -> Model {
-  Model(Hub, flags, 50)
+  Model(Hub, flags, "t", 50)
 }

@@ -275,6 +275,14 @@ function makeError(variant, module, line, fn, message, extra) {
   return error;
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
 // build/dev/javascript/gleam_stdlib/gleam/option.mjs
 var Some = class extends CustomType {
   constructor(x0) {
@@ -290,6 +298,14 @@ function to_result(option, e) {
     return new Ok(a);
   } else {
     return new Error(e);
+  }
+}
+function unwrap(option, default$) {
+  if (option instanceof Some) {
+    let x = option[0];
+    return x;
+  } else {
+    return default$;
   }
 }
 
@@ -1061,6 +1077,13 @@ var unicode_whitespaces = [
 ].join("");
 var trim_start_regex = new RegExp(`^[${unicode_whitespaces}]*`);
 var trim_end_regex = new RegExp(`[${unicode_whitespaces}]*$`);
+function random_uniform() {
+  const random_uniform_result = Math.random();
+  if (random_uniform_result === 1) {
+    return random_uniform();
+  }
+  return random_uniform_result;
+}
 function new_map() {
   return Dict.new();
 }
@@ -1143,6 +1166,21 @@ function try_get_field(value, field2, or_else) {
   }
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/float.mjs
+function compare(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = a < b;
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
+  }
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/int.mjs
 function min(a, b) {
   let $ = a < b;
@@ -1216,6 +1254,10 @@ function keys(dict2) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
+var Ascending = class extends CustomType {
+};
+var Descending = class extends CustomType {
+};
 function reverse_loop(loop$remaining, loop$accumulator) {
   while (true) {
     let remaining = loop$remaining;
@@ -1269,6 +1311,41 @@ function append_loop(loop$first, loop$second) {
 function append(first2, second) {
   return append_loop(reverse(first2), second);
 }
+function reverse_and_prepend(loop$prefix, loop$suffix) {
+  while (true) {
+    let prefix = loop$prefix;
+    let suffix = loop$suffix;
+    if (prefix.hasLength(0)) {
+      return suffix;
+    } else {
+      let first$1 = prefix.head;
+      let rest$1 = prefix.tail;
+      loop$prefix = rest$1;
+      loop$suffix = prepend(first$1, suffix);
+    }
+  }
+}
+function flatten_loop(loop$lists, loop$acc) {
+  while (true) {
+    let lists = loop$lists;
+    let acc = loop$acc;
+    if (lists.hasLength(0)) {
+      return reverse(acc);
+    } else {
+      let list2 = lists.head;
+      let further_lists = lists.tail;
+      loop$lists = further_lists;
+      loop$acc = reverse_and_prepend(list2, acc);
+    }
+  }
+}
+function flatten(lists) {
+  return flatten_loop(lists, toList([]));
+}
+function flat_map(list2, fun) {
+  let _pipe = map(list2, fun);
+  return flatten(_pipe);
+}
 function fold(loop$list, loop$initial, loop$fun) {
   while (true) {
     let list2 = loop$list;
@@ -1305,6 +1382,363 @@ function index_fold_loop(loop$over, loop$acc, loop$with, loop$index) {
 }
 function index_fold(list2, initial, fun) {
   return index_fold_loop(list2, initial, fun, 0);
+}
+function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$prev, loop$acc) {
+  while (true) {
+    let list2 = loop$list;
+    let compare3 = loop$compare;
+    let growing = loop$growing;
+    let direction = loop$direction;
+    let prev = loop$prev;
+    let acc = loop$acc;
+    let growing$1 = prepend(prev, growing);
+    if (list2.hasLength(0)) {
+      if (direction instanceof Ascending) {
+        return prepend(reverse_loop(growing$1, toList([])), acc);
+      } else {
+        return prepend(growing$1, acc);
+      }
+    } else {
+      let new$1 = list2.head;
+      let rest$1 = list2.tail;
+      let $ = compare3(prev, new$1);
+      if ($ instanceof Gt && direction instanceof Descending) {
+        loop$list = rest$1;
+        loop$compare = compare3;
+        loop$growing = growing$1;
+        loop$direction = direction;
+        loop$prev = new$1;
+        loop$acc = acc;
+      } else if ($ instanceof Lt && direction instanceof Ascending) {
+        loop$list = rest$1;
+        loop$compare = compare3;
+        loop$growing = growing$1;
+        loop$direction = direction;
+        loop$prev = new$1;
+        loop$acc = acc;
+      } else if ($ instanceof Eq && direction instanceof Ascending) {
+        loop$list = rest$1;
+        loop$compare = compare3;
+        loop$growing = growing$1;
+        loop$direction = direction;
+        loop$prev = new$1;
+        loop$acc = acc;
+      } else if ($ instanceof Gt && direction instanceof Ascending) {
+        let acc$1 = (() => {
+          if (direction instanceof Ascending) {
+            return prepend(reverse_loop(growing$1, toList([])), acc);
+          } else {
+            return prepend(growing$1, acc);
+          }
+        })();
+        if (rest$1.hasLength(0)) {
+          return prepend(toList([new$1]), acc$1);
+        } else {
+          let next = rest$1.head;
+          let rest$2 = rest$1.tail;
+          let direction$1 = (() => {
+            let $1 = compare3(new$1, next);
+            if ($1 instanceof Lt) {
+              return new Ascending();
+            } else if ($1 instanceof Eq) {
+              return new Ascending();
+            } else {
+              return new Descending();
+            }
+          })();
+          loop$list = rest$2;
+          loop$compare = compare3;
+          loop$growing = toList([new$1]);
+          loop$direction = direction$1;
+          loop$prev = next;
+          loop$acc = acc$1;
+        }
+      } else if ($ instanceof Lt && direction instanceof Descending) {
+        let acc$1 = (() => {
+          if (direction instanceof Ascending) {
+            return prepend(reverse_loop(growing$1, toList([])), acc);
+          } else {
+            return prepend(growing$1, acc);
+          }
+        })();
+        if (rest$1.hasLength(0)) {
+          return prepend(toList([new$1]), acc$1);
+        } else {
+          let next = rest$1.head;
+          let rest$2 = rest$1.tail;
+          let direction$1 = (() => {
+            let $1 = compare3(new$1, next);
+            if ($1 instanceof Lt) {
+              return new Ascending();
+            } else if ($1 instanceof Eq) {
+              return new Ascending();
+            } else {
+              return new Descending();
+            }
+          })();
+          loop$list = rest$2;
+          loop$compare = compare3;
+          loop$growing = toList([new$1]);
+          loop$direction = direction$1;
+          loop$prev = next;
+          loop$acc = acc$1;
+        }
+      } else {
+        let acc$1 = (() => {
+          if (direction instanceof Ascending) {
+            return prepend(reverse_loop(growing$1, toList([])), acc);
+          } else {
+            return prepend(growing$1, acc);
+          }
+        })();
+        if (rest$1.hasLength(0)) {
+          return prepend(toList([new$1]), acc$1);
+        } else {
+          let next = rest$1.head;
+          let rest$2 = rest$1.tail;
+          let direction$1 = (() => {
+            let $1 = compare3(new$1, next);
+            if ($1 instanceof Lt) {
+              return new Ascending();
+            } else if ($1 instanceof Eq) {
+              return new Ascending();
+            } else {
+              return new Descending();
+            }
+          })();
+          loop$list = rest$2;
+          loop$compare = compare3;
+          loop$growing = toList([new$1]);
+          loop$direction = direction$1;
+          loop$prev = next;
+          loop$acc = acc$1;
+        }
+      }
+    }
+  }
+}
+function merge_ascendings(loop$list1, loop$list2, loop$compare, loop$acc) {
+  while (true) {
+    let list1 = loop$list1;
+    let list2 = loop$list2;
+    let compare3 = loop$compare;
+    let acc = loop$acc;
+    if (list1.hasLength(0)) {
+      let list3 = list2;
+      return reverse_loop(list3, acc);
+    } else if (list2.hasLength(0)) {
+      let list3 = list1;
+      return reverse_loop(list3, acc);
+    } else {
+      let first1 = list1.head;
+      let rest1 = list1.tail;
+      let first2 = list2.head;
+      let rest2 = list2.tail;
+      let $ = compare3(first1, first2);
+      if ($ instanceof Lt) {
+        loop$list1 = rest1;
+        loop$list2 = list2;
+        loop$compare = compare3;
+        loop$acc = prepend(first1, acc);
+      } else if ($ instanceof Gt) {
+        loop$list1 = list1;
+        loop$list2 = rest2;
+        loop$compare = compare3;
+        loop$acc = prepend(first2, acc);
+      } else {
+        loop$list1 = list1;
+        loop$list2 = rest2;
+        loop$compare = compare3;
+        loop$acc = prepend(first2, acc);
+      }
+    }
+  }
+}
+function merge_ascending_pairs(loop$sequences, loop$compare, loop$acc) {
+  while (true) {
+    let sequences2 = loop$sequences;
+    let compare3 = loop$compare;
+    let acc = loop$acc;
+    if (sequences2.hasLength(0)) {
+      return reverse_loop(acc, toList([]));
+    } else if (sequences2.hasLength(1)) {
+      let sequence = sequences2.head;
+      return reverse_loop(
+        prepend(reverse_loop(sequence, toList([])), acc),
+        toList([])
+      );
+    } else {
+      let ascending1 = sequences2.head;
+      let ascending2 = sequences2.tail.head;
+      let rest$1 = sequences2.tail.tail;
+      let descending = merge_ascendings(
+        ascending1,
+        ascending2,
+        compare3,
+        toList([])
+      );
+      loop$sequences = rest$1;
+      loop$compare = compare3;
+      loop$acc = prepend(descending, acc);
+    }
+  }
+}
+function merge_descendings(loop$list1, loop$list2, loop$compare, loop$acc) {
+  while (true) {
+    let list1 = loop$list1;
+    let list2 = loop$list2;
+    let compare3 = loop$compare;
+    let acc = loop$acc;
+    if (list1.hasLength(0)) {
+      let list3 = list2;
+      return reverse_loop(list3, acc);
+    } else if (list2.hasLength(0)) {
+      let list3 = list1;
+      return reverse_loop(list3, acc);
+    } else {
+      let first1 = list1.head;
+      let rest1 = list1.tail;
+      let first2 = list2.head;
+      let rest2 = list2.tail;
+      let $ = compare3(first1, first2);
+      if ($ instanceof Lt) {
+        loop$list1 = list1;
+        loop$list2 = rest2;
+        loop$compare = compare3;
+        loop$acc = prepend(first2, acc);
+      } else if ($ instanceof Gt) {
+        loop$list1 = rest1;
+        loop$list2 = list2;
+        loop$compare = compare3;
+        loop$acc = prepend(first1, acc);
+      } else {
+        loop$list1 = rest1;
+        loop$list2 = list2;
+        loop$compare = compare3;
+        loop$acc = prepend(first1, acc);
+      }
+    }
+  }
+}
+function merge_descending_pairs(loop$sequences, loop$compare, loop$acc) {
+  while (true) {
+    let sequences2 = loop$sequences;
+    let compare3 = loop$compare;
+    let acc = loop$acc;
+    if (sequences2.hasLength(0)) {
+      return reverse_loop(acc, toList([]));
+    } else if (sequences2.hasLength(1)) {
+      let sequence = sequences2.head;
+      return reverse_loop(
+        prepend(reverse_loop(sequence, toList([])), acc),
+        toList([])
+      );
+    } else {
+      let descending1 = sequences2.head;
+      let descending2 = sequences2.tail.head;
+      let rest$1 = sequences2.tail.tail;
+      let ascending = merge_descendings(
+        descending1,
+        descending2,
+        compare3,
+        toList([])
+      );
+      loop$sequences = rest$1;
+      loop$compare = compare3;
+      loop$acc = prepend(ascending, acc);
+    }
+  }
+}
+function merge_all(loop$sequences, loop$direction, loop$compare) {
+  while (true) {
+    let sequences2 = loop$sequences;
+    let direction = loop$direction;
+    let compare3 = loop$compare;
+    if (sequences2.hasLength(0)) {
+      return toList([]);
+    } else if (sequences2.hasLength(1) && direction instanceof Ascending) {
+      let sequence = sequences2.head;
+      return sequence;
+    } else if (sequences2.hasLength(1) && direction instanceof Descending) {
+      let sequence = sequences2.head;
+      return reverse_loop(sequence, toList([]));
+    } else if (direction instanceof Ascending) {
+      let sequences$1 = merge_ascending_pairs(sequences2, compare3, toList([]));
+      loop$sequences = sequences$1;
+      loop$direction = new Descending();
+      loop$compare = compare3;
+    } else {
+      let sequences$1 = merge_descending_pairs(sequences2, compare3, toList([]));
+      loop$sequences = sequences$1;
+      loop$direction = new Ascending();
+      loop$compare = compare3;
+    }
+  }
+}
+function sort(list2, compare3) {
+  if (list2.hasLength(0)) {
+    return toList([]);
+  } else if (list2.hasLength(1)) {
+    let x = list2.head;
+    return toList([x]);
+  } else {
+    let x = list2.head;
+    let y = list2.tail.head;
+    let rest$1 = list2.tail.tail;
+    let direction = (() => {
+      let $ = compare3(x, y);
+      if ($ instanceof Lt) {
+        return new Ascending();
+      } else if ($ instanceof Eq) {
+        return new Ascending();
+      } else {
+        return new Descending();
+      }
+    })();
+    let sequences$1 = sequences(
+      rest$1,
+      compare3,
+      toList([x]),
+      direction,
+      y,
+      toList([])
+    );
+    return merge_all(sequences$1, new Ascending(), compare3);
+  }
+}
+function shuffle_pair_unwrap_loop(loop$list, loop$acc) {
+  while (true) {
+    let list2 = loop$list;
+    let acc = loop$acc;
+    if (list2.hasLength(0)) {
+      return acc;
+    } else {
+      let elem_pair = list2.head;
+      let enumerable = list2.tail;
+      loop$list = enumerable;
+      loop$acc = prepend(elem_pair[1], acc);
+    }
+  }
+}
+function do_shuffle_by_pair_indexes(list_of_pairs) {
+  return sort(
+    list_of_pairs,
+    (a_pair, b_pair) => {
+      return compare(a_pair[0], b_pair[0]);
+    }
+  );
+}
+function shuffle(list2) {
+  let _pipe = list2;
+  let _pipe$1 = fold(
+    _pipe,
+    toList([]),
+    (acc, a) => {
+      return prepend([random_uniform(), a], acc);
+    }
+  );
+  let _pipe$2 = do_shuffle_by_pair_indexes(_pipe$1);
+  return shuffle_pair_unwrap_loop(_pipe$2, toList([]));
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
@@ -1571,6 +2005,9 @@ function style(properties) {
       }
     )
   );
+}
+function class$(name) {
+  return attribute("class", name);
 }
 
 // build/dev/javascript/lustre/lustre/element.mjs
@@ -2317,11 +2754,14 @@ var Hub = class extends CustomType {
 };
 var FightStart = class extends CustomType {
 };
+var Fight = class extends CustomType {
+};
 var Model2 = class extends CustomType {
-  constructor(mod, key, volume) {
+  constructor(mod, player_combo, required_combo, volume) {
     super();
     this.mod = mod;
-    this.key = key;
+    this.player_combo = player_combo;
+    this.required_combo = required_combo;
     this.volume = volume;
   }
 };
@@ -2332,61 +2772,123 @@ var Key = class extends CustomType {
   }
 };
 function change_volume(model, change, key) {
+  let _record = model;
   return new Model2(
-    new Hub(),
-    key,
+    _record.mod,
+    model.player_combo + key,
+    _record.required_combo,
     max(min(model.volume + change, 100), 0)
   );
 }
-function update(model, msg) {
-  let action_buttons = from_list(
-    toList([
-      [
-        ["q", new Hub()],
-        [
-          0,
-          (model2, _, _1) => {
-            let _record = model2;
-            return new Model2(new FightStart(), _record.key, _record.volume);
-          }
-        ]
-      ],
-      [["l", new Hub()], [-25, change_volume]],
-      [["k", new Hub()], [-10, change_volume]],
-      [["j", new Hub()], [-5, change_volume]],
-      [["h", new Hub()], [-1, change_volume]],
-      [["y", new Hub()], [1, change_volume]],
-      [["u", new Hub()], [5, change_volume]],
-      [["i", new Hub()], [10, change_volume]],
-      [["o", new Hub()], [25, change_volume]],
-      [
-        ["a", new FightStart()],
-        [
-          0,
-          (model2, _, _1) => {
-            let _record = model2;
-            return new Model2(new Hub(), _record.key, _record.volume);
-          }
-        ]
-      ]
-    ])
-  );
-  {
-    let key = msg[0];
-    let $ = (() => {
-      let _pipe = action_buttons;
-      return map_get(_pipe, [lowercase(key), model.mod]);
-    })();
-    if ($.isOk()) {
-      let t = $[0];
-      return t[1](model, t[0], key);
+function inside(loop$list, loop$combo) {
+  while (true) {
+    let list2 = loop$list;
+    let combo = loop$combo;
+    if (list2.atLeastLength(1)) {
+      let first2 = list2.head;
+      let rest = list2.tail;
+      loop$list = rest;
+      loop$combo = combo + first2;
     } else {
-      return model;
+      return combo;
     }
   }
 }
 function init2(flags) {
-  return new Model2(new Hub(), flags, 50);
+  return new Model2(new Hub(), flags, "t", 50);
+}
+var volume_buttons = /* @__PURE__ */ toList([
+  ["q", -25],
+  ["w", -10],
+  ["e", -5],
+  ["r", -1],
+  ["t", 1],
+  ["y", 5],
+  ["u", 10],
+  ["i", 25]
+]);
+function update(model, msg) {
+  {
+    let key = msg[0];
+    let $ = (() => {
+      let _pipe = from_list(
+        (() => {
+          let _pipe2 = toList([
+            [
+              ["z", new Hub()],
+              [
+                new None(),
+                (model2, _, _1) => {
+                  let _record = model2;
+                  return new Model2(
+                    new FightStart(),
+                    _record.player_combo,
+                    (() => {
+                      let _pipe3 = toList(["f", "g", "h"]);
+                      return ((list2) => {
+                        return inside(
+                          (() => {
+                            let _pipe$1 = list2;
+                            return shuffle(_pipe$1);
+                          })(),
+                          ""
+                        );
+                      })(_pipe3);
+                    })(),
+                    _record.volume
+                  );
+                }
+              ]
+            ],
+            [
+              ["z", new FightStart()],
+              [
+                new None(),
+                (model2, _, _1) => {
+                  let _record = model2;
+                  return new Model2(
+                    new Hub(),
+                    _record.player_combo,
+                    _record.required_combo,
+                    _record.volume
+                  );
+                }
+              ]
+            ]
+          ]);
+          return append(
+            _pipe2,
+            (() => {
+              let _pipe$1 = volume_buttons;
+              return map(
+                _pipe$1,
+                (key_val) => {
+                  return [
+                    [key_val[0], new Hub()],
+                    [new Some(key_val[1]), change_volume]
+                  ];
+                }
+              );
+            })()
+          );
+        })()
+      );
+      return map_get(_pipe, [lowercase(key), model.mod]);
+    })();
+    if ($.isOk()) {
+      let choice = $[0];
+      return choice[1](
+        model,
+        (() => {
+          let _pipe = choice[0];
+          return unwrap(_pipe, 999);
+        })(),
+        key
+      );
+    } else {
+      return model;
+    }
+  }
 }
 
 // build/dev/javascript/app/event_listener.mjs
@@ -2403,31 +2905,40 @@ function div(attrs, children2) {
 }
 
 // build/dev/javascript/app/view.mjs
+function text_to_element(text3) {
+  return map(
+    text3,
+    (text4) => {
+      return div(toList([]), toList([text2(text4)]));
+    }
+  );
+}
 function view(model) {
-  let $ = model.mod;
-  if ($ instanceof Hub) {
-    return div(
-      toList([
-        style(
-          toList([
-            ["display", "grid"],
-            ["grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"],
-            ["place-items", "center;"],
-            ["grid-auto-flow", "column"],
-            ["height", "100vh"],
-            ["background-color", "black"],
-            ["color", "white"],
-            ["font-size", "1.6rem"]
-          ])
-        )
-      ]),
-      (() => {
+  return div(
+    toList([
+      style(
+        toList([
+          ["display", "grid"],
+          ["grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"],
+          ["place-items", "center;"],
+          ["grid-auto-flow", "column"],
+          ["height", "100vh"],
+          ["background-color", "black"],
+          ["color", "white"],
+          ["font-size", "1.6rem"],
+          ["padding", "1rem"],
+          ["box-sizing", "border-box"]
+        ])
+      )
+    ]),
+    (() => {
+      let $ = model.mod;
+      if ($ instanceof Hub) {
         let _pipe = toList([
-          "q fight",
-          "w reset dungeon",
-          "v credits",
+          "z fight",
+          "x reset dungeon",
+          "c credits",
           "made by Oded Yanovich",
-          model.key,
           to_string(model.volume)
         ]);
         let _pipe$1 = map(
@@ -2444,80 +2955,37 @@ function view(model) {
                 style(
                   toList([
                     ["display", "grid"],
+                    ["grid-auto-flow", "column"],
                     ["grid-template", "repeat(2, 1fr) / repeat(8, 1fr)"],
                     ["place-items", "center;"],
-                    ["padding", "0"],
-                    ["border", "0"]
+                    ["width", "100%;"],
+                    ["height", "100%;"]
                   ])
-                )
+                ),
+                class$("t")
               ]),
               (() => {
-                let _pipe$2 = toList([
-                  "l",
-                  "k",
-                  "j",
-                  "h",
-                  "y",
-                  "u",
-                  "i",
-                  "o",
-                  "-25",
-                  "-10",
-                  "-5",
-                  "-1",
-                  "+1",
-                  "+5",
-                  "+10",
-                  "+25"
-                ]);
-                return map(
+                let _pipe$2 = volume_buttons;
+                let _pipe$3 = flat_map(
                   _pipe$2,
-                  (text3) => {
-                    return div(toList([]), toList([text2(text3)]));
+                  (x) => {
+                    return toList([x[0], to_string(x[1])]);
                   }
                 );
+                return text_to_element(_pipe$3);
               })()
             )
           ])
         );
-      })()
-    );
-  } else if ($ instanceof FightStart) {
-    return div(
-      toList([
-        style(
-          toList([
-            ["display", "grid"],
-            ["grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"],
-            ["place-items", "center;"],
-            ["grid-auto-flow", "column"],
-            ["height", "100vh"],
-            ["background-color", "black"],
-            ["color", "white"],
-            ["font-size", "1.6rem"]
-          ])
-        )
-      ]),
-      (() => {
-        let _pipe = toList(["a Hub"]);
-        return map(
-          _pipe,
-          (text3) => {
-            return div(toList([]), toList([text2(text3)]));
-          }
-        );
-      })()
-    );
-  } else {
-    throw makeError(
-      "todo",
-      "view",
-      75,
-      "view",
-      "`todo` expression evaluated. This code has not yet been implemented.",
-      {}
-    );
-  }
+      } else if ($ instanceof Fight) {
+        let _pipe = toList(["z Hub", model.player_combo, model.required_combo]);
+        return text_to_element(_pipe);
+      } else {
+        let _pipe = toList(["z Hub", model.player_combo, model.required_combo]);
+        return text_to_element(_pipe);
+      }
+    })()
+  );
 }
 
 // build/dev/javascript/app/app.mjs
