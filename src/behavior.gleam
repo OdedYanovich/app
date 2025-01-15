@@ -1,5 +1,6 @@
 import gleam/dict
 import gleam/int
+import gleam/list
 import gleam/option.{None, Some}
 import gleam/string
 
@@ -21,28 +22,41 @@ fn change_volume(model: Model, change, key) {
   Model(Hub, key, int.max(int.min(model.volume + change, 100), 0))
 }
 
+pub const volume_buttons = [
+  #("q", -25),
+  #("w", -10),
+  #("e", -5),
+  #("r", -1),
+  #("t", 1),
+  #("y", 5),
+  #("u", 10),
+  #("i", 25),
+]
+
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
     Key(key) -> {
       case
-        dict.from_list([
-          #(
-            #("q", Hub),
-            #(None, fn(model, _change, _key) { Model(..model, mod: FightStart) }),
+        dict.from_list(
+          [
+            #(
+              #("z", Hub),
+              #(None, fn(model, _change, _key) {
+                Model(..model, mod: FightStart)
+              }),
+            ),
+            #(
+              #("z", FightStart),
+              #(None, fn(model, _change, _key) { Model(..model, mod: Hub) }),
+            ),
+          ]
+          |> list.append(
+            volume_buttons
+            |> list.map(fn(key_val) {
+              #(#(key_val.0, Hub), #(Some(key_val.1), change_volume))
+            }),
           ),
-          #(#("l", Hub), #(Some(-25), change_volume)),
-          #(#("k", Hub), #(Some(-10), change_volume)),
-          #(#("j", Hub), #(Some(-5), change_volume)),
-          #(#("h", Hub), #(Some(-1), change_volume)),
-          #(#("y", Hub), #(Some(1), change_volume)),
-          #(#("u", Hub), #(Some(5), change_volume)),
-          #(#("i", Hub), #(Some(10), change_volume)),
-          #(#("o", Hub), #(Some(25), change_volume)),
-          #(
-            #("a", FightStart),
-            #(None, fn(model, _change, _key) { Model(..model, mod: Hub) }),
-          ),
-        ])
+        )
         |> dict.get(#(string.lowercase(key), model.mod))
       {
         Ok(choice) -> {
