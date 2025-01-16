@@ -1,7 +1,6 @@
-import gleam/dict
+import gleam/dict.{type Dict}
 import gleam/int
 import gleam/list
-import gleam/option.{None, Some}
 import gleam/string
 
 pub type Mods {
@@ -11,19 +10,21 @@ pub type Mods {
 }
 
 pub type Model {
-  Model(mod: Mods, player_combo: String, required_combo: String, volume: Int)
+  Model(
+    mod: Mods,
+    player_combo: String,
+    required_combo: String,
+    volume: Int,
+    actions: Dict(String, fn(Model) -> Model),
+  )
 }
 
 pub type Msg {
   Key(String)
 }
 
-fn change_volume(model: Model, change, key) {
-  Model(
-    ..model,
-    player_combo: model.player_combo <> key,
-    volume: int.max(int.min(model.volume + change, 100), 0),
-  )
+fn change_volume(change, model: Model) {
+  Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
 }
 
 pub const volume_buttons = [
@@ -37,46 +38,55 @@ pub const volume_buttons = [
   #("i", 25),
 ]
 
-fn inside(list, combo) {
+fn list_to_string(list, combo) {
   case list {
-    [first, ..rest] -> inside(rest, combo <> first)
+    [first, ..rest] -> list_to_string(rest, combo <> first)
     [] -> combo
   }
+}
+
+pub const hub_transition_key = "z"
+
+const command_keys_temp = ["f", "g", "h"]
+
+fn hub_actions() {
+  volume_buttons
+  |> list.map(fn(key_val) { #(key_val.0, change_volume(key_val.1, _)) })
+  |> list.append([
+    #(hub_transition_key, fn(model) {
+      Model(
+        ..model,
+        required_combo: command_keys_temp
+          |> list.shuffle
+          |> list_to_string(""),
+        mod: FightStart,
+      )
+    }),
+  ])
 }
 
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
     Key(key) -> {
-      case
-        dict.from_list(
-          [
-            #(
-              #("z", Hub),
-              #(None, fn(model, _change, _key) {
-                Model(
-                  ..model,
-                  required_combo: ["f", "g", "h"]
-                    |> fn(list) { inside(list |> list.shuffle, "") },
-                  mod: FightStart,
-                )
-              }),
+      let actions =
+        case model.mod {
+          Hub -> hub_actions()
+
+          Fight -> [#("z", fn(model) { Model(..model, mod: Hub) })]
+
+          FightStart -> [#("z", fn(model) { Model(..model, mod: Hub) })]
+        }
+        |> dict.from_list
+
+      case actions |> dict.get(string.lowercase(key)) {
+        Ok(behavior) -> {
+          behavior(
+            Model(
+              ..model,
+              player_combo: model.player_combo <> key,
+              actions: actions,
             ),
-            #(
-              #("z", FightStart),
-              #(None, fn(model, _change, _key) { Model(..model, mod: Hub) }),
-            ),
-          ]
-          |> list.append(
-            volume_buttons
-            |> list.map(fn(key_val) {
-              #(#(key_val.0, Hub), #(Some(key_val.1), change_volume))
-            }),
-          ),
-        )
-        |> dict.get(#(string.lowercase(key), model.mod))
-      {
-        Ok(choice) -> {
-          choice.1(model, choice.0 |> option.unwrap(999), key)
+          )
         }
         Error(_) -> model
       }
@@ -85,5 +95,5 @@ pub fn update(model: Model, msg: Msg) -> Model {
 }
 
 pub fn init(flags) -> Model {
-  Model(Hub, flags, "t", 50)
+  Model(Hub, flags, "t", 50, dict.from_list(hub_actions()))
 }

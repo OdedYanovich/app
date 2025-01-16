@@ -1,4 +1,7 @@
-import behavior.{type Model, type Msg, Fight, FightStart, Hub, volume_buttons}
+import behavior.{
+  type Model, type Msg, Fight, FightStart, Hub, hub_transition_key,
+  volume_buttons,
+}
 import gleam/int
 import gleam/list
 import lustre/attribute
@@ -29,11 +32,10 @@ pub fn view(model: Model) -> element.Element(Msg) {
     case model.mod {
       Hub -> {
         [
-          "z fight",
+          hub_transition_key <> " fight",
           "x reset dungeon",
           "c credits",
           "made by Oded Yanovich",
-          // model.player_combo,
           int.to_string(model.volume),
         ]
         |> list.map(fn(text) { html.div([], [html.text(text)]) })
@@ -51,21 +53,19 @@ pub fn view(model: Model) -> element.Element(Msg) {
               attribute.class("t"),
             ],
             volume_buttons
-              |> list.flat_map(fn(x) { [x.0, int.to_string(x.1)] })
+              |> list.flat_map(fn(key_val) {
+                [key_val.0, int.to_string(key_val.1)]
+              })
               |> text_to_element,
           ),
         ])
-        // |> list.append([
-        //   html.img([attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg")]),
-        // ])
       }
-      Fight -> {
-        ["z Hub", model.player_combo, model.required_combo]
+      Fight | FightStart -> {
+        [hub_transition_key <> " Hub", model.player_combo, model.required_combo]
         |> text_to_element
-      }
-      FightStart -> {
-        ["z Hub", model.player_combo, model.required_combo]
-        |> text_to_element
+        |> list.append([
+          html.img([attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg")]),
+        ])
       }
     },
   )

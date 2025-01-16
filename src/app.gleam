@@ -14,11 +14,11 @@ pub fn main() {
   use handler <- initialize
   use key <- result.try(dynamic.field("key", dynamic.string)(handler))
   use repeat <- result.try(dynamic.field("repeat", dynamic.bool)(handler))
-  case key, repeat {
-    _, False -> {
+  case repeat {
+    False -> {
       runtime(lustre.dispatch(Key(key)))
       Ok(Nil)
     }
-    _, _ -> Ok(Nil)
+    _ -> Ok(Nil)
   }
 }

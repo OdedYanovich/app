@@ -300,14 +300,6 @@ function to_result(option, e) {
     return new Error(e);
   }
 }
-function unwrap(option, default$) {
-  if (option instanceof Some) {
-    let x = option[0];
-    return x;
-  } else {
-    return default$;
-  }
-}
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
@@ -2009,6 +2001,9 @@ function style(properties) {
 function class$(name) {
   return attribute("class", name);
 }
+function src(uri) {
+  return attribute("src", uri);
+}
 
 // build/dev/javascript/lustre/lustre/element.mjs
 function element(tag, attrs, children2) {
@@ -2757,12 +2752,13 @@ var FightStart = class extends CustomType {
 var Fight = class extends CustomType {
 };
 var Model2 = class extends CustomType {
-  constructor(mod, player_combo, required_combo, volume) {
+  constructor(mod, player_combo, required_combo, volume, actions) {
     super();
     this.mod = mod;
     this.player_combo = player_combo;
     this.required_combo = required_combo;
     this.volume = volume;
+    this.actions = actions;
   }
 };
 var Key = class extends CustomType {
@@ -2771,16 +2767,17 @@ var Key = class extends CustomType {
     this[0] = x0;
   }
 };
-function change_volume(model, change, key) {
+function change_volume(change, model) {
   let _record = model;
   return new Model2(
     _record.mod,
-    model.player_combo + key,
+    _record.player_combo,
     _record.required_combo,
-    max(min(model.volume + change, 100), 0)
+    max(min(model.volume + change, 100), 0),
+    _record.actions
   );
 }
-function inside(loop$list, loop$combo) {
+function list_to_string(loop$list, loop$combo) {
   while (true) {
     let list2 = loop$list;
     let combo = loop$combo;
@@ -2794,9 +2791,6 @@ function inside(loop$list, loop$combo) {
     }
   }
 }
-function init2(flags) {
-  return new Model2(new Hub(), flags, "t", 50);
-}
 var volume_buttons = /* @__PURE__ */ toList([
   ["q", -25],
   ["w", -10],
@@ -2807,88 +2801,113 @@ var volume_buttons = /* @__PURE__ */ toList([
   ["u", 10],
   ["i", 25]
 ]);
+var hub_transition_key = "z";
+var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
+function hub_actions() {
+  let _pipe = volume_buttons;
+  let _pipe$1 = map(
+    _pipe,
+    (key_val) => {
+      return [
+        key_val[0],
+        (_capture) => {
+          return change_volume(key_val[1], _capture);
+        }
+      ];
+    }
+  );
+  return append(
+    _pipe$1,
+    toList([
+      [
+        hub_transition_key,
+        (model) => {
+          let _record = model;
+          return new Model2(
+            new FightStart(),
+            _record.player_combo,
+            (() => {
+              let _pipe$2 = command_keys_temp;
+              let _pipe$3 = shuffle(_pipe$2);
+              return list_to_string(_pipe$3, "");
+            })(),
+            _record.volume,
+            _record.actions
+          );
+        }
+      ]
+    ])
+  );
+}
 function update(model, msg) {
   {
     let key = msg[0];
-    let $ = (() => {
-      let _pipe = from_list(
-        (() => {
-          let _pipe2 = toList([
+    let actions = (() => {
+      let _pipe = (() => {
+        let $2 = model.mod;
+        if ($2 instanceof Hub) {
+          return hub_actions();
+        } else if ($2 instanceof Fight) {
+          return toList([
             [
-              ["z", new Hub()],
-              [
-                new None(),
-                (model2, _, _1) => {
-                  let _record = model2;
-                  return new Model2(
-                    new FightStart(),
-                    _record.player_combo,
-                    (() => {
-                      let _pipe3 = toList(["f", "g", "h"]);
-                      return ((list2) => {
-                        return inside(
-                          (() => {
-                            let _pipe$1 = list2;
-                            return shuffle(_pipe$1);
-                          })(),
-                          ""
-                        );
-                      })(_pipe3);
-                    })(),
-                    _record.volume
-                  );
-                }
-              ]
-            ],
-            [
-              ["z", new FightStart()],
-              [
-                new None(),
-                (model2, _, _1) => {
-                  let _record = model2;
-                  return new Model2(
-                    new Hub(),
-                    _record.player_combo,
-                    _record.required_combo,
-                    _record.volume
-                  );
-                }
-              ]
+              "z",
+              (model2) => {
+                let _record = model2;
+                return new Model2(
+                  new Hub(),
+                  _record.player_combo,
+                  _record.required_combo,
+                  _record.volume,
+                  _record.actions
+                );
+              }
             ]
           ]);
-          return append(
-            _pipe2,
-            (() => {
-              let _pipe$1 = volume_buttons;
-              return map(
-                _pipe$1,
-                (key_val) => {
-                  return [
-                    [key_val[0], new Hub()],
-                    [new Some(key_val[1]), change_volume]
-                  ];
-                }
-              );
-            })()
-          );
-        })()
-      );
-      return map_get(_pipe, [lowercase(key), model.mod]);
+        } else {
+          return toList([
+            [
+              "z",
+              (model2) => {
+                let _record = model2;
+                return new Model2(
+                  new Hub(),
+                  _record.player_combo,
+                  _record.required_combo,
+                  _record.volume,
+                  _record.actions
+                );
+              }
+            ]
+          ]);
+        }
+      })();
+      return from_list(_pipe);
+    })();
+    let $ = (() => {
+      let _pipe = actions;
+      return map_get(_pipe, lowercase(key));
     })();
     if ($.isOk()) {
-      let choice = $[0];
-      return choice[1](
-        model,
+      let behavior = $[0];
+      return behavior(
         (() => {
-          let _pipe = choice[0];
-          return unwrap(_pipe, 999);
-        })(),
-        key
+          let _record = model;
+          return new Model2(
+            _record.mod,
+            model.player_combo + key,
+            _record.required_combo,
+            _record.volume,
+            actions
+          );
+        })()
       );
     } else {
       return model;
     }
   }
+}
+function init2(flags) {
+  return new Model2(new Hub(), flags, "t", 50, from_list(hub_actions()));
 }
 
 // build/dev/javascript/app/event_listener.mjs
@@ -2902,6 +2921,9 @@ function text2(content) {
 }
 function div(attrs, children2) {
   return element("div", attrs, children2);
+}
+function img(attrs) {
+  return element("img", attrs, toList([]));
 }
 
 // build/dev/javascript/app/view.mjs
@@ -2935,7 +2957,7 @@ function view(model) {
       let $ = model.mod;
       if ($ instanceof Hub) {
         let _pipe = toList([
-          "z fight",
+          hub_transition_key + " fight",
           "x reset dungeon",
           "c credits",
           "made by Oded Yanovich",
@@ -2968,8 +2990,8 @@ function view(model) {
                 let _pipe$2 = volume_buttons;
                 let _pipe$3 = flat_map(
                   _pipe$2,
-                  (x) => {
-                    return toList([x[0], to_string(x[1])]);
+                  (key_val) => {
+                    return toList([key_val[0], to_string(key_val[1])]);
                   }
                 );
                 return text_to_element(_pipe$3);
@@ -2978,11 +3000,39 @@ function view(model) {
           ])
         );
       } else if ($ instanceof Fight) {
-        let _pipe = toList(["z Hub", model.player_combo, model.required_combo]);
-        return text_to_element(_pipe);
+        let _pipe = toList([
+          hub_transition_key + " Hub",
+          model.player_combo,
+          model.required_combo
+        ]);
+        let _pipe$1 = text_to_element(_pipe);
+        return append(
+          _pipe$1,
+          toList([
+            img(
+              toList([
+                src("https://cdn2.thecatapi.com/images/b7k.jpg")
+              ])
+            )
+          ])
+        );
       } else {
-        let _pipe = toList(["z Hub", model.player_combo, model.required_combo]);
-        return text_to_element(_pipe);
+        let _pipe = toList([
+          hub_transition_key + " Hub",
+          model.player_combo,
+          model.required_combo
+        ]);
+        let _pipe$1 = text_to_element(_pipe);
+        return append(
+          _pipe$1,
+          toList([
+            img(
+              toList([
+                src("https://cdn2.thecatapi.com/images/b7k.jpg")
+              ])
+            )
+          ])
+        );
       }
     })()
   );
