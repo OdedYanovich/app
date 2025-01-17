@@ -24,7 +24,11 @@ pub type Msg {
 }
 
 fn change_volume(change, model: Model) {
-  Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
+  Model(
+    ..model,
+    volume: int.max(int.min(model.volume + change, 100), 0),
+    player_combo: "",
+  )
 }
 
 pub const volume_buttons = [
@@ -47,23 +51,15 @@ fn list_to_string(list, combo) {
 
 pub const hub_transition_key = "z"
 
-const command_keys_temp = ["f", "g", "h"]
-
 fn hub_actions() {
   volume_buttons
   |> list.map(fn(key_val) { #(key_val.0, change_volume(key_val.1, _)) })
   |> list.append([
-    #(hub_transition_key, fn(model) {
-      Model(
-        ..model,
-        required_combo: command_keys_temp
-          |> list.shuffle
-          |> list_to_string(""),
-        mod: FightStart,
-      )
-    }),
+    #(hub_transition_key, fn(model) { Model(..model, mod: FightStart) }),
   ])
 }
+
+const command_keys_temp = ["f", "g", "h"]
 
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
@@ -71,13 +67,19 @@ pub fn update(model: Model, msg: Msg) -> Model {
       let actions =
         case model.mod {
           Hub -> hub_actions()
-
-          Fight -> [#("z", fn(model) { Model(..model, mod: Hub) })]
-
-          FightStart -> [#("z", fn(model) { Model(..model, mod: Hub) })]
+          Fight | FightStart -> [
+            #(hub_transition_key, fn(model) {
+              Model(
+                ..model,
+                mod: Hub,
+                required_combo: command_keys_temp
+                  |> list.shuffle
+                  |> list_to_string(""),
+              )
+            }),
+          ]
         }
         |> dict.from_list
-
       case actions |> dict.get(string.lowercase(key)) {
         Ok(behavior) -> {
           behavior(
@@ -95,5 +97,5 @@ pub fn update(model: Model, msg: Msg) -> Model {
 }
 
 pub fn init(flags) -> Model {
-  Model(Hub, flags, "t", 50, dict.from_list(hub_actions()))
+  Model(Hub, flags, "", 50, dict.from_list(hub_actions()))
 }

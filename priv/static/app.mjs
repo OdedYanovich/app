@@ -2001,6 +2001,9 @@ function style(properties) {
 function class$(name) {
   return attribute("class", name);
 }
+function id(name) {
+  return attribute("id", name);
+}
 function src(uri) {
   return attribute("src", uri);
 }
@@ -2771,7 +2774,7 @@ function change_volume(change, model) {
   let _record = model;
   return new Model2(
     _record.mod,
-    _record.player_combo,
+    "",
     _record.required_combo,
     max(min(model.volume + change, 100), 0),
     _record.actions
@@ -2802,7 +2805,6 @@ var volume_buttons = /* @__PURE__ */ toList([
   ["i", 25]
 ]);
 var hub_transition_key = "z";
-var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
 function hub_actions() {
   let _pipe = volume_buttons;
   let _pipe$1 = map(
@@ -2826,11 +2828,7 @@ function hub_actions() {
           return new Model2(
             new FightStart(),
             _record.player_combo,
-            (() => {
-              let _pipe$2 = command_keys_temp;
-              let _pipe$3 = shuffle(_pipe$2);
-              return list_to_string(_pipe$3, "");
-            })(),
+            _record.required_combo,
             _record.volume,
             _record.actions
           );
@@ -2839,6 +2837,10 @@ function hub_actions() {
     ])
   );
 }
+function init2(flags) {
+  return new Model2(new Hub(), flags, "", 50, from_list(hub_actions()));
+}
+var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
 function update(model, msg) {
   {
     let key = msg[0];
@@ -2850,13 +2852,17 @@ function update(model, msg) {
         } else if ($2 instanceof Fight) {
           return toList([
             [
-              "z",
+              hub_transition_key,
               (model2) => {
                 let _record = model2;
                 return new Model2(
                   new Hub(),
                   _record.player_combo,
-                  _record.required_combo,
+                  (() => {
+                    let _pipe2 = command_keys_temp;
+                    let _pipe$1 = shuffle(_pipe2);
+                    return list_to_string(_pipe$1, "");
+                  })(),
                   _record.volume,
                   _record.actions
                 );
@@ -2866,13 +2872,17 @@ function update(model, msg) {
         } else {
           return toList([
             [
-              "z",
+              hub_transition_key,
               (model2) => {
                 let _record = model2;
                 return new Model2(
                   new Hub(),
                   _record.player_combo,
-                  _record.required_combo,
+                  (() => {
+                    let _pipe2 = command_keys_temp;
+                    let _pipe$1 = shuffle(_pipe2);
+                    return list_to_string(_pipe$1, "");
+                  })(),
                   _record.volume,
                   _record.actions
                 );
@@ -2906,9 +2916,6 @@ function update(model, msg) {
     }
   }
 }
-function init2(flags) {
-  return new Model2(new Hub(), flags, "t", 50, from_list(hub_actions()));
-}
 
 // build/dev/javascript/app/event_listener.mjs
 function initialize(handler) {
@@ -2927,7 +2934,7 @@ function img(attrs) {
 }
 
 // build/dev/javascript/app/view.mjs
-function text_to_element(text3) {
+function text_to_elements(text3) {
   return map(
     text3,
     (text4) => {
@@ -2961,7 +2968,7 @@ function view(model) {
           "x reset dungeon",
           "c credits",
           "made by Oded Yanovich",
-          to_string(model.volume)
+          "volume: " + to_string(model.volume)
         ]);
         let _pipe$1 = map(
           _pipe,
@@ -2984,17 +2991,38 @@ function view(model) {
                     ["height", "100%;"]
                   ])
                 ),
-                class$("t")
+                id("volume")
               ]),
               (() => {
                 let _pipe$2 = volume_buttons;
-                let _pipe$3 = flat_map(
+                return flat_map(
                   _pipe$2,
-                  (key_val) => {
-                    return toList([key_val[0], to_string(key_val[1])]);
+                  (button_and_volume_change_paired) => {
+                    return toList([
+                      div(
+                        toList([class$("ripple")]),
+                        (() => {
+                          let _pipe$3 = toList([
+                            button_and_volume_change_paired[0]
+                          ]);
+                          return text_to_elements(_pipe$3);
+                        })()
+                      ),
+                      div(
+                        toList([class$("ripple")]),
+                        (() => {
+                          let _pipe$3 = toList([
+                            (() => {
+                              let _pipe$32 = button_and_volume_change_paired[1];
+                              return to_string(_pipe$32);
+                            })()
+                          ]);
+                          return text_to_elements(_pipe$3);
+                        })()
+                      )
+                    ]);
                   }
                 );
-                return text_to_element(_pipe$3);
               })()
             )
           ])
@@ -3002,10 +3030,10 @@ function view(model) {
       } else if ($ instanceof Fight) {
         let _pipe = toList([
           hub_transition_key + " Hub",
-          model.player_combo,
-          model.required_combo
+          "player combo: " + model.player_combo,
+          "required combo: " + model.required_combo
         ]);
-        let _pipe$1 = text_to_element(_pipe);
+        let _pipe$1 = text_to_elements(_pipe);
         return append(
           _pipe$1,
           toList([
@@ -3019,10 +3047,10 @@ function view(model) {
       } else {
         let _pipe = toList([
           hub_transition_key + " Hub",
-          model.player_combo,
-          model.required_combo
+          "player combo: " + model.player_combo,
+          "required combo: " + model.required_combo
         ]);
-        let _pipe$1 = text_to_element(_pipe);
+        let _pipe$1 = text_to_elements(_pipe);
         return append(
           _pipe$1,
           toList([

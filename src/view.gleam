@@ -8,7 +8,7 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 
-fn text_to_element(text: List(String)) {
+fn text_to_elements(text: List(String)) {
   use text <- list.map(text)
   html.div([], [html.text(text)])
 }
@@ -36,7 +36,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
           "x reset dungeon",
           "c credits",
           "made by Oded Yanovich",
-          int.to_string(model.volume),
+          "volume: " <> int.to_string(model.volume),
         ]
         |> list.map(fn(text) { html.div([], [html.text(text)]) })
         |> list.append([
@@ -50,19 +50,32 @@ pub fn view(model: Model) -> element.Element(Msg) {
                 #("width", "100%;"),
                 #("height", "100%;"),
               ]),
-              attribute.class("t"),
+              attribute.id("volume"),
             ],
             volume_buttons
-              |> list.flat_map(fn(key_val) {
-                [key_val.0, int.to_string(key_val.1)]
-              })
-              |> text_to_element,
+              |> list.flat_map(fn(button_and_volume_change_paired) {
+                [
+                  html.div(
+                    [attribute.class("ripple")],
+                    [button_and_volume_change_paired.0] |> text_to_elements(),
+                  ),
+                  html.div(
+                    [attribute.class("ripple")],
+                    [button_and_volume_change_paired.1 |> int.to_string]
+                      |> text_to_elements,
+                  ),
+                ]
+              }),
           ),
         ])
       }
       Fight | FightStart -> {
-        [hub_transition_key <> " Hub", model.player_combo, model.required_combo]
-        |> text_to_element
+        [
+          hub_transition_key <> " Hub",
+          "player combo: " <> model.player_combo,
+          "required combo: " <> model.required_combo,
+        ]
+        |> text_to_elements
         |> list.append([
           html.img([attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg")]),
         ])
