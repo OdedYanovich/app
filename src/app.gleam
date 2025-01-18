@@ -1,7 +1,8 @@
-import behavior.{Key, init, update}
 import gleam/dynamic.{type Dynamic}
 import gleam/result
 import lustre
+import update/types.{Key}
+import update/update.{init, update}
 import view.{view}
 
 @external(javascript, "./event_listener.mjs", "initialize")

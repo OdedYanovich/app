@@ -1,12 +1,10 @@
-import behavior.{
-  type Model, type Msg, Fight, FightStart, Hub, hub_transition_key,
-  volume_buttons,
-}
 import gleam/int
 import gleam/list
 import lustre/attribute
 import lustre/element
 import lustre/element/html
+import update/hub.{hub_transition_key, volume_buttons}
+import update/types.{type Model, type Msg, Fight, FightStart, Hub}
 
 fn text_to_elements(text: List(String)) {
   use text <- list.map(text)
