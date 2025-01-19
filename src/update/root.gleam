@@ -1,9 +1,16 @@
 import gleam/dict.{type Dict}
 
+pub type Fighting {
+  Before
+  During
+  Irrelevant
+}
+
+pub const hub_transition_key = "z"
+
 pub type Mods {
   Hub
-  FightStart
-  Fight
+  Fight(Fighting)
 }
 
 pub type Model {
@@ -13,11 +20,11 @@ pub type Model {
     required_combo: List(String),
     fight_character_set: List(String),
     volume: Int,
-    actions: Dict(#(String, Mods), fn(Model) -> Model),
+    responses: Dict(#(String, Mods), fn(Model) -> Model),
     hp: Int,
   )
 }
 
 pub type Msg {
-  Key(String)
+  Keyboard(String)
 }

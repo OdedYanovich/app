@@ -1,16 +1,16 @@
 import gleam/dict
 import gleam/list
 import gleam/string
-import update/fight
-import update/hub
-import update/types.{type Model, type Msg, Hub, Key, Model}
+import update/root.{type Model, type Msg, Hub, Keyboard, Model}
+import update/state_independent/fight as init_fight
+import update/state_independent/hub as init_hub
 
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
-    Key(key) -> {
-      case model.actions |> dict.get(#(key |> string.lowercase, model.mod)) {
-        Ok(behavior) -> {
-          behavior(
+    Keyboard(key) -> {
+      case model.responses|> dict.get(#(key |> string.lowercase, model.mod)) {
+        Ok(response) -> {
+          response(
             Model(
               ..model,
               player_combo: model.player_combo |> list.append([key]),
@@ -30,9 +30,8 @@ pub fn init(_flags) -> Model {
     [],
     [],
     50,
-    hub.actions()
-      |> list.append([fight.actions()])
-      |> list.append([fight.start_actions()])
+    init_hub.responses()
+      |> list.append(init_fight.responses())
       |> dict.from_list,
     10,
   )

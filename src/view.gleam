@@ -3,8 +3,8 @@ import gleam/list
 import lustre/attribute
 import lustre/element
 import lustre/element/html
-import update/hub.{hub_transition_key, volume_buttons}
-import update/types.{type Model, type Msg, Fight, FightStart, Hub}
+import update/root.{type Model, type Msg, Fight, Hub, hub_transition_key}
+import update/state_dependent/hub
 
 fn text_to_elements(text: List(String)) {
   use text <- list.map(text)
@@ -56,7 +56,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
               ]),
               attribute.id("volume"),
             ],
-            volume_buttons
+            hub.volume_buttons
               |> list.flat_map(fn(button_and_volume_change_paired) {
                 [
                   html.div(
@@ -73,7 +73,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
           ),
         ])
       }
-      Fight | FightStart -> {
+      Fight(_) -> {
         [
           hub_transition_key <> " Hub",
           "player combo: "

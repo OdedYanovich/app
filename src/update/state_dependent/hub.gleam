@@ -1,8 +1,6 @@
 import gleam/int
 import gleam/list
-import update/types.{type Model, FightStart, Hub, Model}
-
-pub const hub_transition_key = "z"
+import update/root.{type Model, Hub, Model}
 
 pub const volume_buttons = [
   #("q", -25),
@@ -15,18 +13,15 @@ pub const volume_buttons = [
   #("i", 25),
 ]
 
-pub fn actions() {
-  volume_buttons
-  |> list.map(fn(key_val) { #(#(key_val.0, Hub), change_volume(key_val.1, _)) })
-  |> list.append([
-    #(#(hub_transition_key, Hub), fn(model) { Model(..model, mod: FightStart) }),
-  ])
-}
-
 fn change_volume(change, model: Model) {
   Model(
     ..model,
     volume: int.max(int.min(model.volume + change, 100), 0),
     player_combo: [],
   )
+}
+
+pub fn actions() {
+  volume_buttons
+  |> list.map(fn(key_val) { #(#(key_val.0, Hub), change_volume(key_val.1, _)) })
 }

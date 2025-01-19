@@ -1,7 +1,7 @@
 import gleam/dynamic.{type Dynamic}
 import gleam/result
 import lustre
-import update/types.{Key}
+import update/root.{Keyboard}
 import update/update.{init, update}
 import view.{view}
 
@@ -17,7 +17,7 @@ pub fn main() {
   use repeat <- result.try(dynamic.field("repeat", dynamic.bool)(handler))
   case repeat {
     False -> {
-      runtime(lustre.dispatch(Key(key)))
+      runtime(lustre.dispatch(Keyboard(key)))
       Ok(Nil)
     }
     _ -> Ok(Nil)
