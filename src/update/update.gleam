@@ -1,26 +1,19 @@
 import gleam/dict
+import gleam/list
 import gleam/string
 import update/fight
 import update/hub
-import update/types.{type Model, type Msg, Fight, FightStart, Hub, Key, Model}
+import update/types.{type Model, type Msg, Hub, Key, Model}
 
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
     Key(key) -> {
-      let actions =
-        case model.mod {
-          Hub -> hub.actions()
-          FightStart -> fight.start_actions()
-          Fight -> fight.actions()
-        }
-        |> dict.from_list
-      case actions |> dict.get(key |> string.lowercase) {
+      case model.actions |> dict.get(#(key |> string.lowercase, model.mod)) {
         Ok(behavior) -> {
           behavior(
             Model(
               ..model,
-              player_combo: model.player_combo <> key,
-              actions: actions,
+              player_combo: model.player_combo |> list.append([key]),
             ),
           )
         }
@@ -30,6 +23,17 @@ pub fn update(model: Model, msg: Msg) -> Model {
   }
 }
 
-pub fn init(flags) -> Model {
-  Model(Hub, flags, "", [], 50, dict.from_list(hub.actions()))
+pub fn init(_flags) -> Model {
+  Model(
+    Hub,
+    ["F"],
+    [],
+    [],
+    50,
+    hub.actions()
+      |> list.append([fight.actions()])
+      |> list.append([fight.start_actions()])
+      |> dict.from_list,
+    10,
+  )
 }

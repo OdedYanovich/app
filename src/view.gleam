@@ -25,6 +25,12 @@ pub fn view(model: Model) -> element.Element(Msg) {
         #("font-size", "1.6rem"),
         #("padding", "1rem"),
         #("box-sizing", "border-box"),
+        #(
+          "background",
+          "linear-gradient(to right, rgba(0,0,0,1) "
+            <> model.hp |> int.to_string
+            <> "%, rgba(255,0,0,1))",
+        ),
       ]),
     ],
     case model.mod {
@@ -70,8 +76,10 @@ pub fn view(model: Model) -> element.Element(Msg) {
       Fight | FightStart -> {
         [
           hub_transition_key <> " Hub",
-          "player combo: " <> model.player_combo,
-          "required combo: " <> model.required_combo,
+          "player combo: "
+            <> model.player_combo |> list.fold("", fn(a, b) { a <> b }),
+          "required combo: "
+            <> model.required_combo |> list.fold("", fn(a, b) { a <> b }),
         ]
         |> text_to_elements
         |> list.append([

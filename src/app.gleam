@@ -10,7 +10,7 @@ fn initialize(handler: fn(Dynamic) -> any) -> Nil
 
 pub fn main() {
   let assert Ok(runtime) =
-    lustre.simple(init, update, view) |> lustre.start("#app", "F")
+    lustre.simple(init, update, view) |> lustre.start("#app", Nil)
 
   use handler <- initialize
   use key <- result.try(dynamic.field("key", dynamic.string)(handler))

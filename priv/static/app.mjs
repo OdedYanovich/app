@@ -41,10 +41,10 @@ var List = class {
   }
   // @internal
   countLength() {
-    let length2 = 0;
+    let length3 = 0;
     for (let _ of this)
-      length2++;
-    return length2;
+      length3++;
+    return length3;
   }
 };
 function prepend(element2, tail) {
@@ -1250,6 +1250,22 @@ var Ascending = class extends CustomType {
 };
 var Descending = class extends CustomType {
 };
+function length_loop(loop$list, loop$count) {
+  while (true) {
+    let list2 = loop$list;
+    let count = loop$count;
+    if (list2.atLeastLength(1)) {
+      let list$1 = list2.tail;
+      loop$list = list$1;
+      loop$count = count + 1;
+    } else {
+      return count;
+    }
+  }
+}
+function length(list2) {
+  return length_loop(list2, 0);
+}
 function reverse_loop(loop$remaining, loop$accumulator) {
   while (true) {
     let remaining = loop$remaining;
@@ -2747,7 +2763,12 @@ function start2(app, selector, flags) {
   );
 }
 
-// build/dev/javascript/app/behavior.mjs
+// build/dev/javascript/app/event_listener.mjs
+function initialize(handler) {
+  window.addEventListener("keydown", handler);
+}
+
+// build/dev/javascript/app/update/types.mjs
 var Hub = class extends CustomType {
 };
 var FightStart = class extends CustomType {
@@ -2755,13 +2776,15 @@ var FightStart = class extends CustomType {
 var Fight = class extends CustomType {
 };
 var Model2 = class extends CustomType {
-  constructor(mod, player_combo, required_combo, volume, actions) {
+  constructor(mod, player_combo, required_combo, fight_character_set, volume, actions3, hp) {
     super();
     this.mod = mod;
     this.player_combo = player_combo;
     this.required_combo = required_combo;
+    this.fight_character_set = fight_character_set;
     this.volume = volume;
-    this.actions = actions;
+    this.actions = actions3;
+    this.hp = hp;
   }
 };
 var Key = class extends CustomType {
@@ -2770,30 +2793,21 @@ var Key = class extends CustomType {
     this[0] = x0;
   }
 };
+
+// build/dev/javascript/app/update/hub.mjs
 function change_volume(change, model) {
   let _record = model;
   return new Model2(
     _record.mod,
-    "",
+    toList([]),
     _record.required_combo,
+    _record.fight_character_set,
     max(min(model.volume + change, 100), 0),
-    _record.actions
+    _record.actions,
+    _record.hp
   );
 }
-function list_to_string(loop$list, loop$combo) {
-  while (true) {
-    let list2 = loop$list;
-    let combo = loop$combo;
-    if (list2.atLeastLength(1)) {
-      let first2 = list2.head;
-      let rest = list2.tail;
-      loop$list = rest;
-      loop$combo = combo + first2;
-    } else {
-      return combo;
-    }
-  }
-}
+var hub_transition_key = "z";
 var volume_buttons = /* @__PURE__ */ toList([
   ["q", -25],
   ["w", -10],
@@ -2804,14 +2818,13 @@ var volume_buttons = /* @__PURE__ */ toList([
   ["u", 10],
   ["i", 25]
 ]);
-var hub_transition_key = "z";
-function hub_actions() {
+function actions() {
   let _pipe = volume_buttons;
   let _pipe$1 = map(
     _pipe,
     (key_val) => {
       return [
-        key_val[0],
+        [key_val[0], new Hub()],
         (_capture) => {
           return change_volume(key_val[1], _capture);
         }
@@ -2822,80 +2835,101 @@ function hub_actions() {
     _pipe$1,
     toList([
       [
-        hub_transition_key,
+        [hub_transition_key, new Hub()],
         (model) => {
           let _record = model;
           return new Model2(
             new FightStart(),
             _record.player_combo,
             _record.required_combo,
+            _record.fight_character_set,
             _record.volume,
-            _record.actions
+            _record.actions,
+            _record.hp
           );
         }
       ]
     ])
   );
 }
-function init2(flags) {
-  return new Model2(new Hub(), flags, "", 50, from_list(hub_actions()));
+
+// build/dev/javascript/app/update/fight.mjs
+function actions2() {
+  return [
+    [hub_transition_key, new Fight()],
+    (model) => {
+      let $ = (() => {
+        let _pipe = model.player_combo;
+        return length(_pipe);
+      })() === (() => {
+        let _pipe = model.required_combo;
+        return length(_pipe);
+      })();
+      if ($) {
+        let _record = model;
+        return new Model2(
+          _record.mod,
+          _record.player_combo,
+          (() => {
+            let _pipe = model.fight_character_set;
+            return shuffle(_pipe);
+          })(),
+          _record.fight_character_set,
+          _record.volume,
+          _record.actions,
+          (() => {
+            let $1 = isEqual(model.player_combo, model.required_combo);
+            if ($1) {
+              return 10;
+            } else {
+              return -10;
+            }
+          })()
+        );
+      } else {
+        return model;
+      }
+    }
+  ];
 }
 var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
+function start_actions() {
+  return [
+    [hub_transition_key, new FightStart()],
+    (model) => {
+      let _record = model;
+      return new Model2(
+        new Hub(),
+        _record.player_combo,
+        (() => {
+          let _pipe = command_keys_temp;
+          return shuffle(_pipe);
+        })(),
+        command_keys_temp,
+        _record.volume,
+        _record.actions,
+        _record.hp
+      );
+    }
+  ];
+}
+
+// build/dev/javascript/app/update/update.mjs
 function update(model, msg) {
   {
     let key = msg[0];
-    let actions = (() => {
-      let _pipe = (() => {
-        let $2 = model.mod;
-        if ($2 instanceof Hub) {
-          return hub_actions();
-        } else if ($2 instanceof Fight) {
-          return toList([
-            [
-              hub_transition_key,
-              (model2) => {
-                let _record = model2;
-                return new Model2(
-                  new Hub(),
-                  _record.player_combo,
-                  (() => {
-                    let _pipe2 = command_keys_temp;
-                    let _pipe$1 = shuffle(_pipe2);
-                    return list_to_string(_pipe$1, "");
-                  })(),
-                  _record.volume,
-                  _record.actions
-                );
-              }
-            ]
-          ]);
-        } else {
-          return toList([
-            [
-              hub_transition_key,
-              (model2) => {
-                let _record = model2;
-                return new Model2(
-                  new Hub(),
-                  _record.player_combo,
-                  (() => {
-                    let _pipe2 = command_keys_temp;
-                    let _pipe$1 = shuffle(_pipe2);
-                    return list_to_string(_pipe$1, "");
-                  })(),
-                  _record.volume,
-                  _record.actions
-                );
-              }
-            ]
-          ]);
-        }
-      })();
-      return from_list(_pipe);
-    })();
     let $ = (() => {
-      let _pipe = actions;
-      return map_get(_pipe, lowercase(key));
+      let _pipe = model.actions;
+      return map_get(
+        _pipe,
+        [
+          (() => {
+            let _pipe$1 = key;
+            return lowercase(_pipe$1);
+          })(),
+          model.mod
+        ]
+      );
     })();
     if ($.isOk()) {
       let behavior = $[0];
@@ -2904,10 +2938,15 @@ function update(model, msg) {
           let _record = model;
           return new Model2(
             _record.mod,
-            model.player_combo + key,
+            (() => {
+              let _pipe = model.player_combo;
+              return append(_pipe, toList([key]));
+            })(),
             _record.required_combo,
+            _record.fight_character_set,
             _record.volume,
-            actions
+            _record.actions,
+            _record.hp
           );
         })()
       );
@@ -2916,10 +2955,21 @@ function update(model, msg) {
     }
   }
 }
-
-// build/dev/javascript/app/event_listener.mjs
-function initialize(handler) {
-  window.addEventListener("keydown", handler);
+function init2(_) {
+  return new Model2(
+    new Hub(),
+    toList(["F"]),
+    toList([]),
+    toList([]),
+    50,
+    (() => {
+      let _pipe = actions();
+      let _pipe$1 = append(_pipe, toList([actions2()]));
+      let _pipe$2 = append(_pipe$1, toList([start_actions()]));
+      return from_list(_pipe$2);
+    })(),
+    10
+  );
 }
 
 // build/dev/javascript/lustre/lustre/element/html.mjs
@@ -2956,7 +3006,14 @@ function view(model) {
           ["color", "white"],
           ["font-size", "1.6rem"],
           ["padding", "1rem"],
-          ["box-sizing", "border-box"]
+          ["box-sizing", "border-box"],
+          [
+            "background",
+            "linear-gradient(to right, rgba(0,0,0,1) " + (() => {
+              let _pipe = model.hp;
+              return to_string(_pipe);
+            })() + "%, rgba(255,0,0,1))"
+          ]
         ])
       )
     ]),
@@ -3030,8 +3087,18 @@ function view(model) {
       } else if ($ instanceof Fight) {
         let _pipe = toList([
           hub_transition_key + " Hub",
-          "player combo: " + model.player_combo,
-          "required combo: " + model.required_combo
+          "player combo: " + (() => {
+            let _pipe2 = model.player_combo;
+            return fold(_pipe2, "", (a, b) => {
+              return a + b;
+            });
+          })(),
+          "required combo: " + (() => {
+            let _pipe2 = model.required_combo;
+            return fold(_pipe2, "", (a, b) => {
+              return a + b;
+            });
+          })()
         ]);
         let _pipe$1 = text_to_elements(_pipe);
         return append(
@@ -3047,8 +3114,18 @@ function view(model) {
       } else {
         let _pipe = toList([
           hub_transition_key + " Hub",
-          "player combo: " + model.player_combo,
-          "required combo: " + model.required_combo
+          "player combo: " + (() => {
+            let _pipe2 = model.player_combo;
+            return fold(_pipe2, "", (a, b) => {
+              return a + b;
+            });
+          })(),
+          "required combo: " + (() => {
+            let _pipe2 = model.required_combo;
+            return fold(_pipe2, "", (a, b) => {
+              return a + b;
+            });
+          })()
         ]);
         let _pipe$1 = text_to_elements(_pipe);
         return append(
@@ -3070,13 +3147,13 @@ function view(model) {
 function main() {
   let $ = (() => {
     let _pipe = simple(init2, update, view);
-    return start2(_pipe, "#app", "F");
+    return start2(_pipe, "#app", void 0);
   })();
   if (!$.isOk()) {
     throw makeError(
       "let_assert",
       "app",
-      11,
+      12,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }

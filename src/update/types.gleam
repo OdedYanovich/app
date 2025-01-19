@@ -9,11 +9,12 @@ pub type Mods {
 pub type Model {
   Model(
     mod: Mods,
-    player_combo: String,
-    required_combo: String,
+    player_combo: List(String),
+    required_combo: List(String),
     fight_character_set: List(String),
     volume: Int,
-    actions: Dict(String, fn(Model) -> Model),
+    actions: Dict(#(String, Mods), fn(Model) -> Model),
+    hp: Int,
   )
 }
 

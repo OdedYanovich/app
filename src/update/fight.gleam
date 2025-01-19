@@ -1,52 +1,38 @@
 import gleam/list
-import gleam/string
 import update/hub.{hub_transition_key}
-import update/types.{type Model, Hub, Model}
+import update/types.{type Model, Fight, FightStart, Hub, Model}
 
 const command_keys_temp = ["f", "g", "h"]
 
-fn list_to_string(list, combo) {
-  case list {
-    [first, ..rest] -> list_to_string(rest, combo <> first)
-    [] -> combo
-  }
-}
-
 pub fn start_actions() {
-  [
-    #(hub_transition_key, fn(model) {
-      Model(
-        ..model,
-        mod: Hub,
-        required_combo: command_keys_temp
-          |> list.shuffle
-          |> list_to_string(""),
-        fight_character_set: command_keys_temp,
-      )
-    }),
-  ]
+  #(#(hub_transition_key, FightStart), fn(model) {
+    Model(
+      ..model,
+      mod: Hub,
+      player_combo: [],
+      required_combo: command_keys_temp
+        |> list.shuffle,
+      fight_character_set: command_keys_temp,
+    )
+  })
 }
 
 pub fn actions() {
-  [
-    #(hub_transition_key, fn(model: Model) {
-      case
-        model.player_combo |> string.length
-        == model.required_combo |> string.length
-      {
-        True -> {
-          todo
-        }
-        False -> {
-          todo
-        }
+  #(#(hub_transition_key, Fight), fn(model: Model) {
+    case
+      model.player_combo |> list.length == model.required_combo |> list.length
+    {
+      True -> {
+        Model(
+          ..model,
+          required_combo: model.fight_character_set |> list.shuffle,
+          hp: case model.player_combo == model.required_combo {
+            True -> 10
+            False -> -10
+          },
+        )
       }
-      Model(
-        ..model,
-        required_combo: model.fight_character_set
-          |> list.shuffle
-          |> list_to_string(""),
-      )
-    }),
-  ]
+      False -> model
+    }
+  })
 }
