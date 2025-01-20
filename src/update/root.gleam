@@ -1,5 +1,4 @@
 import gleam/dict.{type Dict}
-
 pub type Fighting {
   Before
   During
@@ -7,7 +6,6 @@ pub type Fighting {
 }
 
 pub const hub_transition_key = "z"
-
 pub type Mods {
   Hub
   Fight(Fighting)

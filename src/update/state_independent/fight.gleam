@@ -1,6 +1,7 @@
+import gleam/dict
 import gleam/list
 import update/root.{Fight, Hub, Irrelevant, Model, hub_transition_key}
-import update/state_dependent/fight
+import update/state_dependent/hub.{responses}
 
 const command_keys_temp = ["f", "g", "h"]
 
@@ -13,6 +14,7 @@ pub fn responses() {
         player_combo: [],
         fight_character_set: command_keys_temp,
         required_combo: command_keys_temp |> list.shuffle,
+        responses: responses() |> dict.from_list,
       )
     }),
   ]

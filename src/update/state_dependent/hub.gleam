@@ -21,7 +21,7 @@ fn change_volume(change, model: Model) {
   )
 }
 
-pub fn actions() {
+pub fn responses() {
   volume_buttons
   |> list.map(fn(key_val) { #(#(key_val.0, Hub), change_volume(key_val.1, _)) })
 }
