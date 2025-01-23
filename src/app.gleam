@@ -1,7 +1,7 @@
 import gleam/dynamic.{type Dynamic}
 import gleam/result
 import lustre
-import update/root.{Keyboard}
+import root.{Keyboard}
 import update/update.{init, update}
 import view.{view}
 

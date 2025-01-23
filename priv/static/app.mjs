@@ -2768,10 +2768,8 @@ function initialize(handler) {
   window.addEventListener("keydown", handler);
 }
 
-// build/dev/javascript/app/update/root.mjs
+// build/dev/javascript/app/root.mjs
 var Before = class extends CustomType {
-};
-var Irrelevant = class extends CustomType {
 };
 var Hub = class extends CustomType {
 };
@@ -2782,14 +2780,14 @@ var Fight = class extends CustomType {
   }
 };
 var Model2 = class extends CustomType {
-  constructor(mod, player_combo, required_combo, fight_character_set, volume, responses5, hp) {
+  constructor(mod, player_combo, required_combo, fight_character_set, volume, responses, hp) {
     super();
     this.mod = mod;
     this.player_combo = player_combo;
     this.required_combo = required_combo;
     this.fight_character_set = fight_character_set;
     this.volume = volume;
-    this.responses = responses5;
+    this.responses = responses;
     this.hp = hp;
   }
 };
@@ -2799,9 +2797,8 @@ var Keyboard = class extends CustomType {
     this[0] = x0;
   }
 };
-var hub_transition_key = "z";
 
-// build/dev/javascript/app/update/state_dependent/hub.mjs
+// build/dev/javascript/app/update/responses.mjs
 function change_volume(change, model) {
   let _record = model;
   return new Model2(
@@ -2814,6 +2811,8 @@ function change_volume(change, model) {
     _record.hp
   );
 }
+var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
+var hub_transition_key = "z";
 var volume_buttons = /* @__PURE__ */ toList([
   ["q", -25],
   ["w", -10],
@@ -2824,113 +2823,112 @@ var volume_buttons = /* @__PURE__ */ toList([
   ["u", 10],
   ["i", 25]
 ]);
-function responses() {
+function hub() {
   let _pipe = volume_buttons;
-  return map(
+  let _pipe$1 = map(
     _pipe,
     (key_val) => {
       return [
-        [key_val[0], new Hub()],
+        key_val[0],
         (_capture) => {
           return change_volume(key_val[1], _capture);
         }
       ];
     }
   );
-}
-
-// build/dev/javascript/app/update/state_independent/fight.mjs
-var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
-function responses2() {
-  return toList([
-    [
-      [hub_transition_key, new Fight(new Irrelevant())],
-      (model) => {
-        let _record = model;
-        return new Model2(
-          new Hub(),
-          toList([]),
-          (() => {
-            let _pipe = command_keys_temp;
-            return shuffle(_pipe);
-          })(),
-          command_keys_temp,
-          _record.volume,
-          (() => {
-            let _pipe = responses();
-            return from_list(_pipe);
-          })(),
-          _record.hp
-        );
-      }
-    ]
-  ]);
-}
-
-// build/dev/javascript/app/update/state_dependent/fight.mjs
-function responses3() {
-  return toList([
-    [
-      [hub_transition_key, new Fight(new Irrelevant())],
-      (model) => {
-        let $ = (() => {
-          let _pipe = model.player_combo;
-          return length(_pipe);
-        })() === (() => {
-          let _pipe = model.required_combo;
-          return length(_pipe);
-        })();
-        if ($) {
+  return append(
+    _pipe$1,
+    toList([
+      [
+        hub_transition_key,
+        (model) => {
           let _record = model;
           return new Model2(
-            _record.mod,
-            _record.player_combo,
+            new Fight(new Before()),
+            toList([]),
             (() => {
-              let _pipe = model.fight_character_set;
-              return shuffle(_pipe);
+              let _pipe$2 = command_keys_temp;
+              return shuffle(_pipe$2);
             })(),
-            _record.fight_character_set,
+            command_keys_temp,
             _record.volume,
-            _record.responses,
             (() => {
-              let $1 = isEqual(model.player_combo, model.required_combo);
-              if ($1) {
-                return 10;
-              } else {
-                return -10;
-              }
-            })()
+              let _pipe$2 = fight();
+              return from_list(_pipe$2);
+            })(),
+            _record.hp
           );
-        } else {
-          return model;
         }
-      }
-    ]
-  ]);
+      ]
+    ])
+  );
 }
-
-// build/dev/javascript/app/update/state_independent/hub.mjs
-function responses4() {
-  return toList([
-    [
-      [hub_transition_key, new Hub()],
-      (model) => {
-        let _record = model;
-        return new Model2(
-          new Fight(new Before()),
-          toList([]),
-          _record.required_combo,
-          _record.fight_character_set,
-          _record.volume,
-          (() => {
-            let _pipe = responses3();
-            return from_list(_pipe);
-          })(),
-          _record.hp
-        );
-      }
-    ]
-  ]);
+function fight() {
+  let _pipe = command_keys_temp;
+  let _pipe$1 = map(
+    _pipe,
+    (key) => {
+      return [
+        key,
+        (model) => {
+          let $ = (() => {
+            let _pipe$12 = model.player_combo;
+            return length(_pipe$12);
+          })() === (() => {
+            let _pipe$12 = model.required_combo;
+            return length(_pipe$12);
+          })();
+          if ($) {
+            let _record = model;
+            return new Model2(
+              _record.mod,
+              toList([]),
+              (() => {
+                let _pipe$12 = model.fight_character_set;
+                return shuffle(_pipe$12);
+              })(),
+              _record.fight_character_set,
+              _record.volume,
+              _record.responses,
+              model.hp + (() => {
+                let $1 = isEqual(model.player_combo, model.required_combo);
+                if ($1) {
+                  return 1;
+                } else {
+                  return -1;
+                }
+              })()
+            );
+          } else {
+            return model;
+          }
+        }
+      ];
+    }
+  );
+  return append(
+    _pipe$1,
+    toList([
+      [
+        hub_transition_key,
+        (model) => {
+          let _record = model;
+          return new Model2(
+            new Hub(),
+            toList([]),
+            toList([]),
+            toList([]),
+            _record.volume,
+            (() => {
+              let _pipe$2 = hub();
+              return from_list(_pipe$2);
+            })(),
+            _record.hp
+          );
+        }
+      ]
+    ])
+  );
 }
 
 // build/dev/javascript/app/update/update.mjs
@@ -2941,13 +2939,10 @@ function update(model, msg) {
       let _pipe = model.responses;
       return map_get(
         _pipe,
-        [
-          (() => {
-            let _pipe$1 = key;
-            return lowercase(_pipe$1);
-          })(),
-          model.mod
-        ]
+        (() => {
+          let _pipe$1 = key;
+          return lowercase(_pipe$1);
+        })()
       );
     })();
     if ($.isOk()) {
@@ -2982,9 +2977,8 @@ function init2(_) {
     toList([]),
     50,
     (() => {
-      let _pipe = responses4();
-      let _pipe$1 = append(_pipe, responses2());
-      return from_list(_pipe$1);
+      let _pipe = hub();
+      return from_list(_pipe);
     })(),
     10
   );

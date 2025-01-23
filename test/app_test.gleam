@@ -1,9 +1,10 @@
 import gleam/dict
+
 // import gleam/io
 import gleam/list
 import gleeunit
 import gleeunit/should
-import update/root.{Keyboard}
+import root.{Keyboard}
 import update/update.{init, update}
 
 pub fn main() {
