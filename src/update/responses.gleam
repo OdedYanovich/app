@@ -21,8 +21,8 @@ pub fn fight() -> List(#(String, fn(Model) -> Model)) {
             required_combo: model.fight_character_set |> list.shuffle,
             hp: model.hp
               + case model.player_combo == model.required_combo {
-                True -> 1
-                False -> -1
+                True -> 4
+                False -> -4
               },
           )
         }

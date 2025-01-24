@@ -6,7 +6,6 @@ pub type Fighting {
   Irrelevant
 }
 
-
 pub type Mods {
   Hub
   Fight(Fighting)
@@ -25,5 +24,6 @@ pub type Model {
 }
 
 pub type Msg {
-  Keyboard(String)
+  Keydown(String)
+  Keyup
 }

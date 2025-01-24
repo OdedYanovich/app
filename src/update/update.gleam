@@ -1,13 +1,13 @@
 import gleam/dict
 import gleam/list
 import gleam/string
-import root.{type Model, type Msg, Hub, Keyboard, Model}
+import root.{type Model, type Msg, Hub, Keydown, Keyup, Model}
 
 import update/responses.{hub}
 
 pub fn update(model: Model, msg: Msg) -> Model {
   case msg {
-    Keyboard(key) -> {
+    Keydown(key) -> {
       case model.responses |> dict.get(key |> string.lowercase) {
         Ok(response) -> {
           response(
@@ -19,6 +19,9 @@ pub fn update(model: Model, msg: Msg) -> Model {
         }
         Error(_) -> model
       }
+    }
+    Keyup -> {
+      Model(..model, player_combo: [])
     }
   }
 }

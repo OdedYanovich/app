@@ -1,6 +1,8 @@
 let currentKey = "t";
-export function initialize(handler) {
-    window.addEventListener("keydown", handler);
+export function initialize(key_down_event_handler// key_up_event_handler
+) {
+    window.addEventListener("keydown", key_down_event_handler);
+    // window.addEventListener("keyup", key_up_event_handler);
 }
 
 // ///En example of interop

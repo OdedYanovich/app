@@ -2764,8 +2764,8 @@ function start2(app, selector, flags) {
 }
 
 // build/dev/javascript/app/event_listener.mjs
-function initialize(handler) {
-  window.addEventListener("keydown", handler);
+function initialize(key_down_event_handler) {
+  window.addEventListener("keydown", key_down_event_handler);
 }
 
 // build/dev/javascript/app/root.mjs
@@ -2791,7 +2791,7 @@ var Model2 = class extends CustomType {
     this.hp = hp;
   }
 };
-var Keyboard = class extends CustomType {
+var Keydown = class extends CustomType {
   constructor(x0) {
     super();
     this[0] = x0;
@@ -2893,9 +2893,9 @@ function fight() {
               model.hp + (() => {
                 let $1 = isEqual(model.player_combo, model.required_combo);
                 if ($1) {
-                  return 1;
+                  return 4;
                 } else {
-                  return -1;
+                  return -4;
                 }
               })()
             );
@@ -2933,7 +2933,7 @@ function fight() {
 
 // build/dev/javascript/app/update/update.mjs
 function update(model, msg) {
-  {
+  if (msg instanceof Keydown) {
     let key = msg[0];
     let $ = (() => {
       let _pipe = model.responses;
@@ -2967,6 +2967,17 @@ function update(model, msg) {
     } else {
       return model;
     }
+  } else {
+    let _record = model;
+    return new Model2(
+      _record.mod,
+      toList([]),
+      _record.required_combo,
+      _record.fight_character_set,
+      _record.volume,
+      _record.responses,
+      _record.hp
+    );
   }
 }
 function init2(_) {
@@ -3138,7 +3149,7 @@ function main() {
     throw makeError(
       "let_assert",
       "app",
-      12,
+      15,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -3154,7 +3165,7 @@ function main() {
             field("repeat", bool)(handler),
             (repeat2) => {
               if (!repeat2) {
-                runtime(dispatch(new Keyboard(key)));
+                runtime(dispatch(new Keydown(key)));
                 return new Ok(void 0);
               } else {
                 return new Ok(void 0);
