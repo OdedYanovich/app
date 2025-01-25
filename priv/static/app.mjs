@@ -1,3 +1,12 @@
+// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
+function guard(requirement, consequence, alternative) {
+  if (requirement) {
+    return consequence;
+  } else {
+    return alternative();
+  }
+}
+
 // build/dev/javascript/prelude.mjs
 var CustomType = class {
   withFields(fields) {
@@ -89,8 +98,8 @@ var BitArray = class _BitArray {
     return this.buffer.length;
   }
   // @internal
-  byteAt(index2) {
-    return this.buffer[index2];
+  byteAt(index3) {
+    return this.buffer[index3];
   }
   // @internal
   floatFromSlice(start3, end, isBigEndian) {
@@ -110,11 +119,11 @@ var BitArray = class _BitArray {
     return new _BitArray(buffer);
   }
   // @internal
-  sliceAfter(index2) {
+  sliceAfter(index3) {
     const buffer = new Uint8Array(
       this.buffer.buffer,
-      this.buffer.byteOffset + index2,
-      this.buffer.byteLength - index2
+      this.buffer.byteOffset + index3,
+      this.buffer.byteLength - index3
     );
     return new _BitArray(buffer);
   }
@@ -292,14 +301,6 @@ var Some = class extends CustomType {
 };
 var None = class extends CustomType {
 };
-function to_result(option, e) {
-  if (option instanceof Some) {
-    let a = option[0];
-    return new Ok(a);
-  } else {
-    return new Error(e);
-  }
-}
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
@@ -1017,35 +1018,28 @@ function to_string(term) {
   return term.toString();
 }
 var segmenter = void 0;
-function graphemes_iterator(string2) {
+function graphemes_iterator(string3) {
   if (globalThis.Intl && Intl.Segmenter) {
     segmenter ||= new Intl.Segmenter();
-    return segmenter.segment(string2)[Symbol.iterator]();
+    return segmenter.segment(string3)[Symbol.iterator]();
   }
 }
-function pop_grapheme(string2) {
+function pop_grapheme(string3) {
   let first2;
-  const iterator = graphemes_iterator(string2);
+  const iterator = graphemes_iterator(string3);
   if (iterator) {
     first2 = iterator.next().value?.segment;
   } else {
-    first2 = string2.match(/./su)?.[0];
+    first2 = string3.match(/./su)?.[0];
   }
   if (first2) {
-    return new Ok([first2, string2.slice(first2.length)]);
+    return new Ok([first2, string3.slice(first2.length)]);
   } else {
     return new Error(Nil);
   }
 }
-function lowercase(string2) {
-  return string2.toLowerCase();
-}
-function concat(xs) {
-  let result = "";
-  for (const x of xs) {
-    result = result + x;
-  }
-  return result;
+function lowercase(string3) {
+  return string3.toLowerCase();
 }
 var unicode_whitespaces = [
   " ",
@@ -1136,26 +1130,6 @@ function decode_int(data) {
 }
 function decode_bool(data) {
   return typeof data === "boolean" ? new Ok(data) : decoder_error("Bool", data);
-}
-function decode_field(value, name) {
-  const not_a_map_error = () => decoder_error("Dict", value);
-  if (value instanceof Dict || value instanceof WeakMap || value instanceof Map) {
-    const entry = map_get(value, name);
-    return new Ok(entry.isOk() ? new Some(entry[0]) : new None());
-  } else if (value === null) {
-    return not_a_map_error();
-  } else if (Object.getPrototypeOf(value) == Object.prototype) {
-    return try_get_field(value, name, () => new Ok(new None()));
-  } else {
-    return try_get_field(value, name, not_a_map_error);
-  }
-}
-function try_get_field(value, field2, or_else) {
-  try {
-    return field2 in value ? new Ok(new Some(value[field2])) : or_else();
-  } catch {
-    return or_else();
-  }
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/float.mjs
@@ -1375,16 +1349,16 @@ function index_fold_loop(loop$over, loop$acc, loop$with, loop$index) {
     let over = loop$over;
     let acc = loop$acc;
     let with$ = loop$with;
-    let index2 = loop$index;
+    let index3 = loop$index;
     if (over.hasLength(0)) {
       return acc;
     } else {
       let first$1 = over.head;
       let rest$1 = over.tail;
       loop$over = rest$1;
-      loop$acc = with$(acc, first$1, index2);
+      loop$acc = with$(acc, first$1, index3);
       loop$with = with$;
-      loop$index = index2 + 1;
+      loop$index = index3 + 1;
     }
   }
 }
@@ -1752,19 +1726,19 @@ function shuffle(list2) {
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
 function drop_start(loop$string, loop$num_graphemes) {
   while (true) {
-    let string2 = loop$string;
+    let string3 = loop$string;
     let num_graphemes = loop$num_graphemes;
     let $ = num_graphemes > 0;
     if (!$) {
-      return string2;
+      return string3;
     } else {
-      let $1 = pop_grapheme(string2);
+      let $1 = pop_grapheme(string3);
       if ($1.isOk()) {
         let string$1 = $1[0][1];
         loop$string = string$1;
         loop$num_graphemes = num_graphemes - 1;
       } else {
-        return string2;
+        return string3;
       }
     }
   }
@@ -1778,15 +1752,6 @@ function map2(result, fun) {
   } else {
     let e = result[0];
     return new Error(e);
-  }
-}
-function map_error(result, fun) {
-  if (result.isOk()) {
-    let x = result[0];
-    return new Ok(x);
-  } else {
-    let error = result[0];
-    return new Error(fun(error));
   }
 }
 function try$(result, fun) {
@@ -1833,67 +1798,189 @@ function any(decoders) {
     }
   };
 }
-function push_path(error, name) {
-  let name$1 = identity(name);
-  let decoder = any(
-    toList([decode_string, (x) => {
-      return map2(int(x), to_string);
-    }])
-  );
-  let name$2 = (() => {
-    let $ = decoder(name$1);
-    if ($.isOk()) {
-      let name$22 = $[0];
-      return name$22;
-    } else {
-      let _pipe = toList(["<", classify_dynamic(name$1), ">"]);
-      let _pipe$1 = concat(_pipe);
-      return identity(_pipe$1);
+
+// build/dev/javascript/gleam_stdlib/gleam_stdlib_decode_ffi.mjs
+function strict_index(data, key) {
+  const int3 = Number.isInteger(key);
+  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+    const token = {};
+    const entry = data.get(key, token);
+    if (entry === token)
+      return new Ok(new None());
+    return new Ok(new Some(entry));
+  }
+  if ((key === 0 || key === 1 || key === 2) && data instanceof List) {
+    let i = 0;
+    for (const value of data) {
+      if (i === key)
+        return new Ok(new Some(value));
+      i++;
     }
-  })();
-  let _record = error;
-  return new DecodeError(
-    _record.expected,
-    _record.found,
-    prepend(name$2, error.path)
-  );
-}
-function map_errors(result, f) {
-  return map_error(
-    result,
-    (_capture) => {
-      return map(_capture, f);
-    }
-  );
-}
-function field(name, inner_type) {
-  return (value) => {
-    let missing_field_error = new DecodeError("field", "nothing", toList([]));
-    return try$(
-      decode_field(value, name),
-      (maybe_inner) => {
-        let _pipe = maybe_inner;
-        let _pipe$1 = to_result(_pipe, toList([missing_field_error]));
-        let _pipe$2 = try$(_pipe$1, inner_type);
-        return map_errors(
-          _pipe$2,
-          (_capture) => {
-            return push_path(_capture, name);
-          }
-        );
-      }
-    );
-  };
+    return new Error("Indexable");
+  }
+  if (int3 && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
+    if (key in data)
+      return new Ok(new Some(data[key]));
+    return new Ok(new None());
+  }
+  return new Error(int3 ? "Indexable" : "Dict");
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
-function guard(requirement, consequence, alternative) {
-  if (requirement) {
-    return consequence;
+// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var DecodeError2 = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
+var Decoder = class extends CustomType {
+  constructor(function$) {
+    super();
+    this.function = function$;
+  }
+};
+function run(data, decoder) {
+  let $ = decoder.function(data);
+  let maybe_invalid_data = $[0];
+  let errors = $[1];
+  if (errors.hasLength(0)) {
+    return new Ok(maybe_invalid_data);
   } else {
-    return alternative();
+    return new Error(errors);
   }
 }
+function success(data) {
+  return new Decoder((_) => {
+    return [data, toList([])];
+  });
+}
+function push_path(layer, path) {
+  let decoder = any(
+    toList([
+      decode_string,
+      (x) => {
+        return map2(int(x), to_string);
+      }
+    ])
+  );
+  let path$1 = map(
+    path,
+    (key) => {
+      let key$1 = identity(key);
+      let $ = decoder(key$1);
+      if ($.isOk()) {
+        let key$2 = $[0];
+        return key$2;
+      } else {
+        return "<" + classify_dynamic(key$1) + ">";
+      }
+    }
+  );
+  let errors = map(
+    layer[1],
+    (error) => {
+      let _record = error;
+      return new DecodeError2(
+        _record.expected,
+        _record.found,
+        append(path$1, error.path)
+      );
+    }
+  );
+  return [layer[0], errors];
+}
+function index2(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
+  while (true) {
+    let path = loop$path;
+    let position = loop$position;
+    let inner = loop$inner;
+    let data = loop$data;
+    let handle_miss = loop$handle_miss;
+    if (path.hasLength(0)) {
+      let _pipe = inner(data);
+      return push_path(_pipe, reverse(position));
+    } else {
+      let key = path.head;
+      let path$1 = path.tail;
+      let $ = strict_index(data, key);
+      if ($.isOk() && $[0] instanceof Some) {
+        let data$1 = $[0][0];
+        loop$path = path$1;
+        loop$position = prepend(key, position);
+        loop$inner = inner;
+        loop$data = data$1;
+        loop$handle_miss = handle_miss;
+      } else if ($.isOk() && $[0] instanceof None) {
+        return handle_miss(data, prepend(key, position));
+      } else {
+        let kind = $[0];
+        let $1 = inner(data);
+        let default$ = $1[0];
+        let _pipe = [
+          default$,
+          toList([new DecodeError2(kind, classify_dynamic(data), toList([]))])
+        ];
+        return push_path(_pipe, reverse(position));
+      }
+    }
+  }
+}
+function subfield(field_path, field_decoder, next) {
+  return new Decoder(
+    (data) => {
+      let $ = index2(
+        field_path,
+        toList([]),
+        field_decoder.function,
+        data,
+        (data2, position) => {
+          let $12 = field_decoder.function(data2);
+          let default$ = $12[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError2("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+      let out = $[0];
+      let errors1 = $[1];
+      let $1 = next(out).function(data);
+      let out$1 = $1[0];
+      let errors2 = $1[1];
+      return [out$1, append(errors1, errors2)];
+    }
+  );
+}
+function field(field_name, field_decoder, next) {
+  return subfield(toList([field_name]), field_decoder, next);
+}
+function run_dynamic_function(data, zero, f) {
+  let $ = f(data);
+  if ($.isOk()) {
+    let data$1 = $[0];
+    return [data$1, toList([])];
+  } else {
+    let errors = $[0];
+    let errors$1 = map(
+      errors,
+      (e) => {
+        return new DecodeError2(e.expected, e.found, e.path);
+      }
+    );
+    return [zero, errors$1];
+  }
+}
+function decode_string2(data) {
+  return run_dynamic_function(data, "", decode_string);
+}
+function decode_bool2(data) {
+  return run_dynamic_function(data, false, bool);
+}
+var string = /* @__PURE__ */ new Decoder(decode_string2);
+var bool2 = /* @__PURE__ */ new Decoder(decode_bool2);
 
 // build/dev/javascript/lustre/lustre/effect.mjs
 var Effect = class extends CustomType {
@@ -1953,8 +2040,8 @@ function do_element_list_handlers(elements2, handlers2, key) {
   return index_fold(
     elements2,
     handlers2,
-    (handlers3, element2, index2) => {
-      let key$1 = key + "-" + to_string(index2);
+    (handlers3, element2, index3) => {
+      let key$1 = key + "-" + to_string(index3);
       return do_handlers(element2, handlers3, key$1);
     }
   );
@@ -2764,8 +2851,9 @@ function start2(app, selector, flags) {
 }
 
 // build/dev/javascript/app/event_listener.mjs
-function initialize(key_down_event_handler) {
-  window.addEventListener("keydown", key_down_event_handler);
+function initialize(keyup, keydown) {
+  window.addEventListener("keyup", keyup);
+  window.addEventListener("keydown", keydown);
 }
 
 // build/dev/javascript/app/root.mjs
@@ -2797,6 +2885,8 @@ var Keydown = class extends CustomType {
     this[0] = x0;
   }
 };
+var Keyup = class extends CustomType {
+};
 
 // build/dev/javascript/app/update/responses.mjs
 function change_volume(change, model) {
@@ -2811,7 +2901,7 @@ function change_volume(change, model) {
     _record.hp
   );
 }
-var command_keys_temp = /* @__PURE__ */ toList(["f", "g", "h"]);
+var command_keys_temp = /* @__PURE__ */ toList(["w", "e", "r", "g", "b"]);
 var hub_transition_key = "z";
 var volume_buttons = /* @__PURE__ */ toList([
   ["q", -25],
@@ -3149,7 +3239,7 @@ function main() {
     throw makeError(
       "let_assert",
       "app",
-      15,
+      14,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
@@ -3157,19 +3247,36 @@ function main() {
   }
   let runtime = $[0];
   return initialize(
-    (handler) => {
+    () => {
+      return runtime(dispatch(new Keyup()));
+    },
+    (event) => {
       return try$(
-        field("key", decode_string)(handler),
-        (key) => {
-          return try$(
-            field("repeat", bool)(handler),
-            (repeat2) => {
-              if (!repeat2) {
-                runtime(dispatch(new Keydown(key)));
-                return new Ok(void 0);
-              } else {
-                return new Ok(void 0);
-              }
+        run(
+          event,
+          field(
+            "key",
+            string,
+            (key) => {
+              return field(
+                "repeat",
+                bool2,
+                (repeat2) => {
+                  return success([key, repeat2]);
+                }
+              );
+            }
+          )
+        ),
+        (_use0) => {
+          let key = _use0[0];
+          let repeat2 = _use0[1];
+          return guard(
+            repeat2,
+            new Ok(void 0),
+            () => {
+              runtime(dispatch(new Keydown(key)));
+              return new Ok(void 0);
             }
           );
         }

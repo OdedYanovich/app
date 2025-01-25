@@ -3,7 +3,7 @@ import gleam/int
 import gleam/list
 import root.{type Model, Before, Fight, Hub, Model}
 
-const command_keys_temp = ["f", "g", "h"]
+const command_keys_temp = ["w", "e", "r", "g", "b"]
 
 pub const hub_transition_key = "z"
 
