@@ -2851,7 +2851,7 @@ function start2(app, selector, flags) {
 }
 
 // build/dev/javascript/app/event_listener.mjs
-function initialize(keyup, keydown) {
+function keyboardEvents(keyup, keydown) {
   window.addEventListener("keyup", keyup);
   window.addEventListener("keydown", keydown);
 }
@@ -3023,8 +3023,24 @@ function fight() {
 
 // build/dev/javascript/app/update/update.mjs
 function update(model, msg) {
-  if (msg instanceof Keydown) {
-    let key = msg[0];
+  let keyboard = (happy_path) => {
+    if (msg instanceof Keydown) {
+      let key = msg[0];
+      return happy_path(key);
+    } else {
+      let _record = model;
+      return new Model2(
+        _record.mod,
+        toList([]),
+        _record.required_combo,
+        _record.fight_character_set,
+        _record.volume,
+        _record.responses,
+        _record.hp
+      );
+    }
+  };
+  let response_to_key = (key, happy_path) => {
     let $ = (() => {
       let _pipe = model.responses;
       return map_get(
@@ -3037,38 +3053,37 @@ function update(model, msg) {
     })();
     if ($.isOk()) {
       let response = $[0];
-      return response(
-        (() => {
-          let _record = model;
-          return new Model2(
-            _record.mod,
-            (() => {
-              let _pipe = model.player_combo;
-              return append(_pipe, toList([key]));
-            })(),
-            _record.required_combo,
-            _record.fight_character_set,
-            _record.volume,
-            _record.responses,
-            _record.hp
-          );
-        })()
-      );
+      return happy_path(response);
     } else {
       return model;
     }
-  } else {
-    let _record = model;
-    return new Model2(
-      _record.mod,
-      toList([]),
-      _record.required_combo,
-      _record.fight_character_set,
-      _record.volume,
-      _record.responses,
-      _record.hp
-    );
-  }
+  };
+  return keyboard(
+    (latest_key_press) => {
+      return response_to_key(
+        latest_key_press,
+        (response) => {
+          return response(
+            (() => {
+              let _record = model;
+              return new Model2(
+                _record.mod,
+                (() => {
+                  let _pipe = model.player_combo;
+                  return append(_pipe, toList([latest_key_press]));
+                })(),
+                _record.required_combo,
+                _record.fight_character_set,
+                _record.volume,
+                _record.responses,
+                _record.hp
+              );
+            })()
+          );
+        }
+      );
+    }
+  );
 }
 function init2(_) {
   return new Model2(
@@ -3239,14 +3254,14 @@ function main() {
     throw makeError(
       "let_assert",
       "app",
-      14,
+      17,
       "main",
       "Pattern match failed, no pattern matched the value.",
       { value: $ }
     );
   }
   let runtime = $[0];
-  return initialize(
+  return keyboardEvents(
     () => {
       return runtime(dispatch(new Keyup()));
     },

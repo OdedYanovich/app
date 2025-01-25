@@ -7,13 +7,16 @@ import root.{Keydown, Keyup}
 import update/update.{init, update}
 import view.{view}
 
-@external(javascript, "./event_listener.mjs", "initialize")
-fn inintialize(keyup: fn() -> Nil, keydown: fn(dynamic.Dynamic) -> any) -> Nil
+@external(javascript, "./event_listener.mjs", "keyboardEvents")
+fn keyboard_events(
+  keyup: fn() -> Nil,
+  keydown: fn(dynamic.Dynamic) -> any,
+) -> Nil
 
 pub fn main() {
   let assert Ok(runtime) =
     lustre.simple(init, update, view) |> lustre.start("#app", Nil)
-  use event <- inintialize(fn() { runtime(lustre.dispatch(Keyup)) })
+  use event <- keyboard_events(fn() { runtime(lustre.dispatch(Keyup)) })
   use #(key, repeat) <- try(
     decode.run(event, {
       use key <- decode.field("key", decode.string)

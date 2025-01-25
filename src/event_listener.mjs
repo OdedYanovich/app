@@ -1,4 +1,4 @@
-export function initialize(keyup, keydown) {
+export function keyboardEvents(keyup, keydown) {
     window.addEventListener("keyup", keyup);
     window.addEventListener("keydown", keydown);
 }
