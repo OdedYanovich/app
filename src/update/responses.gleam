@@ -8,36 +8,38 @@ const command_keys_temp = ["w", "e", "r", "g", "b"]
 pub const hub_transition_key = "z"
 
 pub fn fight() -> List(#(String, fn(Model) -> Model)) {
-  command_keys_temp
-  |> list.map(fn(key) {
+  {
+    use key <- list.map(command_keys_temp)
     #(key, fn(model: Model) {
-      case
-        model.player_combo |> list.length == model.required_combo |> list.length
-      {
-        True -> {
+      case model.required_combo |> list.take(2) {
+        [required_key] if required_key == model.latest_key_press -> {
           Model(
             ..model,
-            player_combo: [],
+            latest_key_press: "",
             required_combo: model.fight_character_set |> list.shuffle,
-            hp: model.hp
-              + case model.player_combo == model.required_combo {
-                True -> 4
-                False -> -4
-              },
+            hp: model.hp +. 4.0,
           )
         }
-        False -> model
+        [required_key, ..] if required_key == model.latest_key_press -> {
+          Model(..model, required_combo: model.required_combo |> list.drop(1))
+        }
+
+        _ ->
+          Model(
+            ..model,
+            latest_key_press: "",
+            required_combo: model.fight_character_set |> list.shuffle,
+            hp: model.hp -. 4.0,
+          )
       }
     })
-  })
+  }
   |> list.append([
     #(hub_transition_key, fn(model) {
       Model(
         ..model,
         mod: Hub,
-        player_combo: [],
-        fight_character_set: [],
-        required_combo: [],
+        latest_key_press: "",
         responses: hub() |> dict.from_list,
       )
     }),
@@ -56,11 +58,7 @@ pub const volume_buttons = [
 ]
 
 fn change_volume(change, model: Model) {
-  Model(
-    ..model,
-    volume: int.max(int.min(model.volume + change, 100), 0),
-    player_combo: [],
-  )
+  Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
 }
 
 pub fn hub() {
@@ -71,7 +69,7 @@ pub fn hub() {
       Model(
         ..model,
         mod: Fight(Before),
-        player_combo: [],
+        latest_key_press: "",
         fight_character_set: command_keys_temp,
         required_combo: command_keys_temp |> list.shuffle,
         responses: fight() |> dict.from_list,

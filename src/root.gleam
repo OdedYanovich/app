@@ -14,16 +14,16 @@ pub type Mods {
 pub type Model {
   Model(
     mod: Mods,
-    player_combo: List(String),
+    latest_key_press: String,
     required_combo: List(String),
     fight_character_set: List(String),
     volume: Int,
     responses: Dict(String, fn(Model) -> Model),
-    hp: Int,
+    hp: Float,
   )
 }
 
 pub type Msg {
   Keydown(String)
-  Keyup
+  Dmg
 }

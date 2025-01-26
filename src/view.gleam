@@ -1,3 +1,4 @@
+import gleam/float
 import gleam/int
 import gleam/list
 import lustre/attribute
@@ -27,9 +28,9 @@ pub fn view(model: Model) -> element.Element(Msg) {
         #("box-sizing", "border-box"),
         #(
           "background",
-          "linear-gradient(to right, rgba(0,0,0,1) "
-            <> model.hp |> int.to_string
-            <> "%, rgba(255,0,0,1))",
+          "linear-gradient(to left, rgba(0,0,0,1) "
+            <> model.hp |> float.round |> int.to_string
+            <> "%, rgba(0,0,0,1))",
         ),
       ]),
     ],
@@ -76,8 +77,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
       Fight(_) -> {
         [
           hub_transition_key <> " Hub",
-          "player combo: "
-            <> model.player_combo |> list.fold("", fn(a, b) { a <> b }),
+          "latest key press: " <> model.latest_key_press,
           "required combo: "
             <> model.required_combo |> list.fold("", fn(a, b) { a <> b }),
         ]
