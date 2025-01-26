@@ -15,7 +15,7 @@ fn hp_lose(handler: fn() -> any) -> Int
 pub fn main() {
   let assert Ok(runtime) =
     lustre.simple(init, update, view) |> lustre.start("#app", Nil)
-  // let _interval_id = hp_lose(fn() { runtime(lustre.dispatch(Dmg)) })
+  let _interval_id = hp_lose(fn() { runtime(lustre.dispatch(Dmg)) })
   use event <- keyboard_events
   use #(key, repeat) <- try(
     decode.run(event, {
