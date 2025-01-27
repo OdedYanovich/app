@@ -6,8 +6,8 @@ import update/responses.{hub}
 pub fn update(model: Model, msg: Msg) -> Model {
   use <-
     fn(branches) {
-      let #(keyboard, response_to_key) = branches()
-      use latest_key_press <- keyboard
+      let #(keydown, response_to_key) = branches()
+      use latest_key_press <- keydown
       use response <- response_to_key(latest_key_press)
       response(Model(..model, latest_key_press:))
     }

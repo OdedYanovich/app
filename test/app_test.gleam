@@ -1,6 +1,7 @@
 import gleam/dict
 
 // import gleam/io
+import gleam/int
 import gleam/list
 import gleeunit
 import gleeunit/should
@@ -8,15 +9,20 @@ import root.{Keydown}
 import update/update.{init, update}
 
 pub fn main() {
+  let volume_command_model = init(Nil)
+  case volume_command_model.volume == 50 {
+    True -> Nil
+    _ -> panic as "expected 50: got ?"
+  }
   gleeunit.main()
 }
 
-// gleeunit test functions end in `_test`
+// gleeunit test functions end in `_test`u
 pub fn init_test() {
   let model = init(Nil)
-  should.equal(model.responses |> dict.keys |> list.length, 10)
+  should.equal(model.responses |> dict.keys |> list.length, 9)
   let model = update(model, Keydown("z"))
-  should.equal(model.responses |> dict.keys |> list.length, 5)
+  should.equal(model.responses |> dict.keys |> list.length, 6)
 }
 
 pub fn update_volume_test() {
