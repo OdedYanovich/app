@@ -1,5 +1,5 @@
 import gleam/dict.{type Dict}
-
+import gleam/option.{type Option}
 pub type Fighting {
   Before
   During
@@ -20,6 +20,7 @@ pub type Model {
     volume: Int,
     responses: Dict(String, fn(Model) -> Model),
     hp: Float,
+    interval_id: Option(Int)
   )
 }
 

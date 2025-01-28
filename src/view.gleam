@@ -28,7 +28,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
         #("box-sizing", "border-box"),
         #(
           "background",
-          "linear-gradient(to left, rgba(0,0,0,1) "
+          "linear-gradient(to left, rgb(255, 0, 0) "
             <> model.hp |> float.round |> int.to_string
             <> "%, rgba(0,0,0,1))",
         ),
