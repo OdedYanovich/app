@@ -2,6 +2,7 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option.{Some}
+import lustre
 import lustre/effect
 import root.{type Model, Before, Dmg, During, Fight, Hub, Model}
 
@@ -36,34 +37,38 @@ fn responses_to_enconter_keys() {
 }
 
 @external(javascript, "../event_listener.mjs", "startHpLose")
-fn start_hp_lose(handler: fn() -> any) -> Int
+fn start_hp_lose(handler: fn() -> any) -> Nil
 
 @external(javascript, "../event_listener.mjs", "endHpLose")
-fn end_hp_lose(handler: fn(id) -> any) -> Int
+fn end_hp_lose() -> Nil
 
 pub fn fight() {
-  {
-    use key_response <- list.map(responses_to_enconter_keys())
-    // let _interval_id = hp_lose(fn() { runtime(lustre.dispatch(Dmg)) })
-    #(key_response.0, fn(model) {
-      Model(
-        ..key_response.1(model),
-        mod: Fight(During),
-        responses: fight_during() |> dict.from_list,
+  #(
+    {
+      use key_response <- list.map(responses_to_enconter_keys())
+      // let _interval_id = start_hp_lose(fn() { runtime(lustre.dispatch(Dmg)) })
+      #(key_response.0, fn(model) {
+        Model(
+          ..key_response.1(model),
+          mod: Fight(During),
+          responses: fight_during() |> dict.from_list,
+          // interval_id: start_hp_lose(fn() { runtime(lustre.dispatch(Dmg)) }),
         // interval_id: Some(start_hp_lose()),
-      )
-    })
-  }
-  |> list.append([
-    #(hub_transition_key, fn(model) {
-      Model(
-        ..model,
-        mod: Hub,
-        // latest_key_press: "",
-          responses: hub() |> dict.from_list,
-      )
-    }),
-  ])
+        )
+      })
+    }
+      |> list.append([
+        #(hub_transition_key, fn(model) {
+          Model(
+            ..model,
+            mod: Hub,
+            // latest_key_press: "",
+              responses: hub() |> dict.from_list,
+          )
+        }),
+      ]),
+    effect.from(fn(dispatch) { start_hp_lose(fn() { dispatch(Dmg) }) }),
+  )
 }
 
 fn fight_during() -> List(#(String, fn(Model) -> Model)) {
