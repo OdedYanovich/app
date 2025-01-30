@@ -1,11 +1,11 @@
 export function keyboardEvents(handler) {
     addEventListener("keydown", handler);
 }
-let id;
+// let id;
 export function startHpLose(handler) {
-    id = setInterval(handler, 1);
+    return setInterval(handler, 1);
 }
-export function endHpLose() {
+export function endHpLose(id) {
     clearInterval(id);
 }
 // ///En example of interop

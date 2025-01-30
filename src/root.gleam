@@ -1,5 +1,7 @@
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
+import lustre/effect
+
 pub type Fighting {
   Before
   During
@@ -11,6 +13,16 @@ pub type Mods {
   Fight(Fighting)
 }
 
+pub type Msg {
+  Keydown(String)
+  StartDmg(Int)
+  Dmg
+  EndDmg
+}
+
+type Response =
+  fn(Model) -> #(Model, effect.Effect(Msg))
+
 pub type Model {
   Model(
     mod: Mods,
@@ -18,13 +30,8 @@ pub type Model {
     required_combo: List(String),
     fight_character_set: List(String),
     volume: Int,
-    responses: Dict(String, fn(Model) -> Model),
+    responses: Dict(String, Response),
     hp: Float,
-    interval_id: Option(Int)
+    interval_id: Option(Int),
   )
-}
-
-pub type Msg {
-  Keydown(String)
-  Dmg
 }
