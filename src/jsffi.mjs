@@ -1,7 +1,6 @@
 export function keyboardEvents(handler) {
     addEventListener("keydown", handler);
 }
-// let id;
 export function startHpLose(handler) {
     return setInterval(handler, 1);
 }

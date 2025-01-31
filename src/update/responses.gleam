@@ -34,7 +34,7 @@ fn models_from_enconter_keys() {
   })
 }
 
-@external(javascript, "../event_listener.mjs", "startHpLose")
+@external(javascript, "../jsffi.mjs", "startHpLose")
 fn start_hp_lose(handler: fn() -> any) -> Int
 
 fn entering_fight() {
@@ -46,30 +46,26 @@ fn entering_fight() {
         mod: Fight(During),
         responses: fight_during() |> dict.from_list,
       )
-      |> add_effect(
-        effect.from(fn(dispatch) {
-          dispatch(StartDmg(start_hp_lose(fn() { dispatch(Dmg) })))
-        }),
-      )
+      |> add_effect(fn(dispatch) {
+        dispatch(StartDmg(start_hp_lose(fn() { dispatch(Dmg) })))
+      })
     })
   }
   |> list.append([
     #(hub_transition_key, fn(model) {
       Model(..model, mod: Hub, responses: entering_hub() |> dict.from_list)
-      |> add_effect(effect.none())
+      |> effectless
     }),
   ])
 }
 
 fn fight_during() {
   models_from_enconter_keys()
-  |> list.map(fn(key_fn) {
-    #(key_fn.0, fn(a) { key_fn.1(a) |> add_effect(effect.none()) })
-  })
+  |> list.map(fn(key_fn) { #(key_fn.0, fn(a) { key_fn.1(a) |> effectless }) })
   |> list.append([
     #(hub_transition_key, fn(model) {
       Model(..model, mod: Hub, responses: entering_hub() |> dict.from_list)
-      |> add_effect(effect.from(fn(dispatch){dispatch(EndDmg)}))
+      |> add_effect(fn(dispatch) { dispatch(EndDmg) })
     }),
   ])
 }
@@ -87,7 +83,7 @@ pub const volume_buttons = [
 
 fn change_volume(change, model: Model) {
   Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
-  |> add_effect(effect.none())
+  |> effectless
 }
 
 pub fn entering_hub() {
@@ -102,11 +98,15 @@ pub fn entering_hub() {
         required_combo: command_keys_temp |> list.shuffle,
         responses: entering_fight() |> dict.from_list,
       )
-      |> add_effect(effect.none())
+      |> effectless
     }),
   ])
 }
 
-fn add_effect(responses, effect) {
-  #(responses, effect)
+pub fn add_effect(responses, effect) {
+  #(responses, effect.from(effect))
+}
+
+pub fn effectless(responses) {
+  #(responses, effect.none())
 }
