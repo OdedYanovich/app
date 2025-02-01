@@ -2,38 +2,43 @@ import gleam/float
 import gleam/int
 import gleam/list
 import lustre/attribute
-import lustre/element
-import lustre/element/html
-import root.{type Model, type Msg, Fight, Hub}
+
+import root.{type Model, Fight, Hub}
+import sketch/lustre as sketch_lustre
 import update/responses.{hub_transition_key, volume_buttons}
+
+import sketch/css
+import sketch/css/length.{percent, rem, vh}
+
+// import sketch/lustre/element
+import sketch/lustre/element/html
 
 fn text_to_elements(text: List(String)) {
   use text <- list.map(text)
-  html.div([], [html.text(text)])
+  html.div_([], [html.text(text)])
 }
 
-pub fn view(model: Model) -> element.Element(Msg) {
+pub fn view(model: Model, stylesheet) {
+  use <- sketch_lustre.render(stylesheet, [sketch_lustre.node()])
   html.div(
-    [
-      attribute.style([
-        #("display", "grid"),
-        #("grid-template", "repeat(5, 1fr) / repeat(2, 1fr)"),
-        #("place-items", "center;"),
-        #("grid-auto-flow", "column"),
-        #("height", "100vh"),
-        #("background-color", "black"),
-        #("color", "white"),
-        #("font-size", "1.6rem"),
-        #("padding", "1rem"),
-        #("box-sizing", "border-box"),
-        #(
-          "background",
-          "linear-gradient(to left, rgb(255, 0, 0) "
-            <> model.hp |> float.round |> int.to_string
-            <> "%, rgba(0,0,0,1))",
-        ),
-      ]),
-    ],
+    css.class([
+      css.display("grid"),
+      css.grid_template("repeat(5, 1fr) / repeat(2, 1fr)"),
+      css.place_items("center"),
+      css.grid_auto_flow("column"),
+      css.height(vh(100)),
+      css.background_color("black"),
+      css.color("white"),
+      css.font_size(rem(1.6)),
+      css.padding(rem(1.0)),
+      css.box_sizing("border-box"),
+      css.background(
+        "linear-gradient(to left, rgb(255, 0, 0) "
+        <> model.hp |> float.round |> int.to_string
+        <> "%, rgba(0,0,0,1))",
+      ),
+    ]),
+    [],
     case model.mod {
       Hub -> {
         [
@@ -43,28 +48,26 @@ pub fn view(model: Model) -> element.Element(Msg) {
           "made by Oded Yanovich",
           "volume: " <> int.to_string(model.volume),
         ]
-        |> list.map(fn(text) { html.div([], [html.text(text)]) })
+        |> list.map(fn(text) { html.div(css.class([]), [], [html.text(text)]) })
         |> list.append([
           html.div(
-            [
-              attribute.style([
-                #("display", "grid"),
-                #("grid-auto-flow", "column"),
-                #("grid-template", "repeat(2, 1fr) / repeat(8, 1fr)"),
-                #("place-items", "center;"),
-                #("width", "100%;"),
-                #("height", "100%;"),
-              ]),
-              attribute.id("volume"),
-            ],
+            css.class([
+              css.display("grid"),
+              css.grid_auto_flow("column"),
+              css.grid_template("repeat(2, 1fr) / repeat(8, 1fr)"),
+              css.place_items("center"),
+              css.width(percent(100)),
+              css.height(percent(100)),
+            ]),
+            [attribute.id("volume")],
             volume_buttons
               |> list.flat_map(fn(button_and_volume_change_paired) {
                 [
-                  html.div(
+                  html.div_(
                     [attribute.class("ripple")],
-                    [button_and_volume_change_paired.0] |> text_to_elements(),
+                    [button_and_volume_change_paired.0] |> text_to_elements,
                   ),
-                  html.div(
+                  html.div_(
                     [attribute.class("ripple")],
                     [button_and_volume_change_paired.1 |> int.to_string]
                       |> text_to_elements,
@@ -83,7 +86,7 @@ pub fn view(model: Model) -> element.Element(Msg) {
         ]
         |> text_to_elements
         |> list.append([
-          html.img([attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg")]),
+          html.img_([attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg")]),
         ])
       }
     },
