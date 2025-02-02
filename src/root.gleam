@@ -2,15 +2,9 @@ import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 import lustre/effect
 
-pub type Fighting {
-  Before
-  During
-  Irrelevant
-}
-
 pub type Mods {
   Hub
-  Fight(Fighting)
+  Fight
 }
 
 pub type Msg {

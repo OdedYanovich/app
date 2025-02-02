@@ -9,12 +9,15 @@ import gleam/bool.{guard}
 import gleam/dynamic/decode
 import gleam/result.{try}
 
+@external(javascript, "../jsffi.mjs", "endHpLose")
+fn end_hp_lose(id: Int) -> Nil
+
 pub fn update(model: Model, msg: Msg) {
   use <-
     fn(branches) {
-      let #(keydown, response) = branches()
-      use latest_key_press <- keydown
-      use response <- response(latest_key_press)
+      let #(msg_is_keydown, response_found) = branches()
+      use latest_key_press <- msg_is_keydown
+      use response <- response_found(latest_key_press)
       response(Model(..model, latest_key_press:))
     }
   #(
@@ -40,9 +43,6 @@ pub fn update(model: Model, msg: Msg) {
 
 @external(javascript, "../jsffi.mjs", "keyboardEvents")
 pub fn keyboard_events(handler: fn(decode.Dynamic) -> any) -> Nil
-
-@external(javascript, "../jsffi.mjs", "endHpLose")
-fn end_hp_lose(id: Int) -> Nil
 
 pub fn init(_flags) {
   Model(

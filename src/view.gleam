@@ -77,7 +77,7 @@ pub fn view(model: Model, stylesheet) {
           ),
         ])
       }
-      Fight(_) -> {
+      Fight -> {
         [
           hub_transition_key <> " Hub",
           "latest key press: " <> model.latest_key_press,

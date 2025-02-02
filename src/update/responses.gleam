@@ -2,66 +2,53 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import lustre/effect
-import root.{
-  type Model, Before, Dmg, During, EndDmg, Fight, Hub, Model, StartDmg,
-}
+import root.{type Model, Dmg, EndDmg, Fight, Hub, Model, StartDmg}
 
 const command_keys_temp = ["w", "e", "r", "g", "b"]
 
 pub const hub_transition_key = "z"
 
-fn models_from_enconter_keys() {
+fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
-    case model.required_combo |> list.take(2) {
-      [required_key] if required_key == model.latest_key_press -> {
-        Model(
-          ..model,
-          required_combo: model.fight_character_set |> list.shuffle,
-          hp: model.hp +. 8.0,
-        )
-      }
-      [required_key, ..] if required_key == model.latest_key_press -> {
-        Model(..model, required_combo: model.required_combo |> list.drop(1))
-      }
-      _ ->
-        Model(
-          ..model,
-          required_combo: model.fight_character_set |> list.shuffle,
-          hp: model.hp -. 8.0,
-        )
+    let #(
+      mod,
+      responses,
+      //  effect
+    ) = case model.hp {
+      hp if hp >. 92.0 -> #(
+        Hub,
+        entering_hub() |> dict.from_list,
+        //  fn(_a) {
+      //   effect.none()
+      // }
+      )
+      _ -> #(
+        model.mod,
+        model.responses,
+        // , fn(dispatch) { dispatch(EndDmg) }
+      )
     }
+    Model(
+      ..model,
+      hp: model.hp
+        +. case model.required_combo |> list.take(1) {
+          [key] if key == model.latest_key_press -> 8.0
+          _ -> -8.0
+        },
+      required_combo: model.required_combo
+        |> list.drop(1)
+        |> list.append(model.fight_character_set |> list.sample(1)),
+      mod:,
+      responses:,
+    )
+    // |> add_effect(effect)
+    |> effectless()
   })
 }
 
-@external(javascript, "../jsffi.mjs", "startHpLose")
-fn start_hp_lose(handler: fn() -> any) -> Int
-
 fn entering_fight() {
-  {
-    use key_response <- list.map(models_from_enconter_keys())
-    #(key_response.0, fn(model) {
-      Model(
-        ..key_response.1(model),
-        mod: Fight(During),
-        responses: fight_during() |> dict.from_list,
-      )
-      |> add_effect(fn(dispatch) {
-        dispatch(StartDmg(start_hp_lose(fn() { dispatch(Dmg) })))
-      })
-    })
-  }
-  |> list.append([
-    #(hub_transition_key, fn(model) {
-      Model(..model, mod: Hub, responses: entering_hub() |> dict.from_list)
-      |> effectless
-    }),
-  ])
-}
-
-fn fight_during() {
-  models_from_enconter_keys()
-  |> list.map(fn(key_fn) { #(key_fn.0, fn(a) { key_fn.1(a) |> effectless }) })
+  fight_action_responses()
   |> list.append([
     #(hub_transition_key, fn(model) {
       Model(..model, mod: Hub, responses: entering_hub() |> dict.from_list)
@@ -86,6 +73,9 @@ fn change_volume(change, model: Model) {
   |> effectless
 }
 
+@external(javascript, "../jsffi.mjs", "startHpLose")
+fn start_hp_lose(handler: fn() -> any) -> Int
+
 pub fn entering_hub() {
   volume_buttons
   |> list.map(fn(key_val) { #(key_val.0, change_volume(key_val.1, _)) })
@@ -93,12 +83,14 @@ pub fn entering_hub() {
     #(hub_transition_key, fn(model) {
       Model(
         ..model,
-        mod: Fight(Before),
+        mod: Fight,
         fight_character_set: command_keys_temp,
         required_combo: command_keys_temp |> list.shuffle,
         responses: entering_fight() |> dict.from_list,
       )
-      |> effectless
+      |> add_effect(fn(dispatch) {
+        dispatch(StartDmg(start_hp_lose(fn() { dispatch(Dmg) })))
+      })
     }),
   ])
 }
