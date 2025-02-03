@@ -12,6 +12,9 @@ import gleam/result.{try}
 @external(javascript, "../jsffi.mjs", "endHpLose")
 fn end_hp_lose(id: Int) -> Nil
 
+@external(javascript, "../jsffi.mjs", "startHpLose")
+fn start_hp_lose(handler: fn() -> any) -> Int
+
 pub fn update(model: Model, msg: Msg) {
   use <-
     fn(branches) {
@@ -24,8 +27,14 @@ pub fn update(model: Model, msg: Msg) {
     fn(keyboard) {
       case msg {
         Keydown(key) -> keyboard(key)
-        Dmg -> #(Model(..model, hp: model.hp -. 0.01), effect.none())
-        StartDmg(id) -> #(Model(..model, interval_id: Some(id)), effect.none())
+        Dmg -> #(Model(..model, hp: model.hp -. 0.02), effect.none())
+        StartDmg(dispatch) -> #(
+          Model(
+            ..model,
+            interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })),
+          ),
+          effect.none(),
+        )
         EndDmg -> {
           end_hp_lose(model.interval_id |> option.unwrap(0))
           Model(..model, interval_id: None) |> effectless
@@ -42,7 +51,7 @@ pub fn update(model: Model, msg: Msg) {
 }
 
 @external(javascript, "../jsffi.mjs", "keyboardEvents")
-pub fn keyboard_events(handler: fn(decode.Dynamic) -> any) -> Nil
+fn keyboard_events(handler: fn(decode.Dynamic) -> any) -> Nil
 
 pub fn init(_flags) {
   Model(
@@ -66,7 +75,6 @@ pub fn init(_flags) {
       }),
     )
     use <- guard(repeat, Ok(Nil))
-    dispatch(Keydown(key))
-    Ok(Nil)
+    dispatch(Keydown(key)) |> Ok
   })
 }

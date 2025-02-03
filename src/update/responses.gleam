@@ -2,7 +2,7 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import lustre/effect
-import root.{type Model, Dmg, EndDmg, Fight, Hub, Model, StartDmg}
+import root.{type Model, EndDmg, Fight, Hub, Model, StartDmg}
 
 const command_keys_temp = ["w", "e", "r", "g", "b"]
 
@@ -11,23 +11,11 @@ pub const hub_transition_key = "z"
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
-    let #(
-      mod,
-      responses,
-      //  effect
-    ) = case model.hp {
-      hp if hp >. 92.0 -> #(
-        Hub,
-        entering_hub() |> dict.from_list,
-        //  fn(_a) {
-      //   effect.none()
-      // }
-      )
-      _ -> #(
-        model.mod,
-        model.responses,
-        // , fn(dispatch) { dispatch(EndDmg) }
-      )
+    let #(mod, responses, effect) = case model.hp {
+      hp if hp >. 92.0 -> #(Hub, entering_hub() |> dict.from_list, fn(dispatch) {
+        dispatch(EndDmg)
+      })
+      _ -> #(model.mod, model.responses, fn(_dispatch) { Nil })
     }
     Model(
       ..model,
@@ -42,8 +30,7 @@ fn fight_action_responses() {
       mod:,
       responses:,
     )
-    // |> add_effect(effect)
-    |> effectless()
+    |> add_effect(effect)
   })
 }
 
@@ -73,9 +60,6 @@ fn change_volume(change, model: Model) {
   |> effectless
 }
 
-@external(javascript, "../jsffi.mjs", "startHpLose")
-fn start_hp_lose(handler: fn() -> any) -> Int
-
 pub fn entering_hub() {
   volume_buttons
   |> list.map(fn(key_val) { #(key_val.0, change_volume(key_val.1, _)) })
@@ -89,7 +73,10 @@ pub fn entering_hub() {
         responses: entering_fight() |> dict.from_list,
       )
       |> add_effect(fn(dispatch) {
-        dispatch(StartDmg(start_hp_lose(fn() { dispatch(Dmg) })))
+        dispatch(StartDmg(
+          dispatch,
+          //start_hp_lose(fn() { dispatch(Dmg) })
+        ))
       })
     }),
   ])

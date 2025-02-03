@@ -9,7 +9,7 @@ pub type Mods {
 
 pub type Msg {
   Keydown(String)
-  StartDmg(Int)
+  StartDmg(fn(Msg) -> Nil)
   Dmg
   EndDmg
 }

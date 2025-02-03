@@ -1,16 +1,17 @@
 import gleam/float
+import gleam/function.{tap}
 import gleam/int
 import gleam/list
 import lustre/attribute
-
 import root.{type Model, Fight, Hub}
 import sketch/lustre as sketch_lustre
 import update/responses.{hub_transition_key, volume_buttons}
 
 import sketch/css
-import sketch/css/length.{percent, rem, vh}
+import sketch/css/length.{percent, px, rem, vh}
 
-// import sketch/lustre/element
+import sketch/lustre/element.{type Element}
+
 import sketch/lustre/element/html
 
 fn text_to_elements(text: List(String)) {
@@ -18,16 +19,18 @@ fn text_to_elements(text: List(String)) {
   html.div_([], [html.text(text)])
 }
 
+@external(javascript, "./jsffi.mjs", "t")
+fn t(c: Element(a)) -> Element(a)
+
 pub fn view(model: Model, stylesheet) {
   use <- sketch_lustre.render(stylesheet, [sketch_lustre.node()])
-  html.div(
+  html.canvas(
     css.class([
       css.display("grid"),
       css.grid_template("repeat(5, 1fr) / repeat(2, 1fr)"),
       css.place_items("center"),
       css.grid_auto_flow("column"),
       css.height(vh(100)),
-      css.background_color("black"),
       css.color("white"),
       css.font_size(rem(1.6)),
       css.padding(rem(1.0)),
@@ -38,7 +41,7 @@ pub fn view(model: Model, stylesheet) {
         <> "%, rgba(0,0,0,1))",
       ),
     ]),
-    [],
+    [attribute.id("canvas")],
     case model.mod {
       Hub -> {
         [
@@ -48,7 +51,7 @@ pub fn view(model: Model, stylesheet) {
           "made by Oded Yanovich",
           "volume: " <> int.to_string(model.volume),
         ]
-        |> list.map(fn(text) { html.div(css.class([]), [], [html.text(text)]) })
+        |> list.map(fn(text) { html.div_([], [html.text(text)]) })
         |> list.append([
           html.div(
             css.class([
@@ -79,7 +82,7 @@ pub fn view(model: Model, stylesheet) {
       }
       Fight -> {
         [
-          hub_transition_key <> " Hub",
+          // hub_transition_key <> " Hub",
           "latest key press: " <> model.latest_key_press,
           "required combo: "
             <> model.required_combo |> list.fold("", fn(a, b) { a <> b }),
@@ -90,5 +93,19 @@ pub fn view(model: Model, stylesheet) {
         ])
       }
     },
+    // |> list.append([
+  //   html.canvas(
+  //     css.class([
+  //       css.background_color("blue"),
+  //       css.width(rem(20.0)),
+  //       css.height(rem(20.0)),
+  //       css.top(px(300)),
+  //       css.left(px(300)),
+  //     ]),
+  //     [],
+  //     [],
+  //   ),
+  // ]),
   )
+  |> tap(t)
 }
