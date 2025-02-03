@@ -8,6 +8,9 @@ const command_keys_temp = ["w", "e", "r", "g", "b"]
 
 pub const hub_transition_key = "z"
 
+@external(javascript, "../jsffi.mjs", "t")
+fn t(a: fn(a) -> Nil) -> Nil
+
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
@@ -57,7 +60,7 @@ pub const volume_buttons = [
 
 fn change_volume(change, model: Model) {
   Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
-  |> effectless
+  |> add_effect(t)
 }
 
 pub fn entering_hub() {
