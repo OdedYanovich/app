@@ -27,5 +27,7 @@ pub type Model {
     responses: Dict(String, Response),
     hp: Float,
     interval_id: Option(Int),
+    unlocked_levels: Int,
+    selected_level: Int,
   )
 }

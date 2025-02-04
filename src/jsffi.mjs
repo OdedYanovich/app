@@ -1,11 +1,12 @@
 export function t(c) {
-    // const canvas = document.querySelector("canvas");
-    // const ctx = canvas.getContext("2d");
-    // console.log(c)
+    const canvas = document.querySelector("canvas");
+    const ctx = canvas.getContext("2d");
 
-    // ctx.font = "50px Arial";
-    // ctx.fillText("Hello World", 10, 40);
-    // return c
+    ctx.beginPath();
+    ctx.fillStyle = "white";
+    ctx.arc(20, 20, 1, 0., Math.PI * 2., true);
+    ctx.closePath();
+    ctx.fill();
 }
 export function keyboardEvents(handler) {
     addEventListener("keydown", handler);

@@ -55,15 +55,17 @@ fn keyboard_events(handler: fn(decode.Dynamic) -> any) -> Nil
 
 pub fn init(_flags) {
   Model(
-    Hub,
-    "F",
-    [],
-    [],
-    50,
-    entering_hub()
+    mod: Hub,
+    latest_key_press: "F",
+    required_combo: [],
+    fight_character_set: [],
+    volume: 50,
+    responses: entering_hub()
       |> dict.from_list,
-    50.0,
-    None,
+    hp: 50.0,
+    interval_id: None,
+    unlocked_levels: 3,
+    selected_level: 1,
   )
   |> add_effect(fn(dispatch) {
     use event <- keyboard_events

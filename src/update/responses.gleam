@@ -14,11 +14,19 @@ fn t(a: fn(a) -> Nil) -> Nil
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
-    let #(mod, responses, effect) = case model.hp {
-      hp if hp >. 92.0 -> #(Hub, entering_hub() |> dict.from_list, fn(dispatch) {
-        dispatch(EndDmg)
-      })
-      _ -> #(model.mod, model.responses, fn(_dispatch) { Nil })
+    let #(mod, responses, effect, unlocked_levels) = case model.hp {
+      hp if hp >. 92.0 -> #(
+        Hub,
+        entering_hub() |> dict.from_list,
+        fn(dispatch) { dispatch(EndDmg) },
+        model.unlocked_levels + 1,
+      )
+      _ -> #(
+        model.mod,
+        model.responses,
+        fn(_dispatch) { Nil },
+        model.unlocked_levels,
+      )
     }
     Model(
       ..model,
@@ -32,6 +40,7 @@ fn fight_action_responses() {
         |> list.append(model.fight_character_set |> list.sample(1)),
       mod:,
       responses:,
+      unlocked_levels:,
     )
     |> add_effect(effect)
   })
