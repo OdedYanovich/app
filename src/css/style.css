@@ -1,8 +1,7 @@
-
 html, body {
 	margin: 0;
-	width:100%;
-	height: 100%;
+	width: 100vw;
+	height: 100vh;
 	margin: 0;
 	overflow: hidden;
 	/* background-color: blue; */
@@ -19,9 +18,18 @@ html, body {
 	outline: 0;
 	border: 0;
 }
+/* #canvas { */
+	/* background: rgb(89, 0, 255); */
+	/* width: 100%;
+	height: 100%; */
+
+	/* border: 1px solid red; */
+	/* object-fit: contain; */
+/* } */
+
 @keyframes growAndFade {
 	0% {
-		opacity: .25;
+		opacity: 0.25;
 		transform: scale(0.8);
 	}
 

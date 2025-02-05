@@ -3,7 +3,7 @@ import gleam/float
 import gleam/int
 import gleam/list
 import lustre/attribute
-import root.{type Model, Fight, Hub}
+import root.{type Model, Fight, Hub, Init}
 import sketch/lustre as sketch_lustre
 import update/responses.{hub_transition_key, volume_buttons}
 
@@ -19,7 +19,7 @@ fn text_to_elements(text: List(String)) {
 
 pub fn view(model: Model, stylesheet) {
   use <- sketch_lustre.render(stylesheet, [sketch_lustre.node()])
-  html.div_([], [
+  html.div(css.class([css.width(vw(100)), css.height(vh(100))]), [], [
     html.canvas(
       css.class([
         css.position("absolute"),
@@ -27,13 +27,16 @@ pub fn view(model: Model, stylesheet) {
         css.height(vh(100)),
         css.background_color("black"),
       ]),
-      [],
+      [
+        attribute.style([#("width", "10"), #("height", "10")]),
+        attribute.id("canvas"),
+      ],
       [],
     ),
     html.div(
       css.class([
         css.position("absolute"),
-        css.width(percent(100)),
+        css.width(vw(100)),
         css.height(vh(100)),
         css.display("grid"),
         css.grid_template("repeat(5, 1fr) / repeat(2, 1fr)"),
@@ -44,14 +47,14 @@ pub fn view(model: Model, stylesheet) {
         css.padding(rem(1.0)),
         css.box_sizing("border-box"),
         css.background(
-          "linear-gradient(to left, rgb(255, 0, 0) "
+          "linear-gradient(to left, rgba(255, 0, 0,0.8) "
           <> model.hp |> float.round |> int.to_string
           <> "%, rgba(0,0,0,0))",
         ),
       ]),
-      [attribute.id("canvas")],
+      [],
       case model.mod {
-        Hub -> {
+        Init | Hub -> {
           [
             hub_transition_key <> " fight",
             "x reset dungeon",

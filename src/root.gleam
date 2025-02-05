@@ -5,6 +5,7 @@ import lustre/effect
 pub type Mods {
   Hub
   Fight
+  Init
 }
 
 pub type Msg {
