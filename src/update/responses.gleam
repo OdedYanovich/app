@@ -69,7 +69,7 @@ pub const volume_buttons = [
 
 fn change_volume(change, model: Model) {
   Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
-  |> add_effect(t)
+  |> effectless()
 }
 
 pub fn entering_hub() {

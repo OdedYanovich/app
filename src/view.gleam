@@ -19,18 +19,16 @@ fn text_to_elements(text: List(String)) {
 
 pub fn view(model: Model, stylesheet) {
   use <- sketch_lustre.render(stylesheet, [sketch_lustre.node()])
-  html.div(css.class([css.width(vw(100)), css.height(vh(100))]), [], [
+  html.div_([], [
     html.canvas(
       css.class([
         css.position("absolute"),
-        css.width(vw(100)),
-        css.height(vh(100)),
+        css.width(percent(100)),
+        css.height(percent(100)),
         css.background_color("black"),
+        css.object_fit("contain"),
       ]),
-      [
-        attribute.style([#("width", "10"), #("height", "10")]),
-        attribute.id("canvas"),
-      ],
+      [attribute.id("canvas")],
       [],
     ),
     html.div(
