@@ -3,7 +3,7 @@ import gleam/float
 import gleam/int
 import gleam/list
 import lustre/attribute
-import root.{type Model, Fight, Hub, Init}
+import root.{type Model, Fight, Hub}
 import sketch/lustre as sketch_lustre
 import update/responses.{hub_transition_key, volume_buttons}
 
@@ -44,15 +44,15 @@ pub fn view(model: Model, stylesheet) {
         css.font_size(rem(1.6)),
         css.padding(rem(1.0)),
         css.box_sizing("border-box"),
-        css.background(
-          "linear-gradient(to left, rgba(255, 0, 0,0.8) "
-          <> model.hp |> float.round |> int.to_string
-          <> "%, rgba(0,0,0,0))",
-        ),
+        // css.background(
+        //   "linear-gradient(to left, rgba(255, 0, 0,0.8) "
+        //   <> model.hp |> float.round |> int.to_string
+        //   <> "%, rgba(0,0,0,0))",
+        // ),
       ]),
       [],
       case model.mod {
-        Init | Hub -> {
+        Hub -> {
           [
             hub_transition_key <> " fight",
             "x reset dungeon",

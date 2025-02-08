@@ -5,7 +5,7 @@ import lustre/effect
 pub type Mods {
   Hub
   Fight
-  Init
+  // Init
 }
 
 pub type Msg {
@@ -30,5 +30,6 @@ pub type Model {
     interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
+    // particals: List(#(Float, Float)),
   )
 }

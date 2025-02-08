@@ -8,9 +8,6 @@ const command_keys_temp = ["w", "e", "r", "g", "b"]
 
 pub const hub_transition_key = "z"
 
-@external(javascript, "../jsffi.mjs", "t")
-fn t(a: fn(a) -> Nil) -> Nil
-
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {

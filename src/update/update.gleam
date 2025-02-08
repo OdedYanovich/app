@@ -53,7 +53,11 @@ pub fn update(model: Model, msg: Msg) {
 @external(javascript, "../jsffi.mjs", "keyboardEvents")
 fn keyboard_events(handler: fn(decode.Dynamic) -> any) -> Nil
 
+@external(javascript, "../jsffi.mjs", "setParticles")
+fn set_particles() -> Nil
+
 pub fn init(_flags) {
+  set_particles()
   Model(
     mod: Hub,
     latest_key_press: "F",
@@ -66,6 +70,7 @@ pub fn init(_flags) {
     interval_id: None,
     unlocked_levels: 3,
     selected_level: 1,
+    // particals: [],
   )
   |> add_effect(fn(dispatch) {
     use event <- keyboard_events
