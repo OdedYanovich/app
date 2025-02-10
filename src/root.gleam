@@ -13,6 +13,7 @@ pub type Msg {
   StartDmg(fn(Msg) -> Nil)
   Dmg
   EndDmg
+  Draw
 }
 
 type Response =
@@ -30,6 +31,6 @@ pub type Model {
     interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
-    // particals: List(#(Float, Float)),
+    particals: List(#(Float, Float)),
   )
 }

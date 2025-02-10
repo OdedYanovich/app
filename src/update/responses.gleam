@@ -81,12 +81,25 @@ pub fn entering_hub() {
         required_combo: command_keys_temp |> list.shuffle,
         responses: entering_fight() |> dict.from_list,
       )
-      |> add_effect(fn(dispatch) {
-        dispatch(StartDmg(
-          dispatch,
-          //start_hp_lose(fn() { dispatch(Dmg) })
-        ))
+      |> add_effect(fn(dispatch) { dispatch(StartDmg(dispatch)) })
+    }),
+  ])
+  |> list.append([
+    #("k", fn(model) {
+      Model(..model, selected_level: case model.selected_level {
+        1 -> 1
+        n -> n - 1
       })
+      |> effectless
+    }),
+  ])
+  |> list.append([
+    #("l", fn(model) {
+      Model(..model, selected_level: case model.selected_level {
+        n if n == model.unlocked_levels -> n
+        n -> n + 1
+      })
+      |> effectless
     }),
   ])
 }

@@ -1,13 +1,15 @@
+import gleam/bool.{guard}
 import gleam/dict
+import gleam/dynamic/decode
+import gleam/list
 import gleam/option.{None, Some}
+import gleam/result.{try}
 import gleam/string
 import lustre/effect
-import root.{type Model, type Msg, Dmg, EndDmg, Hub, Keydown, Model, StartDmg}
+import root.{
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, StartDmg,
+}
 import update/responses.{add_effect, effectless, entering_hub}
-
-import gleam/bool.{guard}
-import gleam/dynamic/decode
-import gleam/result.{try}
 
 @external(javascript, "../jsffi.mjs", "endHpLose")
 fn end_hp_lose(id: Int) -> Nil
@@ -16,48 +18,44 @@ fn end_hp_lose(id: Int) -> Nil
 fn start_hp_lose(handler: fn() -> any) -> Int
 
 pub fn update(model: Model, msg: Msg) {
-  use <-
-    fn(branches) {
-      let #(msg_is_keydown, response_found) = branches()
-      use latest_key_press <- msg_is_keydown
-      use response <- response_found(latest_key_press)
-      response(Model(..model, latest_key_press:))
-    }
-  #(
-    fn(keyboard) {
-      case msg {
-        Keydown(key) -> keyboard(key)
-        Dmg -> #(Model(..model, hp: model.hp -. 0.02), effect.none())
-        StartDmg(dispatch) -> #(
-          Model(
-            ..model,
-            interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })),
-          ),
-          effect.none(),
-        )
-        EndDmg -> {
-          end_hp_lose(model.interval_id |> option.unwrap(0))
-          Model(..model, interval_id: None) |> effectless
-        }
-      }
-    },
-    fn(key, response_to_key) {
+  case msg {
+    Keydown(key) -> {
       case model.responses |> dict.get(key |> string.lowercase) {
-        Ok(response) -> response_to_key(response)
+        Ok(response) -> response(Model(..model, latest_key_press: key))
         Error(_) -> model |> effectless
       }
-    },
-  )
+    }
+    Dmg -> #(Model(..model, hp: model.hp -. 0.02), effect.none())
+    StartDmg(dispatch) ->
+      Model(..model, interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })))
+      |> effectless
+    EndDmg -> {
+      end_hp_lose(model.interval_id |> option.unwrap(0))
+      Model(..model, interval_id: None) |> effectless
+    }
+    Draw -> {
+      draw(model.particals)
+      Model(
+        ..model,
+        particals: model.particals
+          |> list.map(fn(partical) { #(partical.0 +. 0.015, partical.1 -. 0.01) }),
+      )
+      |> effectless
+    }
+  }
 }
 
-@external(javascript, "../jsffi.mjs", "keyboardEvents")
-fn keyboard_events(handler: fn(decode.Dynamic) -> any) -> Nil
+@external(javascript, "../jsffi.mjs", "init")
+fn init_js(
+  draw draw: fn() -> Nil,
+  keydown keydown_event: fn(decode.Dynamic) -> any,
+) -> Nil
 
-@external(javascript, "../jsffi.mjs", "setParticles")
-fn set_particles() -> Nil
+@external(javascript, "../jsffi.mjs", "draw")
+fn draw(particles: List(#(Float, Float))) -> Nil
 
 pub fn init(_flags) {
-  set_particles()
+  let particals = [#(40.0, 20.0), #(80.0, 80.0), #(100.0, 100.0)]
   Model(
     mod: Hub,
     latest_key_press: "F",
@@ -70,10 +68,10 @@ pub fn init(_flags) {
     interval_id: None,
     unlocked_levels: 3,
     selected_level: 1,
-    // particals: [],
+    particals:,
   )
   |> add_effect(fn(dispatch) {
-    use event <- keyboard_events
+    use event <- init_js(fn() { dispatch(Draw) })
     use #(key, repeat) <- try(
       decode.run(event, {
         use key <- decode.field("key", decode.string)
