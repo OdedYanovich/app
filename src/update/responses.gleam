@@ -1,12 +1,12 @@
 import gleam/dict
-import gleam/int
 import gleam/list
-import lustre/effect
-import root.{type Model, EndDmg, Fight, Hub, Model, StartDmg}
+import root.{
+  type Model, EndDmg, Fight, Hub, Model, StartDmg, add_effect, effectless,
+  hub_transition_key,
+}
+import update/hub.{change_volume, volume_buttons}
 
 const command_keys_temp = ["w", "e", "r", "g", "b"]
-
-pub const hub_transition_key = "z"
 
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
@@ -53,22 +53,6 @@ fn entering_fight() {
   ])
 }
 
-pub const volume_buttons = [
-  #("q", -25),
-  #("w", -10),
-  #("e", -5),
-  #("r", -1),
-  #("t", 1),
-  #("y", 5),
-  #("u", 10),
-  #("i", 25),
-]
-
-fn change_volume(change, model: Model) {
-  Model(..model, volume: int.max(int.min(model.volume + change, 100), 0))
-  |> effectless()
-}
-
 pub fn entering_hub() {
   volume_buttons
   |> list.map(fn(key_val) { #(key_val.0, change_volume(key_val.1, _)) })
@@ -102,12 +86,4 @@ pub fn entering_hub() {
       |> effectless
     }),
   ])
-}
-
-pub fn add_effect(responses, effect) {
-  #(responses, effect.from(effect))
-}
-
-pub fn effectless(responses) {
-  #(responses, effect.none())
 }

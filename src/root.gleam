@@ -13,7 +13,7 @@ pub type Msg {
   StartDmg(fn(Msg) -> Nil)
   Dmg
   EndDmg
-  Draw
+  Draw(Float)
 }
 
 type Response =
@@ -32,5 +32,16 @@ pub type Model {
     unlocked_levels: Int,
     selected_level: Int,
     particals: List(#(Float, Float)),
+    timer: Float,
   )
+}
+
+pub const hub_transition_key = "z"
+
+pub fn add_effect(responses, effect) {
+  #(responses, effect.from(effect))
+}
+
+pub fn effectless(responses) {
+  #(responses, effect.none())
 }

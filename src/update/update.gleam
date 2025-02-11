@@ -8,8 +8,9 @@ import gleam/string
 import lustre/effect
 import root.{
   type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, StartDmg,
+  add_effect, effectless,
 }
-import update/responses.{add_effect, effectless, entering_hub}
+import update/responses.{entering_hub}
 
 @external(javascript, "../jsffi.mjs", "endHpLose")
 fn end_hp_lose(id: Int) -> Nil
@@ -33,12 +34,17 @@ pub fn update(model: Model, msg: Msg) {
       end_hp_lose(model.interval_id |> option.unwrap(0))
       Model(..model, interval_id: None) |> effectless
     }
-    Draw -> {
-      draw(model.particals)
+    Draw(elapsed) -> {
+      start_drawing()
+      model.particals |> list.map(draw)
       Model(
         ..model,
         particals: model.particals
-          |> list.map(fn(partical) { #(partical.0 +. 0.015, partical.1 -. 0.01) }),
+          |> list.map(fn(partical) { #(partical.0 +. 0.02, partical.1 +. 0.01) }),
+        timer: case model.timer >. elapsed {
+          True -> model.timer -. elapsed
+          False -> 0.0
+        },
       )
       |> effectless
     }
@@ -47,15 +53,17 @@ pub fn update(model: Model, msg: Msg) {
 
 @external(javascript, "../jsffi.mjs", "init")
 fn init_js(
-  draw draw: fn() -> Nil,
+  draw draw: fn(Float) -> Nil,
   keydown keydown_event: fn(decode.Dynamic) -> any,
 ) -> Nil
 
+@external(javascript, "../jsffi.mjs", "startDrawing")
+fn start_drawing() -> Nil
+
 @external(javascript, "../jsffi.mjs", "draw")
-fn draw(particles: List(#(Float, Float))) -> Nil
+fn draw(particles: #(Float, Float)) -> Nil
 
 pub fn init(_flags) {
-  let particals = [#(40.0, 20.0), #(80.0, 80.0), #(100.0, 100.0)]
   Model(
     mod: Hub,
     latest_key_press: "F",
@@ -64,14 +72,15 @@ pub fn init(_flags) {
     volume: 50,
     responses: entering_hub()
       |> dict.from_list,
-    hp: 50.0,
+    hp: 5.0,
     interval_id: None,
     unlocked_levels: 3,
     selected_level: 1,
-    particals:,
+    particals: [#(40.0, 20.0), #(80.0, 80.0), #(100.0, 100.0)],
+    timer: 0.0,
   )
   |> add_effect(fn(dispatch) {
-    use event <- init_js(fn() { dispatch(Draw) })
+    use event <- init_js(fn(t) { dispatch(Draw(t)) })
     use #(key, repeat) <- try(
       decode.run(event, {
         use key <- decode.field("key", decode.string)

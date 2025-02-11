@@ -1,37 +1,38 @@
 let canvas;
 let ctx;
-let start
+let start;
 export function init(drawParticles, keydownEvent) {
     requestAnimationFrame(() => {
+        canvas = document.getElementById("canvas");
+        ctx = canvas.getContext("2d");
+        sizeCanvas();
+        addEventListener("resize", sizeCanvas);
+        addEventListener("keydown", keydownEvent);
         function main(timeStamp) {
             requestAnimationFrame(main);
+            // Problematic if statement
             if (start === undefined) {
                 start = timeStamp;
             }
-            const elapsed = timeStamp - start;
-            drawParticles();
+            console.log(timeStamp - start)
+            drawParticles(timeStamp - start);
         }
-        canvas = document.getElementById("canvas");
-        ctx = canvas.getContext("2d");
-        ctx.canvas.width = window.innerWidth;
-        ctx.canvas.height = window.innerHeight;
         main();
     });
-    addEventListener("keydown", keydownEvent);
 }
-export function draw(particles) {
+export function startDrawing() {
     ctx.beginPath();
-    ctx.fillStyle = "black";
+    ctx.fillStyle = "rgba(0,0,0,0.02)";
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
     ctx.closePath();
+}
+export function draw(particle) {
     ctx.fillStyle = "blue";
-    for (const particle of particles) {
-        ctx.beginPath();
-        ctx.arc(particle[0], particle[1], 45, 0., Math.PI * 2.);
-        ctx.fill();
-        ctx.closePath();
-    }
+    ctx.beginPath();
+    ctx.arc(particle[0], particle[1], 5, 0., Math.PI * 2.);
+    ctx.fill();
+    ctx.closePath();
 }
 export function startHpLose(handler) {
     return setInterval(handler, 1);
@@ -39,13 +40,20 @@ export function startHpLose(handler) {
 export function endHpLose(id) {
     clearInterval(id);
 }
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  
-  // Additional logic to redraw graphics based on new size
+let w, h, scale;
+function sizeCanvas() {
+    w = innerWidth;
+    h = innerHeight;
+    scale = devicePixelRatio;
+    canvas.width = w * scale;
+    canvas.height = h * scale;
+    ctx.scale(scale, scale);
+    // ctx.canvas.width = innerWidth;
+    // ctx.canvas.height = innerHeight;
+    // canvas.width = innerWidth;
+    // canvas.height = innerHeight;
+    // ctx.scale(innerWidth, innerHeight);
 }
-window.addEventListener('resize', resizeCanvas);
 
 // viewport
 
