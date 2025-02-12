@@ -2,10 +2,11 @@ import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 import lustre/effect
 
+// import gleam/dynamic/decode
 pub type Mods {
   Hub
   Fight
-  // Init
+  Credit
 }
 
 pub type Msg {

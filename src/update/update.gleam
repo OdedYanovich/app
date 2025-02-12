@@ -34,15 +34,20 @@ pub fn update(model: Model, msg: Msg) {
       end_hp_lose(model.interval_id |> option.unwrap(0))
       Model(..model, interval_id: None) |> effectless
     }
-    Draw(elapsed) -> {
+    Draw(time_elapsed) -> {
       start_drawing()
       model.particals |> list.map(draw)
       Model(
         ..model,
         particals: model.particals
-          |> list.map(fn(partical) { #(partical.0 +. 0.02, partical.1 +. 0.01) }),
-        timer: case model.timer >. elapsed {
-          True -> model.timer -. elapsed
+          |> list.map(fn(partical) {
+            #(
+              partical.0 +. 0.001 *. time_elapsed,
+              partical.1 +. 0.001 *. time_elapsed,
+            )
+          }),
+        timer: case model.timer >. time_elapsed {
+          True -> model.timer -. time_elapsed
           False -> 0.0
         },
       )
@@ -53,8 +58,8 @@ pub fn update(model: Model, msg: Msg) {
 
 @external(javascript, "../jsffi.mjs", "init")
 fn init_js(
-  draw draw: fn(Float) -> Nil,
-  keydown keydown_event: fn(decode.Dynamic) -> any,
+  loop: fn(Float) -> Nil,
+  keydown_event: fn(decode.Dynamic) -> any,
 ) -> Nil
 
 @external(javascript, "../jsffi.mjs", "startDrawing")
@@ -80,7 +85,7 @@ pub fn init(_flags) {
     timer: 0.0,
   )
   |> add_effect(fn(dispatch) {
-    use event <- init_js(fn(t) { dispatch(Draw(t)) })
+    use event <- init_js(fn(time_elapsed) { dispatch(Draw(time_elapsed)) })
     use #(key, repeat) <- try(
       decode.run(event, {
         use key <- decode.field("key", decode.string)

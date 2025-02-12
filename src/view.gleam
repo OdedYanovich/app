@@ -2,7 +2,7 @@ import gleam/float
 import gleam/int
 import gleam/list
 import lustre/attribute
-import root.{type Model, Fight, Hub, hub_transition_key}
+import root.{type Model, Credit, Fight, Hub, hub_transition_key}
 import sketch/lustre as sketch_lustre
 import update/hub.{volume_buttons}
 
@@ -18,20 +18,17 @@ fn text_to_elements(text: List(String)) {
 
 pub fn view(model: Model, stylesheet) {
   use <- sketch_lustre.render(stylesheet, [sketch_lustre.node()])
-  html.div_([], [
+  html.div_([attribute.id("wrapper")], [
     html.canvas(
       css.class([
-        // css.position("absolute"),
-        css.image_rendering("crisp-edges"),
-        css.position("fixed"),
+        css.position("absolute"),
         css.background_color("black"),
         css.left(rem(0.0)),
         css.top(rem(0.0)),
         css.width(percent(100)),
         css.height(percent(100)),
-        // css.object_fit("contain"),
-      // css.object_fit("cover"),
-      // css.object_fit("fill"),
+        css.object_fit("cover"),
+        // css.image_rendering("crisp-edges"),
       ]),
       [attribute.id("canvas")],
       [],
@@ -112,8 +109,16 @@ pub fn view(model: Model, stylesheet) {
             hub_transition_key <> " Hub",
             "current level: " <> model.unlocked_levels |> int.to_string,
             "required combo: "
-              <> model.required_combo |> list.fold("", fn(a, b) { a <> b }),
+              <> model.required_combo
+            |> list.fold("", fn(state, addition) { state <> " " <> addition }),
+            "relevant buttons: "
+              <> model.fight_character_set
+            |> list.fold("", fn(state, addition) { state <> " " <> addition }),
           ]
+          |> text_to_elements
+        }
+        Credit -> {
+          [hub_transition_key <> " Hub", "todo"]
           |> text_to_elements
           |> list.append([
             html.img_([

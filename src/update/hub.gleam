@@ -1,4 +1,5 @@
 import gleam/int
+import gleam/list
 import root.{type Model, Model, effectless}
 
 pub const volume_buttons = [
@@ -15,8 +16,12 @@ pub const volume_buttons = [
 pub fn change_volume(change, model: Model) {
   Model(
     ..model,
-    timer: 100000.0,
+    timer: 500.0,
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
   |> effectless()
+}
+
+pub fn level_buttons(buttons, current_level) {
+  buttons |> list.take(current_level + 1)
 }

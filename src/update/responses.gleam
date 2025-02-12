@@ -1,12 +1,12 @@
 import gleam/dict
 import gleam/list
 import root.{
-  type Model, EndDmg, Fight, Hub, Model, StartDmg, add_effect, effectless,
-  hub_transition_key,
+  type Model, Credit, EndDmg, Fight, Hub, Model, StartDmg, add_effect,
+  effectless, hub_transition_key,
 }
-import update/hub.{change_volume, volume_buttons}
+import update/hub.{change_volume, level_buttons, volume_buttons}
 
-const command_keys_temp = ["w", "e", "r", "g", "b"]
+const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
@@ -61,11 +61,17 @@ pub fn entering_hub() {
       Model(
         ..model,
         mod: Fight,
-        fight_character_set: command_keys_temp,
-        required_combo: command_keys_temp |> list.shuffle,
+        fight_character_set: command_keys_temp
+          |> level_buttons(model.selected_level),
+        required_combo: command_keys_temp
+          |> level_buttons(model.selected_level)
+          |> list.shuffle,
         responses: entering_fight() |> dict.from_list,
       )
       |> add_effect(fn(dispatch) { dispatch(StartDmg(dispatch)) })
+    }),
+    #("c", fn(model) {
+      Model(..model, mod: Credit, responses: entering_credit()) |> effectless
     }),
   ])
   |> list.append([
@@ -86,4 +92,14 @@ pub fn entering_hub() {
       |> effectless
     }),
   ])
+}
+
+fn entering_credit() {
+  [
+    #(hub_transition_key, fn(model) {
+      Model(..model, mod: Hub, responses: entering_hub() |> dict.from_list)
+      |> effectless
+    }),
+  ]
+  |> dict.from_list
 }
