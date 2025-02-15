@@ -1,7 +1,7 @@
 import lustre
 // import sketch
 import update/update.{init, update}
-import view.{view}
+import view/view.{view}
 
 pub fn main() {
   // let assert Ok(stylesheet) = sketch.stylesheet(strategy: sketch.Ephemeral)

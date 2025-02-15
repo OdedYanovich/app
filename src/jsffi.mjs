@@ -30,6 +30,8 @@ function sizeCanvas() {
     // ctx.scale(pixelRatio, pixelRatio);
     canvas.width = 700;
     canvas.height = 700;
+    // canvas.tyle.width = "700px";
+    // canvas.style.height = "700px";
 }
 
 export function startDrawing() {

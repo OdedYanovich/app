@@ -3,12 +3,10 @@ import gleam/int
 import gleam/list
 import lustre/attribute
 import root.{type Model, Credit, Fight, Hub, hub_transition_key}
-
-// import sketch/lustre as sketch_lustre
 import update/hub.{volume_buttons}
-
-// import sketch/css
-// import sketch/css/length.{percent, px, rem, vh, vw}
+import view/css.{
+  Absolute, Black, BorderBox, Center, Column, Fr, Grid, Px, REM, VH, VW, White,
+}
 
 import lustre/element/html
 
@@ -18,34 +16,33 @@ fn text_to_elements(text: List(String)) {
 }
 
 pub fn view(model: Model) {
-  // use <- sketch_lustre.render(stylesheet, [sketch_lustre.node()])
-  html.div([attribute.id("wrapper")], [
+  html.div([], [
     html.canvas([
       attribute.id("canvas"),
       attribute.style([
-        #("position", "absolute"),
-        #("background-color", "black"),
-        #("left", "0rem"),
-        #("top", "0rem"),
-        #("width", "700px"),
-        #("height", "700px"),
+        css.position(Absolute),
+        css.background_color(Black),
+        css.left(REM(0.0)),
+        css.top(REM(0.0)),
+        css.width(Px(700)),
+        css.height(Px(700)),
         // #("object-fit", "cover"),
       ]),
     ]),
     html.div(
       [
         attribute.style([
-          #("position", "absolute"),
-          #("width", "100vw"),
-          #("height", "100vh"),
-          #("display", "grid"),
-          #("grid-template", "repeat(5,1fr) / repeat(2, 1fr)"),
-          #("place-items", "center"),
-          #("grid-auto-flow", "column"),
-          #("color", "white"),
-          #("font-size", "1.6rem"),
-          #("padding", "1rem"),
-          #("box-sizing", "border-box"),
+          css.position(Absolute),
+          css.width(VW(100)),
+          css.height(VH(100)),
+          css.display(Grid),
+          css.grid_template(#(5, Fr(1)), #(2, Fr(1))),
+          css.place_items(Center),
+          css.grid_auto_flow(Column),
+          css.color(White),
+          css.font_size(REM(1.6)),
+          css.padding(REM(1.0)),
+          css.box_sizing(BorderBox),
           #(
             "background",
             "linear-gradient(to left, rgba(255, 0, 0,0.8) "
