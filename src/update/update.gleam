@@ -7,8 +7,8 @@ import gleam/result.{try}
 import gleam/string
 import lustre/effect
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, StartDmg,
-  add_effect, effectless,
+  type Model, type Msg,  Dmg, Draw, EndDmg, Hub, Keydown, Model,
+  Resize, StartDmg, add_effect, effectless,
 }
 import update/responses.{entering_hub}
 
@@ -42,8 +42,8 @@ pub fn update(model: Model, msg: Msg) {
         particals: model.particals
           |> list.map(fn(partical) {
             #(
-              partical.0 +. 0.001 *. time_elapsed,
-              partical.1 +. 0.001 *. time_elapsed,
+              partical.0 +. 0.005 *. time_elapsed,
+              partical.1 +. 0.005 *. time_elapsed,
             )
           }),
         timer: case model.timer >. time_elapsed {
@@ -53,12 +53,17 @@ pub fn update(model: Model, msg: Msg) {
       )
       |> effectless
     }
+    Resize(viewport_x, viewport_y) ->
+      Model(..model, viewport_x:, viewport_y:)
+      // model
+      |> effectless
   }
 }
 
 @external(javascript, "../jsffi.mjs", "init")
 fn init_js(
   loop: fn(Float) -> Nil,
+  resize: fn(Int, Int) -> Nil,
   keydown_event: fn(decode.Dynamic) -> any,
 ) -> Nil
 
@@ -67,6 +72,9 @@ fn start_drawing() -> Nil
 
 @external(javascript, "../jsffi.mjs", "draw")
 fn draw(particles: #(Float, Float)) -> Nil
+
+@external(javascript, "../jsffi.mjs", "sandCanvasSize")
+fn get_viewport_size() -> #(Int, Int)
 
 pub fn init(_flags) {
   Model(
@@ -81,11 +89,16 @@ pub fn init(_flags) {
     interval_id: None,
     unlocked_levels: 3,
     selected_level: 1,
-    particals: [#(40.0, 20.0), #(80.0, 80.0), #(100.0, 100.0)],
+    particals: [#(40.0, 20.0), #(80.0, 140.0), #(100.0, 280.0)],
     timer: 0.0,
+    viewport_x: get_viewport_size().0,
+    viewport_y: get_viewport_size().1,
   )
   |> add_effect(fn(dispatch) {
-    use event <- init_js(fn(time_elapsed) { dispatch(Draw(time_elapsed)) })
+    use event <- init_js(
+      fn(time_elapsed) { dispatch(Draw(time_elapsed)) },
+      fn(viewport_x, viewport_y) { dispatch(Resize(viewport_x, viewport_y)) },
+    )
     use #(key, repeat) <- try(
       decode.run(event, {
         use key <- decode.field("key", decode.string)

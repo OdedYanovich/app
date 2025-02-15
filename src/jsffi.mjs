@@ -1,16 +1,18 @@
 let canvas;
 let ctx;
-// let elementsWrapper;
 let time;
 
-export function init(loop, keydownEvent) {
+export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
-        // elementsWrapper = document.getElementById("wrapper");
         canvas = document.getElementById("canvas");
         ctx = canvas.getContext("2d");
 
-        sizeCanvas();
-        addEventListener("resize", sizeCanvas);
+        addEventListener(
+            "resize",
+            () => {
+                resize(innerWidth, innerHeight);
+            },
+        );
         addEventListener("keydown", keydownEvent);
         time = performance.now();
         function main() {
@@ -21,17 +23,8 @@ export function init(loop, keydownEvent) {
         main();
     });
 }
-
-function sizeCanvas() {
-    // const pixelRatio = window.devicePixelRatio;
-
-    // canvas.width = pixelRatio * innerWidth;
-    // canvas.height = pixelRatio * innerHeight;
-    // ctx.scale(pixelRatio, pixelRatio);
-    canvas.width = 700;
-    canvas.height = 700;
-    // canvas.tyle.width = "700px";
-    // canvas.style.height = "700px";
+export function sandCanvasSize() {
+    return [innerWidth, innerHeight];
 }
 
 export function startDrawing() {
@@ -44,7 +37,7 @@ export function startDrawing() {
 export function draw(particle) {
     ctx.fillStyle = "blue";
     ctx.beginPath();
-    ctx.arc(particle[0], particle[1], 6, 0., Math.PI * 2.);
+    ctx.arc(particle[0], particle[1], 36, 0., Math.PI * 2.);
     ctx.fill();
     ctx.closePath();
 }

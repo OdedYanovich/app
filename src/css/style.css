@@ -6,7 +6,10 @@ html, body {
 	overflow: hidden;
 	/* background-color: blue; */
 }
-
+/* #canvas{
+	width: 700px;
+	height: 700px;
+} */
 #volume > div {
 	font-family: "Roboto", sans-serif;
 	position: relative;

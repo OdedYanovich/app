@@ -19,13 +19,18 @@ pub fn view(model: Model) {
   html.div([], [
     html.canvas([
       attribute.id("canvas"),
+      attribute.attribute("width", model.viewport_x |> int.to_string <> "px"),
+      attribute.attribute("height", model.viewport_y |> int.to_string <> "px"),
+      // attribute.property("width", "700px"),
+      // attribute.property("height", "700px"),
       attribute.style([
         css.position(Absolute),
         css.background_color(Black),
         css.left(REM(0.0)),
         css.top(REM(0.0)),
-        css.width(Px(700)),
-        css.height(Px(700)),
+        // css.width(VW(100)),
+        css.width(Px(model.viewport_x)),
+        css.height(Px(model.viewport_y)),
         // #("object-fit", "cover"),
       ]),
     ]),

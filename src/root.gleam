@@ -15,6 +15,7 @@ pub type Msg {
   Dmg
   EndDmg
   Draw(Float)
+  Resize(Int,Int)
 }
 
 type Response =
@@ -34,6 +35,8 @@ pub type Model {
     selected_level: Int,
     particals: List(#(Float, Float)),
     timer: Float,
+    viewport_x: Int,
+    viewport_y: Int,
   )
 }
 
