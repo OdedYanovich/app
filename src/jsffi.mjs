@@ -23,11 +23,13 @@ export function init(loop, keydownEvent) {
 }
 
 function sizeCanvas() {
-    const pixelRatio = window.devicePixelRatio;
+    // const pixelRatio = window.devicePixelRatio;
 
-    canvas.width = pixelRatio * innerWidth;
-    canvas.height = pixelRatio * innerHeight;
-    ctx.scale(pixelRatio, pixelRatio);
+    // canvas.width = pixelRatio * innerWidth;
+    // canvas.height = pixelRatio * innerHeight;
+    // ctx.scale(pixelRatio, pixelRatio);
+    canvas.width = 700;
+    canvas.height = 700;
 }
 
 export function startDrawing() {

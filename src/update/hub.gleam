@@ -19,7 +19,7 @@ pub fn change_volume(change, model: Model) {
     timer: 500.0,
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
-  |> effectless()
+  |> effectless
 }
 
 pub fn level_buttons(buttons, current_level) {
