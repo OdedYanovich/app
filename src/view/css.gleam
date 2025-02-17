@@ -14,6 +14,7 @@ pub fn position(position: Position) {
 pub type Color {
   Black
   White
+  Green
   RGBA(Length, Length, Length, Length)
 }
 
@@ -21,6 +22,7 @@ fn color_to_string(color) {
   case color {
     Black -> "black"
     White -> "white"
+    Green -> "green"
     RGBA(r, g, b, a) ->
       "rgba("
       <> r |> length_to_string
@@ -144,7 +146,6 @@ pub fn box_sizing(box_sizing) {
 pub type Angle {
   Left
 }
-
 // fn direction_to_string(direction) {
 //   case direction {
 //     Left -> "to left"

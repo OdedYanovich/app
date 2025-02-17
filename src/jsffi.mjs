@@ -1,12 +1,20 @@
-let canvas;
 let ctx;
 let time;
 
+// let imgCtx;
+// const img = new Image(8,8);
+// img.src = "../assets/foo.jpg";
+// img.crossOrigin = "anonymous";
+// const imgData = imgCtx.getImageData(0, 0, 80, 80);
+
+let img;
 export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
-        canvas = document.getElementById("canvas");
-        ctx = canvas.getContext("2d");
-
+        ctx = document.getElementById("canvas").getContext("2d");
+        // imgCtx = document.getElementById("imgCanvas").getContext("2d");
+        // imgCtx.drawImage(img, 0, 0);
+        // img = document.getElementById("img").files;
+        // console.log(img)
         addEventListener(
             "resize",
             () => {
@@ -26,13 +34,14 @@ export function init(loop, resize, keydownEvent) {
 export function sandCanvasSize() {
     return [innerWidth, innerHeight];
 }
-
 export function startDrawing() {
-    ctx.beginPath();
-    ctx.fillStyle = "rgba(0,0,0,0.02)";
-    ctx.rect(0, 0, window.innerWidth, window.innerHeight);
-    ctx.fill();
-    ctx.closePath();
+    // ctx.beginPath();
+    // ctx.fillStyle = "rgba(0,0,0,0.02)";
+    // ctx.rect(0, 0, innerWidth, innerHeight);
+    // ctx.fill();
+    // ctx.closePath();
+
+    // ctx.putImageData(imgData, 80, 80);
 }
 export function draw(particle) {
     ctx.fillStyle = "blue";

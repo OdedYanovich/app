@@ -5,7 +5,8 @@ import lustre/attribute
 import root.{type Model, Credit, Fight, Hub, hub_transition_key}
 import update/hub.{volume_buttons}
 import view/css.{
-  Absolute, Black, BorderBox, Center, Column, Fr, Grid, Px, REM, VH, VW, White,
+  Absolute, Black, BorderBox, Center, Column, Fr, Green, Grid, Px, REM, VH, VW,
+  White,
 }
 
 import lustre/element/html
@@ -34,6 +35,19 @@ pub fn view(model: Model) {
         // #("object-fit", "cover"),
       ]),
     ]),
+    // html.canvas([
+    //   attribute.id("imgCanvas"),
+    //   attribute.attribute("width", 1000 |> int.to_string <> "px"),
+    //   attribute.attribute("height", 1000 |> int.to_string <> "px"),
+    //   attribute.style([
+    //     css.position(Absolute),
+    //     css.background_color(Green),
+    //     css.left(Px(200)),
+    //     css.top(Px(400)),
+    //     css.width(Px(180)),
+    //     css.height(Px(180)),
+    //   ]),
+    // ]),
     html.div(
       [
         attribute.style([
@@ -134,5 +148,17 @@ pub fn view(model: Model) {
         }
       },
     ),
+    html.img([
+      attribute.src("/assets/foo.jpg"),
+      attribute.alt("man"),
+      attribute.style([#("width", "80px"), #("height", "80px")]),
+    ]),
+    // html.input([
+  //   attribute.type_("file"),
+  //   attribute.id("img"),
+  //   attribute.accept([".jpg"]),
+  //   // attribute.enctype("./assets"),
+  //   // attribute.value("/assets/foo.jpg"),
+  // ]),
   ])
 }
