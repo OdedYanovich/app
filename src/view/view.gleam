@@ -5,8 +5,7 @@ import lustre/attribute
 import root.{type Model, Credit, Fight, Hub, hub_transition_key}
 import update/hub.{volume_buttons}
 import view/css.{
-  Absolute, Black, BorderBox, Center, Column, Fr, Green, Grid, Px, REM, VH, VW,
-  White,
+  Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }
 
 import lustre/element/html
@@ -20,34 +19,15 @@ pub fn view(model: Model) {
   html.div([], [
     html.canvas([
       attribute.id("canvas"),
-      attribute.attribute("width", model.viewport_x |> int.to_string <> "px"),
-      attribute.attribute("height", model.viewport_y |> int.to_string <> "px"),
-      // attribute.property("width", "700px"),
-      // attribute.property("height", "700px"),
+      attribute.width(model.viewport_x),
+      attribute.height(model.viewport_y),
       attribute.style([
         css.position(Absolute),
         css.background_color(Black),
         css.left(REM(0.0)),
         css.top(REM(0.0)),
-        // css.width(VW(100)),
-        css.width(Px(model.viewport_x)),
-        css.height(Px(model.viewport_y)),
-        // #("object-fit", "cover"),
       ]),
     ]),
-    // html.canvas([
-    //   attribute.id("imgCanvas"),
-    //   attribute.attribute("width", 1000 |> int.to_string <> "px"),
-    //   attribute.attribute("height", 1000 |> int.to_string <> "px"),
-    //   attribute.style([
-    //     css.position(Absolute),
-    //     css.background_color(Green),
-    //     css.left(Px(200)),
-    //     css.top(Px(400)),
-    //     css.width(Px(180)),
-    //     css.height(Px(180)),
-    //   ]),
-    // ]),
     html.div(
       [
         attribute.style([
@@ -62,6 +42,8 @@ pub fn view(model: Model) {
           css.font_size(REM(1.6)),
           css.padding(REM(1.0)),
           css.box_sizing(BorderBox),
+          css.left(REM(0.0)),
+          css.top(REM(0.0)),
           #(
             "background",
             "linear-gradient(to left, rgba(255, 0, 0,0.8) "
@@ -148,17 +130,5 @@ pub fn view(model: Model) {
         }
       },
     ),
-    html.img([
-      attribute.src("/assets/foo.jpg"),
-      attribute.alt("man"),
-      attribute.style([#("width", "80px"), #("height", "80px")]),
-    ]),
-    // html.input([
-  //   attribute.type_("file"),
-  //   attribute.id("img"),
-  //   attribute.accept([".jpg"]),
-  //   // attribute.enctype("./assets"),
-  //   // attribute.value("/assets/foo.jpg"),
-  // ]),
   ])
 }

@@ -7,8 +7,8 @@ import gleam/result.{try}
 import gleam/string
 import lustre/effect
 import root.{
-  type Model, type Msg,  Dmg, Draw, EndDmg, Hub, Keydown, Model,
-  Resize, StartDmg, add_effect, effectless,
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, Resize, StartDmg,
+  add_effect, effectless,
 }
 import update/responses.{entering_hub}
 
@@ -55,7 +55,6 @@ pub fn update(model: Model, msg: Msg) {
     }
     Resize(viewport_x, viewport_y) ->
       Model(..model, viewport_x:, viewport_y:)
-      // model
       |> effectless
   }
 }

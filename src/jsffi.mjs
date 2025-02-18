@@ -1,20 +1,16 @@
 let ctx;
 let time;
+// canvas stuff
+// const img = new Image(8, 8);
+// img.src = "/assets/foo.png";
+// const imgCanvas = new OffscreenCanvas(8, 8);
+// const imgCtx = imgCanvas.getContext("2d");
+// imgCtx.drawImage(img, 0, 0);
+// const imgData = imgCtx.getImageData(0, 0, 8, 8);
 
-// let imgCtx;
-// const img = new Image(8,8);
-// img.src = "../assets/foo.jpg";
-// img.crossOrigin = "anonymous";
-// const imgData = imgCtx.getImageData(0, 0, 80, 80);
-
-let img;
 export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
         ctx = document.getElementById("canvas").getContext("2d");
-        // imgCtx = document.getElementById("imgCanvas").getContext("2d");
-        // imgCtx.drawImage(img, 0, 0);
-        // img = document.getElementById("img").files;
-        // console.log(img)
         addEventListener(
             "resize",
             () => {
@@ -35,16 +31,14 @@ export function sandCanvasSize() {
     return [innerWidth, innerHeight];
 }
 export function startDrawing() {
-    // ctx.beginPath();
-    // ctx.fillStyle = "rgba(0,0,0,0.02)";
-    // ctx.rect(0, 0, innerWidth, innerHeight);
-    // ctx.fill();
-    // ctx.closePath();
-
-    // ctx.putImageData(imgData, 80, 80);
+    ctx.beginPath();
+    ctx.fillStyle = "rgba(0,0,0,0.02)";
+    ctx.rect(0, 0, innerWidth, innerHeight);
+    ctx.fill();
+    ctx.closePath();
+    ctx.fillStyle = "blue";
 }
 export function draw(particle) {
-    ctx.fillStyle = "blue";
     ctx.beginPath();
     ctx.arc(particle[0], particle[1], 36, 0., Math.PI * 2.);
     ctx.fill();
