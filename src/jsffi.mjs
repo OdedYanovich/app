@@ -1,16 +1,12 @@
 let ctx;
 let time;
-// canvas stuff
-// const img = new Image(8, 8);
-// img.src = "/assets/foo.png";
-// const imgCanvas = new OffscreenCanvas(8, 8);
-// const imgCtx = imgCanvas.getContext("2d");
-// imgCtx.drawImage(img, 0, 0);
-// const imgData = imgCtx.getImageData(0, 0, 8, 8);
 
+const img = new Image(8, 8);
+img.src = "/assets/foo.png";
 export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
         ctx = document.getElementById("canvas").getContext("2d");
+        ctx.imageSmoothingEnabled = false;
         addEventListener(
             "resize",
             () => {
@@ -31,18 +27,22 @@ export function sandCanvasSize() {
     return [innerWidth, innerHeight];
 }
 export function startDrawing() {
-    ctx.beginPath();
-    ctx.fillStyle = "rgba(0,0,0,0.02)";
+    ctx.fillStyle = "rgba(0,0,0,255)";
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
-    ctx.closePath();
-    ctx.fillStyle = "blue";
 }
 export function draw(particle) {
-    ctx.beginPath();
-    ctx.arc(particle[0], particle[1], 36, 0., Math.PI * 2.);
-    ctx.fill();
-    ctx.closePath();
+    ctx.drawImage(
+        img,
+        particle.count % 8,
+        Math.floor(particle.count / 8),
+        1,
+        1,
+        particle.pos_x,
+        particle.pos_y,
+        50,
+        50,
+    );
 }
 export function startHpLose(handler) {
     return setInterval(handler, 1);

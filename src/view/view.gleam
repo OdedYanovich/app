@@ -46,7 +46,7 @@ pub fn view(model: Model) {
           css.top(REM(0.0)),
           #(
             "background",
-            "linear-gradient(to left, rgba(255, 0, 0,0.8) "
+            "linear-gradient(to left, rgba(0, 255, 0,0.3) "
               <> model.hp |> float.round |> int.to_string
               <> "%, rgba(0,0,0,0))",
           ),

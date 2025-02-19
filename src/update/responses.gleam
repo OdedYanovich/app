@@ -1,8 +1,8 @@
 import gleam/dict
 import gleam/list
 import root.{
-  type Model, Credit, EndDmg, Fight, Hub, Model, StartDmg, add_effect,
-  effectless, hub_transition_key,
+  type Model, Credit, Direction, EndDmg, Fight, Hub, Model, Pixel, StartDmg,
+  add_effect, effectless, hub_transition_key,
 }
 import update/hub.{change_volume, level_buttons, volume_buttons}
 
@@ -11,33 +11,63 @@ const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
-    let #(mod, responses, effect, unlocked_levels) = case model.hp {
-      hp if hp >. 92.0 -> #(
+    let #(
+      mod,
+      responses,
+      effect,
+      unlocked_levels,
+      hp,
+      moving_pixels,
+      drawn_pixel_count,
+    ) = case
+      model.required_combo |> list.take(1) == [model.latest_key_press],
+      model.hp
+    {
+      True, hp if hp >. 92.0 -> #(
         Hub,
         entering_hub() |> dict.from_list,
         fn(dispatch) { dispatch(EndDmg) },
         model.unlocked_levels + 1,
+        5.0,
+        model.moving_pixels,
+        model.drawn_pixel_count,
       )
-      _ -> #(
+      True, _ -> #(
         model.mod,
         model.responses,
         fn(_dispatch) { Nil },
         model.unlocked_levels,
+        model.hp +. 8.0,
+        model.moving_pixels
+          |> list.append([
+            #(
+              Pixel(800.0, 800.0, model.drawn_pixel_count),
+              Direction(0.0, -1.0, 800.0, 400.0),
+            ),
+          ]),
+        model.drawn_pixel_count + 1,
+      )
+      False, _ -> #(
+        model.mod,
+        model.responses,
+        fn(_dispatch) { Nil },
+        model.unlocked_levels,
+        model.hp -. 8.0,
+        model.moving_pixels,
+        model.drawn_pixel_count,
       )
     }
     Model(
       ..model,
-      hp: model.hp
-        +. case model.required_combo |> list.take(1) {
-          [key] if key == model.latest_key_press -> 8.0
-          _ -> -8.0
-        },
+      hp:,
       required_combo: model.required_combo
         |> list.drop(1)
         |> list.append(model.fight_character_set |> list.sample(1)),
       mod:,
       responses:,
       unlocked_levels:,
+      moving_pixels:,
+      drawn_pixel_count:,
     )
     |> add_effect(effect)
   })

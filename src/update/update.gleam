@@ -7,8 +7,8 @@ import gleam/result.{try}
 import gleam/string
 import lustre/effect
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, Resize, StartDmg,
-  add_effect, effectless,
+  type Model, type Msg, type Pixel, Direction, Dmg, Draw, EndDmg, Hub, Keydown,
+  Model, Pixel, Resize, StartDmg, add_effect, effectless,
 }
 import update/responses.{entering_hub}
 
@@ -35,15 +35,41 @@ pub fn update(model: Model, msg: Msg) {
       Model(..model, interval_id: None) |> effectless
     }
     Draw(time_elapsed) -> {
+      let speed = 0.05 *. time_elapsed
+      let #(stationary_pixels, moving_pixels) = case
+        list.first(model.moving_pixels)
+      {
+        Ok(last_pixel) if last_pixel.0.pos_y <. 400.0 -> {
+          #(
+            model.stationary_pixels
+              |> list.append([
+                Pixel(
+                  { last_pixel.0 }.pos_x,
+                  { last_pixel.0 }.pos_y,
+                  { last_pixel.0 }.count,
+                ),
+              ]),
+            model.moving_pixels |> list.drop(1),
+          )
+        }
+        _ -> #(model.stationary_pixels, model.moving_pixels)
+      }
       start_drawing()
-      model.particals |> list.map(draw)
+      model.stationary_pixels
+      |> list.append(model.moving_pixels |> list.map(fn(pixel) { pixel.0 }))
+      |> list.map(draw)
       Model(
         ..model,
-        particals: model.particals
-          |> list.map(fn(partical) {
+        stationary_pixels:,
+        moving_pixels: moving_pixels
+          |> list.map(fn(pixel) {
             #(
-              partical.0 +. 0.005 *. time_elapsed,
-              partical.1 +. 0.005 *. time_elapsed,
+              Pixel(
+                { pixel.0 }.pos_x +. { pixel.1 }.mov_x *. speed,
+                { pixel.0 }.pos_y +. { pixel.1 }.mov_y *. speed,
+                { pixel.0 }.count,
+              ),
+              pixel.1,
             )
           }),
         timer: case model.timer >. time_elapsed {
@@ -70,7 +96,7 @@ fn init_js(
 fn start_drawing() -> Nil
 
 @external(javascript, "../jsffi.mjs", "draw")
-fn draw(particles: #(Float, Float)) -> Nil
+fn draw(particles: Pixel) -> Nil
 
 @external(javascript, "../jsffi.mjs", "sandCanvasSize")
 fn get_viewport_size() -> #(Int, Int)
@@ -88,10 +114,12 @@ pub fn init(_flags) {
     interval_id: None,
     unlocked_levels: 3,
     selected_level: 1,
-    particals: [#(40.0, 20.0), #(80.0, 140.0), #(100.0, 280.0)],
+    stationary_pixels: [],
+    moving_pixels: [],
     timer: 0.0,
     viewport_x: get_viewport_size().0,
     viewport_y: get_viewport_size().1,
+    drawn_pixel_count: 0,
   )
   |> add_effect(fn(dispatch) {
     use event <- init_js(

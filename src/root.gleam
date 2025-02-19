@@ -15,7 +15,7 @@ pub type Msg {
   Dmg
   EndDmg
   Draw(Float)
-  Resize(Int,Int)
+  Resize(Int, Int)
 }
 
 type Response =
@@ -33,11 +33,21 @@ pub type Model {
     interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
-    particals: List(#(Float, Float)),
+    stationary_pixels: List(Pixel),
+    moving_pixels: List(#(Pixel, Direction)),
     timer: Float,
     viewport_x: Int,
     viewport_y: Int,
+    drawn_pixel_count: Int,
   )
+}
+
+pub type Pixel {
+  Pixel(pos_x: Float, pos_y: Float, count: Int)
+}
+
+pub type Direction {
+  Direction(mov_x: Float, mov_y: Float, end_x: Float, end_t: Float)
 }
 
 pub const hub_transition_key = "z"
