@@ -1,5 +1,5 @@
+import { pixel_dimensions, pixel_rows_columns } from "./root.mjs";
 let ctx;
-let time;
 
 const img = new Image(8, 8);
 img.src = "/assets/foo.png";
@@ -14,11 +14,9 @@ export function init(loop, resize, keydownEvent) {
             },
         );
         addEventListener("keydown", keydownEvent);
-        time = performance.now();
         function main() {
             requestAnimationFrame(main);
-            loop(performance.now() - time);
-            time = performance.now();
+            loop(performance.now());
         }
         main();
     });
@@ -31,17 +29,18 @@ export function startDrawing() {
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
 }
-export function draw(particle) {
+export function draw(x, y, pixel_id) {
     ctx.drawImage(
         img,
-        particle.count % 8,
-        Math.floor(particle.count / 8),
+        pixel_id % pixel_rows_columns,
+        Math.floor(pixel_id / pixel_rows_columns),
         1,
         1,
-        particle.pos_x,
-        particle.pos_y,
-        50,
-        50,
+        x,
+        y,
+        pixel_dimensions,
+        pixel_dimensions,
+        // 50,50
     );
 }
 export function startHpLose(handler) {
@@ -50,5 +49,3 @@ export function startHpLose(handler) {
 export function endHpLose(id) {
     clearInterval(id);
 }
-
-// import { bar } from "./app.mjs"; // Interop example

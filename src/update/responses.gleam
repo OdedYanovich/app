@@ -1,8 +1,8 @@
 import gleam/dict
 import gleam/list
 import root.{
-  type Model, Credit, Direction, EndDmg, Fight, Hub, Model, Pixel, StartDmg,
-  add_effect, effectless, hub_transition_key,
+  type Model, Credit, EndDmg, Fight, Hub, MPixel, Model, StartDmg, add_effect,
+  effectless, hub_transition_key, relative_position,
 }
 import update/hub.{change_volume, level_buttons, volume_buttons}
 
@@ -23,7 +23,7 @@ fn fight_action_responses() {
       model.required_combo |> list.take(1) == [model.latest_key_press],
       model.hp
     {
-      True, hp if hp >. 92.0 -> #(
+      True, hp if hp >. 96.0 -> #(
         Hub,
         entering_hub() |> dict.from_list,
         fn(dispatch) { dispatch(EndDmg) },
@@ -37,12 +37,14 @@ fn fight_action_responses() {
         model.responses,
         fn(_dispatch) { Nil },
         model.unlocked_levels,
-        model.hp +. 8.0,
+        model.hp +. 4.0,
         model.moving_pixels
           |> list.append([
-            #(
-              Pixel(800.0, 800.0, model.drawn_pixel_count),
-              Direction(0.0, -1.0, 800.0, 400.0),
+            MPixel(
+              relative_position(model.drawn_pixel_count)
+                |> fn(pos) { #(pos.0 +. 400.0, pos.1 +. 800.0) },
+              model.drawn_pixel_count,
+              0.0,
             ),
           ]),
         model.drawn_pixel_count + 1,

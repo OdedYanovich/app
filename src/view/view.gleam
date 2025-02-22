@@ -2,13 +2,12 @@ import gleam/float
 import gleam/int
 import gleam/list
 import lustre/attribute
+import lustre/element/html
 import root.{type Model, Credit, Fight, Hub, hub_transition_key}
 import update/hub.{volume_buttons}
 import view/css.{
   Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }
-
-import lustre/element/html
 
 fn text_to_elements(text: List(String)) {
   use text <- list.map(text)
@@ -16,7 +15,7 @@ fn text_to_elements(text: List(String)) {
 }
 
 pub fn view(model: Model) {
-  [
+  html.div([], [
     html.canvas([
       attribute.id("canvas"),
       attribute.width(model.viewport_x),
