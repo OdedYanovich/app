@@ -16,7 +16,7 @@ fn text_to_elements(text: List(String)) {
 }
 
 pub fn view(model: Model) {
-  html.div([], [
+  [
     html.canvas([
       attribute.id("canvas"),
       attribute.width(model.viewport_x),
