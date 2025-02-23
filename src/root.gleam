@@ -3,7 +3,6 @@ import gleam/int
 import gleam/option.{type Option}
 import lustre/effect
 
-// import gleam/dynamic/decode
 pub type Mods {
   Hub
   Fight
@@ -34,8 +33,8 @@ pub type Model {
     interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
-    stationary_pixels: List(StationaryPixel),
-    moving_pixels: List(MovingPixel),
+    stationary_pixels: List(Pixel),
+    moving_pixels: List(Pixel),
     timer: Float,
     program_duration: Float,
     viewport_x: Int,
@@ -44,13 +43,16 @@ pub type Model {
   )
 }
 
-pub type StationaryPixel {
-  Pixel(pos: Position, pixel_id: Int)
+pub type Pixel {
+  StationaryP(id: Int)
+  MovingP(id: Int, time_since_creation: Float)
 }
 
-pub type MovingPixel {
-  MPixel(pos: Position, pixel_id: Int, time_since_creation: Float)
-}
+pub const pixel_general_spawn_point = #(400.0, 800.0)
+
+pub const pixel_general_stoping_point = #(400.0, 400.0)
+
+pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
 
@@ -63,15 +65,8 @@ pub fn relative_position(pixel_id) {
   )
 }
 
-pub fn animation(start, end, duration) {
-  { end -. start } /. duration
-}
-
-type Position =
-  #(Float, Float)
-
-pub type Direction {
-  Direction(mov_x: Float, mov_y: Float, end_x: Float, end_t: Float)
+pub fn animation(start, end, time) {
+  { end -. start } /. { animation_end_time /. { animation_end_time -. time } }
 }
 
 pub const hub_transition_key = "z"

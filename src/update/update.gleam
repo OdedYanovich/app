@@ -6,8 +6,9 @@ import gleam/option.{None, Some}
 import gleam/result.{try}
 import gleam/string
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, MPixel, Model, Pixel,
-  Resize, StartDmg, add_effect, effectless,
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, MovingP, Resize,
+  StartDmg, StationaryP, add_effect, animation, animation_end_time, effectless,
+  pixel_general_spawn_point, pixel_general_stoping_point, relative_position,
 }
 import update/responses.{entering_hub}
 
@@ -21,36 +22,61 @@ pub fn update(model: Model, msg: Msg) {
   case msg {
     Draw(program_duration) -> {
       let time_elapsed = program_duration -. model.program_duration
-      let speed = 0.1 *. time_elapsed
       let #(stationary_pixels, moving_pixels) = case
         list.first(model.moving_pixels)
       {
-        Ok(last_pixel) if last_pixel.time_since_creation >. 3000.0 -> {
+        Ok(MovingP(pixel_id, time_since_creation))
+          if time_since_creation >. animation_end_time
+        -> {
           #(
             model.stationary_pixels
-              |> list.append([Pixel(last_pixel.pos, last_pixel.pixel_id)]),
+              |> list.append([StationaryP(pixel_id)]),
             model.moving_pixels |> list.drop(1),
           )
         }
         _ -> #(model.stationary_pixels, model.moving_pixels)
       }
       start_drawing()
+
       model.stationary_pixels
-      |> list.append(
-        model.moving_pixels
-        |> list.map(fn(pixel) { Pixel(pixel.pos, pixel.pixel_id) }),
-      )
-      |> list.map(fn(pixel) { draw(pixel.pos.0, pixel.pos.1, pixel.pixel_id) })
+      |> list.map(fn(pixel) {
+        let #(x, y) = relative_position(pixel.id)
+        draw(
+          pixel_general_stoping_point.0 +. x,
+          pixel_general_stoping_point.1 +. y,
+          pixel.id,
+        )
+      })
+
+      model.moving_pixels
+      |> list.map(fn(pixel) {
+        let assert MovingP(id, time_since_creation) = pixel
+        let #(x, y) = relative_position(id)
+        draw(
+          x
+            +. pixel_general_stoping_point.0
+            -. animation(
+            pixel_general_spawn_point.0,
+            pixel_general_stoping_point.0,
+            time_since_creation,
+          ),
+          y
+            +. pixel_general_stoping_point.1
+            -. animation(
+            pixel_general_spawn_point.1,
+            pixel_general_stoping_point.1,
+            time_since_creation,
+          ),
+          id,
+        )
+      })
       Model(
         ..model,
         stationary_pixels:,
         moving_pixels: moving_pixels
           |> list.map(fn(pixel) {
-            MPixel(
-              #(pixel.pos.0, pixel.pos.1 -. speed),
-              pixel.pixel_id,
-              pixel.time_since_creation +. time_elapsed,
-            )
+            let assert MovingP(id, time_since_creation) = pixel
+            MovingP(id, time_since_creation +. time_elapsed)
           }),
         timer: model.timer -. time_elapsed,
         program_duration:,
@@ -105,7 +131,7 @@ pub fn init(_flags) {
     hp: 5.0,
     interval_id: None,
     unlocked_levels: 3,
-    selected_level: 1,
+    selected_level: 2,
     stationary_pixels: [],
     moving_pixels: [],
     timer: 0.0,

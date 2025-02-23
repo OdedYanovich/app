@@ -1,8 +1,8 @@
 import gleam/dict
 import gleam/list
 import root.{
-  type Model, Credit, EndDmg, Fight, Hub, MPixel, Model, StartDmg, add_effect,
-  effectless, hub_transition_key, relative_position,
+  type Model, Credit, EndDmg, Fight, Hub, MovingP, Model, StartDmg, add_effect,
+  effectless, hub_transition_key, 
 }
 import update/hub.{change_volume, level_buttons, volume_buttons}
 
@@ -39,14 +39,7 @@ fn fight_action_responses() {
         model.unlocked_levels,
         model.hp +. 4.0,
         model.moving_pixels
-          |> list.append([
-            MPixel(
-              relative_position(model.drawn_pixel_count)
-                |> fn(pos) { #(pos.0 +. 400.0, pos.1 +. 800.0) },
-              model.drawn_pixel_count,
-              0.0,
-            ),
-          ]),
+          |> list.append([MovingP(model.drawn_pixel_count, 0.0)]),
         model.drawn_pixel_count + 1,
       )
       False, _ -> #(

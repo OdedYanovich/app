@@ -7,6 +7,7 @@ export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
         ctx = document.getElementById("canvas").getContext("2d");
         ctx.imageSmoothingEnabled = false;
+        ctx.fillStyle = "rgba(0,0,0,255)";
         addEventListener(
             "resize",
             () => {
@@ -25,7 +26,6 @@ export function sandCanvasSize() {
     return [innerWidth, innerHeight];
 }
 export function startDrawing() {
-    ctx.fillStyle = "rgba(0,0,0,255)";
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
 }
@@ -40,7 +40,6 @@ export function draw(x, y, pixel_id) {
         y,
         pixel_dimensions,
         pixel_dimensions,
-        // 50,50
     );
 }
 export function startHpLose(handler) {

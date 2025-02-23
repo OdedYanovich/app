@@ -53,14 +53,14 @@ pub fn view(model: Model) {
       ],
       case model.mod {
         Hub -> {
-          [
-            hub_transition_key <> " fight",
-            "x reset dungeon",
-            "c credits",
-            "made by Oded Yanovich",
-            "volume: " <> int.to_string(model.volume),
-          ]
-          |> list.map(fn(text) { html.div([], [html.text(text)]) })
+            [
+              hub_transition_key <> " fight",
+              "x reset dungeon",
+              "c credits",
+              "made by Oded Yanovich",
+              "volume: " <> model.volume |> int.to_string,
+            ]
+          |> text_to_elements
           |> list.append([
             html.div(
               [
@@ -81,12 +81,12 @@ pub fn view(model: Model) {
               volume_buttons
                 |> list.flat_map(fn(button__volume_change) {
                   [
-                    html.div([], [button__volume_change.0] |> text_to_elements),
-                    html.div(
-                      [],
-                      [button__volume_change.1 |> int.to_string]
-                        |> text_to_elements,
-                    ),
+                    html.div([], [button__volume_change.0 |> html.text]),
+                    html.div([], [
+                      button__volume_change.1
+                      |> int.to_string
+                      |> html.text,
+                    ]),
                   ]
                 }),
             ),
@@ -108,7 +108,7 @@ pub fn view(model: Model) {
         Fight -> {
           [
             hub_transition_key <> " Hub",
-            "current level: " <> model.unlocked_levels |> int.to_string,
+            "current level: " <> model.selected_level |> int.to_string,
             "required combo: "
               <> model.required_combo
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
