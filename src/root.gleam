@@ -53,18 +53,18 @@ pub type Pixel {
 
 pub const pixel_general_spawn_point = #(400.0, 800.0)
 
-pub const pixel_general_stoping_point = #(400.0, 400.0)
+pub const pixel_general_stopping_point = #(400.0, 400.0)
 
 pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
 
-pub const image_rows_columns = 8
-
+pub const image_rows = 8
+pub const image_columns = 8
 pub fn relative_position(pixel_id) {
   #(
-    { pixel_id % image_rows_columns } * pixel_dimensions |> int.to_float,
-    { pixel_id / image_rows_columns } * pixel_dimensions |> int.to_float,
+    { pixel_id % image_rows } * pixel_dimensions |> int.to_float,
+    { pixel_id / image_columns } * pixel_dimensions |> int.to_float,
   )
 }
 

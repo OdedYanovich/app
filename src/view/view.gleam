@@ -4,7 +4,7 @@ import gleam/list
 import lustre/attribute
 import lustre/element/html
 import root.{type Model, Credit, Fight, Hub, hub_transition_key}
-import update/hub.{volume_buttons}
+import responses/hub.{volume_buttons}
 import view/css.{
   Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }

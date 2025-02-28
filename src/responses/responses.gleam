@@ -3,9 +3,9 @@ import gleam/list
 import prng/random
 import root.{
   type Model, Credit, EndDmg, Fight, Hub, Model, MovingPixel, StartDmg,
-  add_effect, effectless, hub_transition_key, image_rows_columns,
+  add_effect, effectless, hub_transition_key, image_columns, image_rows,
 }
-import update/hub.{change_volume, level_buttons, volume_buttons}
+import responses/hub.{change_volume, level_buttons, volume_buttons}
 
 const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 
@@ -26,8 +26,8 @@ fn fight_action_responses() {
         )
         |> add_effect(fn(dispatch) { dispatch(EndDmg) })
       True, _ -> {
-        let #(column, seed) =
-          random.int(0, image_rows_columns - 1)
+        let #(selected_column, seed) =
+          random.int(0, image_columns - 1)
           |> random.step(model.seed)
         Model(
           ..model,
@@ -35,19 +35,27 @@ fn fight_action_responses() {
           moving_pixels: model.moving_pixels
             |> list.append([
               MovingPixel(
-                list.index_fold(model.drawn_pixels, 0, fn(acc, item, i) {
-                  case i == column {
-                    True -> item * image_rows_columns + column
-                    False -> acc
-                  }
-                }),
+                list.index_fold(
+                  model.drawn_pixels,
+                  0,
+                  fn(acc, raw_count, column_index) {
+                    case
+                      column_index == selected_column,
+                      raw_count <= image_rows
+                    {
+                      True, True -> raw_count * image_rows + selected_column
+                      True, False -> todo
+                      False, _ -> acc
+                    }
+                  },
+                ),
                 0.0,
               ),
             ]),
           drawn_pixel_count: model.drawn_pixel_count + 1,
           drawn_pixels: model.drawn_pixels
             |> list.index_map(fn(taken_rows, i) {
-              case i == column {
+              case i == selected_column {
                 True -> {
                   taken_rows + 1
                 }
@@ -128,6 +136,5 @@ fn entering_credit() {
   ]
   |> dict.from_list
 }
-
 // @external(javascript, "../jsffi.mjs", "indexing")
 // fn indexing(list: List(a), index: Int, fun: fn(a) -> b) -> b

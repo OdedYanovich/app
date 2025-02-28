@@ -1,6 +1,5 @@
 import lustre
-// import sketch
-import update/update.{init, update}
+import update.{init, update}
 import view/view.{view}
 
 pub fn main() {
