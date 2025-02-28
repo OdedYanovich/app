@@ -1,8 +1,9 @@
 import gleam/dict
 import gleam/list
+import prng/random
 import root.{
-  type Model, Credit, EndDmg, Fight, Hub, MovingP, Model, StartDmg, add_effect,
-  effectless, hub_transition_key, 
+  type Model, Credit, EndDmg, Fight, Hub, Model, MovingPixel, StartDmg,
+  add_effect, effectless, hub_transition_key, image_rows_columns,
 }
 import update/hub.{change_volume, level_buttons, volume_buttons}
 
@@ -11,60 +12,59 @@ const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
-    let #(
-      mod,
-      responses,
-      effect,
-      unlocked_levels,
-      hp,
-      moving_pixels,
-      drawn_pixel_count,
-    ) = case
+    case
       model.required_combo |> list.take(1) == [model.latest_key_press],
-      model.hp
+      model.drawn_pixel_count >= 64
     {
-      True, hp if hp >. 96.0 -> #(
-        Hub,
-        entering_hub() |> dict.from_list,
-        fn(dispatch) { dispatch(EndDmg) },
-        model.unlocked_levels + 1,
-        5.0,
-        model.moving_pixels,
-        model.drawn_pixel_count,
-      )
-      True, _ -> #(
-        model.mod,
-        model.responses,
-        fn(_dispatch) { Nil },
-        model.unlocked_levels,
-        model.hp +. 4.0,
-        model.moving_pixels
-          |> list.append([MovingP(model.drawn_pixel_count, 0.0)]),
-        model.drawn_pixel_count + 1,
-      )
-      False, _ -> #(
-        model.mod,
-        model.responses,
-        fn(_dispatch) { Nil },
-        model.unlocked_levels,
-        model.hp -. 8.0,
-        model.moving_pixels,
-        model.drawn_pixel_count,
-      )
+      True, True ->
+        Model(
+          ..model,
+          mod: Hub,
+          responses: entering_hub() |> dict.from_list,
+          unlocked_levels: model.unlocked_levels + 1,
+          hp: 5.0,
+        )
+        |> add_effect(fn(dispatch) { dispatch(EndDmg) })
+      True, _ -> {
+        let #(column, seed) =
+          random.int(0, image_rows_columns - 1)
+          |> random.step(model.seed)
+        Model(
+          ..model,
+          hp: model.hp +. 14.0,
+          moving_pixels: model.moving_pixels
+            |> list.append([
+              MovingPixel(
+                list.index_fold(model.drawn_pixels, 0, fn(acc, item, i) {
+                  case i == column {
+                    True -> item * image_rows_columns + column
+                    False -> acc
+                  }
+                }),
+                0.0,
+              ),
+            ]),
+          drawn_pixel_count: model.drawn_pixel_count + 1,
+          drawn_pixels: model.drawn_pixels
+            |> list.index_map(fn(taken_rows, i) {
+              case i == column {
+                True -> {
+                  taken_rows + 1
+                }
+                False -> taken_rows
+              }
+            }),
+          seed:,
+          required_combo: model.required_combo
+            |> list.drop(1)
+            |> list.append(model.fight_character_set |> list.sample(1)),
+        )
+        |> add_effect(fn(_dispatch) { Nil })
+      }
+      False, _ ->
+        Model(..model, hp: model.hp -. 8.0)
+        |> add_effect(fn(_dispatch) { Nil })
     }
-    Model(
-      ..model,
-      hp:,
-      required_combo: model.required_combo
-        |> list.drop(1)
-        |> list.append(model.fight_character_set |> list.sample(1)),
-      mod:,
-      responses:,
-      unlocked_levels:,
-      moving_pixels:,
-      drawn_pixel_count:,
-    )
-    |> add_effect(effect)
   })
 }
 
@@ -128,3 +128,6 @@ fn entering_credit() {
   ]
   |> dict.from_list
 }
+
+// @external(javascript, "../jsffi.mjs", "indexing")
+// fn indexing(list: List(a), index: Int, fun: fn(a) -> b) -> b

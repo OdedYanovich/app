@@ -1,4 +1,4 @@
-import { pixel_dimensions, pixel_rows_columns } from "./root.mjs";
+import { pixel_dimensions, image_rows_columns } from "./root.mjs";
 let ctx;
 
 const img = new Image(8, 8);
@@ -32,8 +32,8 @@ export function startDrawing() {
 export function draw(x, y, pixel_id) {
     ctx.drawImage(
         img,
-        pixel_id % pixel_rows_columns,
-        Math.floor(pixel_id / pixel_rows_columns),
+        pixel_id % image_rows_columns,
+        Math.floor(pixel_id / image_rows_columns),
         1,
         1,
         x,
@@ -48,3 +48,4 @@ export function startHpLose(handler) {
 export function endHpLose(id) {
     clearInterval(id);
 }
+export function random(max){}

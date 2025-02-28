@@ -2,6 +2,7 @@ import gleam/dict.{type Dict}
 import gleam/int
 import gleam/option.{type Option}
 import lustre/effect
+import prng/seed
 
 pub type Mods {
   Hub
@@ -40,12 +41,14 @@ pub type Model {
     viewport_x: Int,
     viewport_y: Int,
     drawn_pixel_count: Int,
+    drawn_pixels: List(Int),
+    seed: seed.Seed,
   )
 }
 
 pub type Pixel {
-  StationaryP(id: Int)
-  MovingP(id: Int, time_since_creation: Float)
+  StationaryPixel(id: Int)
+  MovingPixel(id: Int, time_since_creation: Float)
 }
 
 pub const pixel_general_spawn_point = #(400.0, 800.0)
@@ -56,12 +59,12 @@ pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
 
-pub const pixel_rows_columns = 8
+pub const image_rows_columns = 8
 
 pub fn relative_position(pixel_id) {
   #(
-    { pixel_id % pixel_rows_columns } * pixel_dimensions |> int.to_float,
-    { pixel_id / pixel_rows_columns } * pixel_dimensions |> int.to_float,
+    { pixel_id % image_rows_columns } * pixel_dimensions |> int.to_float,
+    { pixel_id / image_rows_columns } * pixel_dimensions |> int.to_float,
   )
 }
 

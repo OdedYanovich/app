@@ -5,10 +5,12 @@ import gleam/list
 import gleam/option.{None, Some}
 import gleam/result.{try}
 import gleam/string
+import prng/seed
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, MovingP, Resize,
-  StartDmg, StationaryP, add_effect, animation, animation_end_time, effectless,
-  pixel_general_spawn_point, pixel_general_stoping_point, relative_position,
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, MovingPixel,
+  Resize, StartDmg, add_effect, animation, animation_end_time, effectless,
+  image_rows_columns, pixel_general_spawn_point, pixel_general_stoping_point,
+  relative_position,
 }
 import update/responses.{entering_hub}
 
@@ -25,12 +27,12 @@ pub fn update(model: Model, msg: Msg) {
       let #(stationary_pixels, moving_pixels) = case
         list.first(model.moving_pixels)
       {
-        Ok(MovingP(pixel_id, time_since_creation))
+        Ok(MovingPixel(pixel_id, time_since_creation))
           if time_since_creation >. animation_end_time
         -> {
           #(
             model.stationary_pixels
-              |> list.append([StationaryP(pixel_id)]),
+              |> list.append([root.StationaryPixel(pixel_id)]),
             model.moving_pixels |> list.drop(1),
           )
         }
@@ -50,7 +52,7 @@ pub fn update(model: Model, msg: Msg) {
 
       model.moving_pixels
       |> list.map(fn(pixel) {
-        let assert MovingP(id, time_since_creation) = pixel
+        let assert MovingPixel(id, time_since_creation) = pixel
         let #(x, y) = relative_position(id)
         draw(
           x
@@ -75,8 +77,8 @@ pub fn update(model: Model, msg: Msg) {
         stationary_pixels:,
         moving_pixels: moving_pixels
           |> list.map(fn(pixel) {
-            let assert MovingP(id, time_since_creation) = pixel
-            MovingP(id, time_since_creation +. time_elapsed)
+            let assert MovingPixel(id, time_since_creation) = pixel
+            MovingPixel(id, time_since_creation +. time_elapsed)
           }),
         timer: model.timer -. time_elapsed,
         program_duration:,
@@ -139,6 +141,8 @@ pub fn init(_flags) {
     viewport_x: get_viewport_size().0,
     viewport_y: get_viewport_size().1,
     drawn_pixel_count: 0,
+    drawn_pixels: list.repeat(0, image_rows_columns),
+    seed: seed.random(),
   )
   |> add_effect(fn(dispatch) {
     use event <- init_js(

@@ -108,10 +108,10 @@ pub fn view(model: Model) {
         Fight -> {
           [
             hub_transition_key <> " Hub",
-            "current level: " <> model.selected_level |> int.to_string,
             "required combo: "
               <> model.required_combo
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
+            "current level: " <> model.selected_level |> int.to_string,
             "relevant buttons: "
               <> model.fight_character_set
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
