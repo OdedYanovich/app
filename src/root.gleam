@@ -41,7 +41,7 @@ pub type Model {
     viewport_x: Int,
     viewport_y: Int,
     drawn_pixel_count: Int,
-    drawn_pixels: List(Int),
+    drawn_pixels: List(Column),
     seed: seed.Seed,
   )
 }
@@ -49,6 +49,10 @@ pub type Model {
 pub type Pixel {
   StationaryPixel(id: Int)
   MovingPixel(id: Int, time_since_creation: Float)
+}
+
+pub type Column {
+  Column(stationary: Int, moving: List(Float))
 }
 
 pub const pixel_general_spawn_point = #(400.0, 800.0)
@@ -60,7 +64,9 @@ pub const animation_end_time = 3000.0
 pub const pixel_dimensions = 50
 
 pub const image_rows = 8
+
 pub const image_columns = 8
+
 pub fn relative_position(pixel_id) {
   #(
     { pixel_id % image_rows } * pixel_dimensions |> int.to_float,

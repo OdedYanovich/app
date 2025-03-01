@@ -1,5 +1,4 @@
 import draw/draw.{draw_frame}
-import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/list
@@ -9,8 +8,8 @@ import gleam/string
 import prng/seed
 import responses/responses.{entering_hub}
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, Resize, StartDmg,
-  add_effect, effectless, image_rows,
+  type Column, type Model, type Msg, Column, Dmg, Draw, EndDmg, Hub, Keydown,
+  Model, Resize, StartDmg, add_effect, effectless, image_rows,
 }
 
 @external(javascript, "../jsffi.mjs", "endHpLose")
@@ -73,7 +72,7 @@ pub fn init(_flags) {
     viewport_x: get_viewport_size().0,
     viewport_y: get_viewport_size().1,
     drawn_pixel_count: 0,
-    drawn_pixels: list.repeat(0, image_rows),
+    drawn_pixels: #(list.repeat(Column(0, []), 8), list.repeat(False), 8),
     seed: seed.random(),
   )
   |> add_effect(fn(dispatch) {
@@ -88,7 +87,9 @@ pub fn init(_flags) {
         decode.success(#(key, repeat))
       }),
     )
-    use <- guard(repeat, Ok(Nil))
-    dispatch(Keydown(key)) |> Ok
+    case repeat {
+      True -> Ok(Nil)
+      False -> dispatch(Keydown(key)) |> Ok
+    }
   })
 }
