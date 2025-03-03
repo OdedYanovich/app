@@ -1,5 +1,4 @@
 import gleam/dict.{type Dict}
-import gleam/int
 import gleam/option.{type Option}
 import lustre/effect
 import prng/seed
@@ -34,8 +33,6 @@ pub type Model {
     interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
-    stationary_pixels: List(Pixel),
-    moving_pixels: List(Pixel),
     timer: Float,
     program_duration: Float,
     viewport_x: Int,
@@ -55,9 +52,9 @@ pub type Column {
   Column(stationary: Int, moving: List(Float))
 }
 
-pub const pixel_general_spawn_point = #(400.0, 800.0)
+pub const pixel_spawn_offset = #(400.0, 800.0)
 
-pub const pixel_general_stopping_point = #(400.0, 400.0)
+pub const pixel_stopping_offset = #(400.0, 400.0)
 
 pub const animation_end_time = 3000.0
 
@@ -67,12 +64,6 @@ pub const image_rows = 8
 
 pub const image_columns = 8
 
-pub fn relative_position(pixel_id) {
-  #(
-    { pixel_id % image_rows } * pixel_dimensions |> int.to_float,
-    { pixel_id / image_columns } * pixel_dimensions |> int.to_float,
-  )
-}
 
 pub fn animation(start, end, time) {
   { end -. start } /. { animation_end_time /. { animation_end_time -. time } }

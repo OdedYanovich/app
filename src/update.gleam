@@ -9,13 +9,13 @@ import prng/seed
 import responses/responses.{entering_hub}
 import root.{
   type Column, type Model, type Msg, Column, Dmg, Draw, EndDmg, Hub, Keydown,
-  Model, Resize, StartDmg, add_effect, effectless, image_rows,
+  Model, Resize, StartDmg, add_effect, effectless,
 }
 
-@external(javascript, "../jsffi.mjs", "endHpLose")
+@external(javascript, "./jsffi.mjs", "endHpLose")
 fn end_hp_lose(id: Int) -> Nil
 
-@external(javascript, "../jsffi.mjs", "startHpLose")
+@external(javascript, "./jsffi.mjs", "startHpLose")
 fn start_hp_lose(handler: fn() -> any) -> Int
 
 pub fn update(model: Model, msg: Msg) {
@@ -42,14 +42,14 @@ pub fn update(model: Model, msg: Msg) {
   }
 }
 
-@external(javascript, "../jsffi.mjs", "init")
+@external(javascript, "./jsffi.mjs", "init")
 fn init_js(
   loop: fn(Float) -> Nil,
   resize: fn(Int, Int) -> Nil,
   keydown_event: fn(decode.Dynamic) -> any,
 ) -> Nil
 
-@external(javascript, "../jsffi.mjs", "sandCanvasSize")
+@external(javascript, "./jsffi.mjs", "sandCanvasSize")
 fn get_viewport_size() -> #(Int, Int)
 
 pub fn init(_flags) {
@@ -65,14 +65,12 @@ pub fn init(_flags) {
     interval_id: None,
     unlocked_levels: 3,
     selected_level: 2,
-    stationary_pixels: [],
-    moving_pixels: [],
     timer: 0.0,
     program_duration: 0.0,
     viewport_x: get_viewport_size().0,
     viewport_y: get_viewport_size().1,
     drawn_pixel_count: 0,
-    drawn_pixels: #(list.repeat(Column(0, []), 8), list.repeat(False), 8),
+    drawn_pixels: list.repeat(Column(0, []), 8),
     seed: seed.random(),
   )
   |> add_effect(fn(dispatch) {
