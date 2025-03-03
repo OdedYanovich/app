@@ -3,8 +3,8 @@ import gleam/int
 import gleam/list
 import lustre/attribute
 import lustre/element/html
-import root.{type Model, Credit, Fight, Hub, hub_transition_key}
 import responses/hub.{volume_buttons}
+import root.{type Model, Credit, Fight, Hub, hub_transition_key}
 import view/css.{
   Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }
@@ -18,8 +18,8 @@ pub fn view(model: Model) {
   html.div([], [
     html.canvas([
       attribute.id("canvas"),
-      attribute.width(model.viewport_x),
-      attribute.height(model.viewport_y),
+      attribute.width(model.viewport_width),
+      attribute.height(model.viewport_height),
       attribute.style([
         css.position(Absolute),
         css.background_color(Black),
@@ -53,13 +53,13 @@ pub fn view(model: Model) {
       ],
       case model.mod {
         Hub -> {
-            [
-              hub_transition_key <> " fight",
-              "x reset dungeon",
-              "c credits",
-              "made by Oded Yanovich",
-              "volume: " <> model.volume |> int.to_string,
-            ]
+          [
+            hub_transition_key <> " fight",
+            "x reset dungeon",
+            "c credits",
+            "made by Oded Yanovich",
+            "volume: " <> model.volume |> int.to_string,
+          ]
           |> text_to_elements
           |> list.append([
             html.div(
@@ -72,7 +72,9 @@ pub fn view(model: Model) {
                   #("width", "100%"),
                   #("height", "100%"),
                   #("place-items", "center"),
-                  #("background-color", case model.timer >. 0.0 {
+                  #("background-color", case
+                    model.timer >. model.program_duration
+                  {
                     True -> "green"
                     False -> "blue"
                   }),

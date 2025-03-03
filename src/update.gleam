@@ -20,7 +20,8 @@ fn start_hp_lose(handler: fn() -> any) -> Int
 
 pub fn update(model: Model, msg: Msg) {
   case msg {
-    Draw(program_duration) -> draw_frame(model, program_duration)
+    Draw(program_duration) ->
+      draw_frame(model, program_duration) |> root.effectless
 
     Keydown(key) -> {
       case model.responses |> dict.get(key |> string.lowercase) {
@@ -30,15 +31,17 @@ pub fn update(model: Model, msg: Msg) {
     }
     Dmg -> Model(..model, hp: model.hp -. 0.02) |> effectless
     StartDmg(dispatch) ->
-      Model(..model, interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })))
+      Model(
+        ..model,
+        hp_lose_interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })),
+      )
       |> effectless
     EndDmg -> {
-      end_hp_lose(model.interval_id |> option.unwrap(0))
-      Model(..model, interval_id: None) |> effectless
+      end_hp_lose(model.hp_lose_interval_id |> option.unwrap(0))
+      Model(..model, hp_lose_interval_id: None) |> effectless
     }
-    Resize(viewport_x, viewport_y) ->
-      Model(..model, viewport_x:, viewport_y:)
-      |> effectless
+    Resize(viewport_width, viewport_height) ->
+      Model(..model, viewport_width:, viewport_height:) |> effectless
   }
 }
 
@@ -62,16 +65,18 @@ pub fn init(_flags) {
     responses: entering_hub()
       |> dict.from_list,
     hp: 5.0,
-    interval_id: None,
+    hp_lose_interval_id: None,
     unlocked_levels: 3,
     selected_level: 2,
     timer: 0.0,
     program_duration: 0.0,
-    viewport_x: get_viewport_size().0,
-    viewport_y: get_viewport_size().1,
+    viewport_width: get_viewport_size().0,
+    viewport_height: get_viewport_size().1,
     drawn_pixel_count: 0,
     drawn_pixels: list.repeat(Column(0, []), 8),
     seed: seed.random(),
+    full_columns: 0,
+    // effect: effect.none(),
   )
   |> add_effect(fn(dispatch) {
     use event <- init_js(

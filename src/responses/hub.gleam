@@ -16,7 +16,7 @@ pub const volume_buttons = [
 pub fn change_volume(change, model: Model) {
   Model(
     ..model,
-    timer: 500.0,
+    timer: model.program_duration +. 500.0,
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
   |> effectless

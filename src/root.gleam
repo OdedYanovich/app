@@ -30,22 +30,19 @@ pub type Model {
     volume: Int,
     responses: Dict(String, Response),
     hp: Float,
-    interval_id: Option(Int),
+    hp_lose_interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
     timer: Float,
     program_duration: Float,
-    viewport_x: Int,
-    viewport_y: Int,
+    viewport_width: Int,
+    viewport_height: Int,
     drawn_pixel_count: Int,
     drawn_pixels: List(Column),
     seed: seed.Seed,
+    full_columns: Int,
+    // effect: effect.Effect(Msg),
   )
-}
-
-pub type Pixel {
-  StationaryPixel(id: Int)
-  MovingPixel(id: Int, time_since_creation: Float)
 }
 
 pub type Column {
@@ -63,7 +60,6 @@ pub const pixel_dimensions = 50
 pub const image_rows = 8
 
 pub const image_columns = 8
-
 
 pub fn animation(start, end, time) {
   { end -. start } /. { animation_end_time /. { animation_end_time -. time } }

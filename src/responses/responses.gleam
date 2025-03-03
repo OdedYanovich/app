@@ -1,6 +1,5 @@
 import gleam/bool.{guard}
 import gleam/dict
-import gleam/io
 import gleam/list
 import prng/random
 import responses/hub.{change_volume, level_buttons, volume_buttons}
@@ -14,67 +13,61 @@ const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
-    case
-      model.required_combo |> list.take(1) == [model.latest_key_press],
-      model.drawn_pixel_count >= 64
-    {
-      True, True ->
-        Model(
-          ..model,
-          mod: Hub,
-          responses: entering_hub() |> dict.from_list,
-          unlocked_levels: model.unlocked_levels + 1,
-          hp: 5.0,
-        )
-        |> add_effect(fn(dispatch) { dispatch(EndDmg) })
-      True, _ -> {
-        let #(selected_column, seed) =
-          random.int(0, image_columns - 1)
-          |> random.step(model.seed)
-        let #(drawn_pixels, _full_column) =
-          list.index_fold(
-            model.drawn_pixels,
-            #([], 0),
-            fn(drawn_pixels_and_full_columns, column, index) {
-              let #(drawn_pixels, full_columns) = drawn_pixels_and_full_columns
-              let Column(stationary_pixels, moving_pixels) = column
-              use <- guard(
-                stationary_pixels + { moving_pixels |> list.length } == 8,
-                #(drawn_pixels |> list.append([column]), full_columns + 1),
-              )
-              use <- guard(selected_column + full_columns != index, #(
-                drawn_pixels |> list.append([column]),
-                full_columns,
-              ))
-              #(
-                drawn_pixels
-                  |> list.append([
-                    Column(
-                      stationary_pixels,
-                      moving_pixels |> list.append([0.0]),
-                    ),
-                  ]),
-                full_columns,
-              )
-            },
+    use <- guard(
+      model.full_columns >= 8,
+      Model(
+        ..model,
+        mod: Hub,
+        responses: entering_hub() |> dict.from_list,
+        unlocked_levels: model.unlocked_levels + 1,
+        hp: 5.0,
+      )
+        |> add_effect(fn(dispatch) { dispatch(EndDmg) }),
+    )
+    use <- guard(
+      model.required_combo |> list.take(1) != [model.latest_key_press],
+      Model(..model, hp: model.hp -. 8.0)
+        |> effectless,
+    )
+    let #(selected_column, seed) =
+      random.int(0, image_columns - 1 - model.full_columns)
+      |> random.step(model.seed)
+    let #(drawn_pixels, full_columns) =
+      list.index_fold(
+        model.drawn_pixels,
+        #([], 0),
+        fn(drawn_pixels_and_full_columns, column, index) {
+          let #(drawn_pixels, full_columns) = drawn_pixels_and_full_columns
+          let Column(stationary_pixels, moving_pixels) = column
+          use <- guard(
+            stationary_pixels + { moving_pixels |> list.length } == 8,
+            #(drawn_pixels |> list.append([column]), full_columns + 1),
           )
-        io.debug(drawn_pixels)
-        Model(
-          ..model,
-          hp: model.hp +. 4.0,
-          drawn_pixel_count: model.drawn_pixel_count + 1,
-          drawn_pixels:,
-          seed:,
-          required_combo: model.required_combo
-            |> list.drop(1)
-            |> list.append(model.fight_character_set |> list.sample(1)),
-        )
-        |> add_effect(fn(_dispatch) { Nil })
-      }
-      False, _ ->
-        Model(..model, hp: model.hp -. 8.0)
-        |> add_effect(fn(_dispatch) { Nil })
-    }
+          use <- guard(selected_column + full_columns != index, #(
+            drawn_pixels |> list.append([column]),
+            full_columns,
+          ))
+          #(
+            drawn_pixels
+              |> list.append([
+                Column(stationary_pixels, moving_pixels |> list.append([0.0])),
+              ]),
+            full_columns,
+          )
+        },
+      )
+    Model(
+      ..model,
+      hp: model.hp +. 8.0,
+      drawn_pixel_count: model.drawn_pixel_count + 1,
+      drawn_pixels:,
+      seed:,
+      required_combo: model.required_combo
+        |> list.drop(1)
+        |> list.append(model.fight_character_set |> list.sample(1)),
+      full_columns:,
+    )
+    |> effectless
   })
 }
 
