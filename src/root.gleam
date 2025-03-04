@@ -38,16 +38,24 @@ pub type Model {
     viewport_width: Int,
     viewport_height: Int,
     drawn_pixel_count: Int,
-    drawn_pixels: List(Column),
+    stationary_pixels: BitArray,
+    moving_pixels: List(MovingPixel),
     seed: seed.Seed,
     full_columns: Int,
     // effect: effect.Effect(Msg),
   )
 }
 
-pub type Column {
-  Column(stationary: Int, moving: List(Float))
+type BoundedInt =
+  Int
+
+pub type MovingPixel {
+  Pixel(existence_time: Float, spawn_point: BoundedInt, changing_point: Int)
 }
+
+// pub type Column {
+//   Column(stationary: List(Int), moving: List(Float))
+// }
 
 pub const pixel_spawn_offset = #(400.0, 800.0)
 

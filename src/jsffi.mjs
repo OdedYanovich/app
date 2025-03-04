@@ -29,11 +29,11 @@ export function startDrawing() {
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
 }
-export function draw(x, y, row, column) {
+export function draw(x, y, column, row) {
     ctx.drawImage(
         img,
-        row,
         column,
+        row,
         1,
         1,
         x,
@@ -49,3 +49,5 @@ export function endHpLose(id) {
     clearInterval(id);
 }
 export function random(max) {}
+
+// export function vector(){}

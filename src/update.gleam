@@ -73,9 +73,10 @@ pub fn init(_flags) {
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
     drawn_pixel_count: 0,
-    drawn_pixels: list.repeat(Column(0, []), 8),
+    drawn_pixels: list.repeat(list.repeat(False)),
     seed: seed.random(),
     full_columns: 0,
+    stationary_pixels: <<0:size({ root.image_rows * root.image_columns })>>,
     // effect: effect.none(),
   )
   |> add_effect(fn(dispatch) {
