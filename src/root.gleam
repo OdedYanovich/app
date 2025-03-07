@@ -1,4 +1,5 @@
 import gleam/dict.{type Dict}
+import gleam/int
 import gleam/option.{type Option}
 import lustre/effect
 import prng/seed
@@ -38,19 +39,18 @@ pub type Model {
     viewport_width: Int,
     viewport_height: Int,
     drawn_pixel_count: Int,
-    stationary_pixels: BitArray,
+    stationary_pixels: List(List(Bool)),
+    //optimization: BitMap
     moving_pixels: List(MovingPixel),
     seed: seed.Seed,
     full_columns: Int,
+    to_be_drawn: List(Int),
     // effect: effect.Effect(Msg),
   )
 }
 
-type BoundedInt =
-  Int
-
 pub type MovingPixel {
-  Pixel(existence_time: Float, spawn_point: BoundedInt, changing_point: Int)
+  Pixel(existence_time: Float, spawn_point: Int, changing_point: Int)
 }
 
 // pub type Column {
@@ -69,9 +69,16 @@ pub const image_rows = 8
 
 pub const image_columns = 8
 
-pub fn animation(start, end, time) {
-  { end -. start } /. { animation_end_time /. { animation_end_time -. time } }
+pub fn moving_pixel_spawn_offset() {
+  #(
+    pixel_spawn_offset.0 -. int.to_float({ image_rows * pixel_dimensions }),
+    pixel_spawn_offset.1 -. int.to_float({ image_columns * pixel_dimensions }),
+  )
 }
+
+// pub fn difference_between_first_moving_and_stationary_pixel() {
+//   image_rows * 4
+// }
 
 pub const hub_transition_key = "z"
 

@@ -4,7 +4,7 @@ import gleam/list
 import prng/random
 import responses/hub.{change_volume, level_buttons, volume_buttons}
 import root.{
-  type Model, Column, Credit, EndDmg, Fight, Hub, Model, StartDmg, add_effect,
+  type Model, Credit, EndDmg, Fight, Hub, Model, StartDmg, add_effect,
   effectless, hub_transition_key, image_columns,
 }
 
@@ -32,6 +32,10 @@ fn fight_action_responses() {
     let #(selected_column, seed) =
       random.int(0, image_columns - 1 - model.full_columns)
       |> random.step(model.seed)
+    
+  // let #()
+
+
     let #(drawn_pixels, full_columns) =
       list.index_fold(
         model.drawn_pixels,
@@ -56,16 +60,17 @@ fn fight_action_responses() {
           )
         },
       )
+
     Model(
       ..model,
       hp: model.hp +. 8.0,
       drawn_pixel_count: model.drawn_pixel_count + 1,
-      drawn_pixels:,
+      // drawn_pixels:,
       seed:,
       required_combo: model.required_combo
         |> list.drop(1)
         |> list.append(model.fight_character_set |> list.sample(1)),
-      full_columns:,
+      // full_columns:,
     )
     |> effectless
   })
