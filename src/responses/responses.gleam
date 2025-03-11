@@ -5,8 +5,9 @@ import prng/random
 import responses/hub.{change_volume, level_buttons, volume_buttons}
 import root.{
   type Model, Credit, EndDmg, Fight, Hub, Model, StartDmg, add_effect,
-  effectless, hub_transition_key, image_columns,
+  effectless, hub_transition_key,
 }
+import view/image.{add_moving_pixel, finished}
 
 const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 
@@ -14,7 +15,7 @@ fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
     use <- guard(
-      model.full_columns >= 8,
+      model.image |> finished,
       Model(
         ..model,
         mod: Hub,
@@ -30,47 +31,52 @@ fn fight_action_responses() {
         |> effectless,
     )
     let #(selected_column, seed) =
-      random.int(0, image_columns - 1 - model.full_columns)
+      random.int(0, model.image.columns - 1 - model.image.full_columns)
       |> random.step(model.seed)
-    
-  // let #()
+    let image = add_moving_pixel(selected_column, model.image)
 
+    // let image = {
+    //   use image, column, index <- list.index_fold(
+    //     model.image.moving_pixels,
+    //     Image(..model.image, stationary_pixels: [], moving_pixels: []),
+    //   )
+    //   // use<-guard(image.stationary_pixels+image.mov)
+    //   Image(..image)
+    // }
 
-    let #(drawn_pixels, full_columns) =
-      list.index_fold(
-        model.drawn_pixels,
-        #([], 0),
-        fn(drawn_pixels_and_full_columns, column, index) {
-          let #(drawn_pixels, full_columns) = drawn_pixels_and_full_columns
-          let Column(stationary_pixels, moving_pixels) = column
-          use <- guard(
-            stationary_pixels + { moving_pixels |> list.length } == 8,
-            #(drawn_pixels |> list.append([column]), full_columns + 1),
-          )
-          use <- guard(selected_column + full_columns != index, #(
-            drawn_pixels |> list.append([column]),
-            full_columns,
-          ))
-          #(
-            drawn_pixels
-              |> list.append([
-                Column(stationary_pixels, moving_pixels |> list.append([0.0])),
-              ]),
-            full_columns,
-          )
-        },
-      )
+    // let #(drawn_pixels, full_columns) =
+    //   list.index_fold(
+    //     model.drawn_pixels,
+    //     #([], 0),
+    //     fn(drawn_pixels_and_full_columns, column, index) {
+    //       let #(drawn_pixels, full_columns) = drawn_pixels_and_full_columns
+    //       let Column(stationary_pixels, moving_pixels) = column
+    //       use <- guard(
+    //         stationary_pixels + { moving_pixels |> list.length } == 8,
+    //         #(drawn_pixels |> list.append([column]), full_columns + 1),
+    //       )
+    //       use <- guard(selected_column + full_columns != index, #(
+    //         drawn_pixels |> list.append([column]),
+    //         full_columns,
+    //       ))
+    //       #(
+    //         drawn_pixels
+    //           |> list.append([
+    //             Column(stationary_pixels, moving_pixels |> list.append([0.0])),
+    //           ]),
+    //         full_columns,
+    //       )
+    //     },
+    //   )
 
     Model(
       ..model,
       hp: model.hp +. 8.0,
-      drawn_pixel_count: model.drawn_pixel_count + 1,
-      // drawn_pixels:,
       seed:,
       required_combo: model.required_combo
         |> list.drop(1)
         |> list.append(model.fight_character_set |> list.sample(1)),
-      // full_columns:,
+      image:,
     )
     |> effectless
   })

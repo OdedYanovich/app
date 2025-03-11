@@ -1,22 +1,16 @@
-import draw/draw.{draw_frame}
+import array.{new_array}
+import draw.{draw_frame}
 import gleam/dict
 import gleam/dynamic/decode
-import gleam/list
 import gleam/option.{None, Some}
 import gleam/result.{try}
 import gleam/string
 import prng/seed
 import responses/responses.{entering_hub}
 import root.{
-  type Column, type Model, type Msg, Column, Dmg, Draw, EndDmg, Hub, Keydown,
-  Model, Resize, StartDmg, add_effect, effectless,
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Image, Keydown, Model, Resize,
+  StartDmg, add_effect, effectless,
 }
-
-@external(javascript, "./jsffi.mjs", "endHpLose")
-fn end_hp_lose(id: Int) -> Nil
-
-@external(javascript, "./jsffi.mjs", "startHpLose")
-fn start_hp_lose(handler: fn() -> any) -> Int
 
 pub fn update(model: Model, msg: Msg) {
   case msg {
@@ -45,16 +39,6 @@ pub fn update(model: Model, msg: Msg) {
   }
 }
 
-@external(javascript, "./jsffi.mjs", "init")
-fn init_js(
-  loop: fn(Float) -> Nil,
-  resize: fn(Int, Int) -> Nil,
-  keydown_event: fn(decode.Dynamic) -> any,
-) -> Nil
-
-@external(javascript, "./jsffi.mjs", "sandCanvasSize")
-fn get_viewport_size() -> #(Int, Int)
-
 pub fn init(_flags) {
   Model(
     mod: Hub,
@@ -72,12 +56,17 @@ pub fn init(_flags) {
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
-    drawn_pixel_count: 0,
-    drawn_pixels: list.repeat(list.repeat(False)),
+    image: Image(
+      stationary_pixels: new_array(8 * 8),
+      moving_pixels: [],
+      columns_fullness: new_array(8),
+      full_columns: 0,
+      rows: 8,
+      columns: 8,
+      spawn_offset: #(400.0, 800.0),
+      stopping_offset: #(400.0, 400.0),
+    ),
     seed: seed.random(),
-    full_columns: 0,
-    stationary_pixels: <<0:size({ root.image_rows * root.image_columns })>>,
-    // effect: effect.none(),
   )
   |> add_effect(fn(dispatch) {
     use event <- init_js(
@@ -97,3 +86,19 @@ pub fn init(_flags) {
     }
   })
 }
+
+@external(javascript, "./jsffi.mjs", "init")
+fn init_js(
+  loop: fn(Float) -> Nil,
+  resize: fn(Int, Int) -> Nil,
+  keydown_event: fn(decode.Dynamic) -> any,
+) -> Nil
+
+@external(javascript, "./jsffi.mjs", "sandCanvasSize")
+fn get_viewport_size() -> #(Int, Int)
+
+@external(javascript, "./jsffi.mjs", "endHpLose")
+fn end_hp_lose(id: Int) -> Nil
+
+@external(javascript, "./jsffi.mjs", "startHpLose")
+fn start_hp_lose(handler: fn() -> any) -> Int

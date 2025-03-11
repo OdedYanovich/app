@@ -1,4 +1,4 @@
-import { image_columns, image_rows, pixel_dimensions } from "./root.mjs";
+import { pixel_dimensions } from "./root.mjs";
 let ctx;
 
 const img = new Image(8, 8);
@@ -29,11 +29,11 @@ export function startDrawing() {
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
 }
-export function draw(x, y, column, row) {
+export function draw(x, y, row, column) {
     ctx.drawImage(
         img,
-        column,
         row,
+        column,
         1,
         1,
         x,
@@ -48,6 +48,33 @@ export function startHpLose(handler) {
 export function endHpLose(id) {
     clearInterval(id);
 }
-export function random(max) {}
+// export function random(max) {}
 
-// export function vector(){}
+export function newArray(size) {
+    Array(size);
+}
+export function new2dArray(rows, columns) {
+    return Array(rows).fill().map(() => Array(columns).fill(false));
+}
+export function get(array, index) {
+    return array[index];
+}
+export function addOne(array, index) {
+    array[index] += 1;
+    return array;
+}
+
+export function pixelOn(index, array) {
+    array[index] = true;
+    return array;
+}
+export function iter(image, fun) {
+    image.forEach((column, column_index) => {
+        column.forEach((pixel, row_index) => {
+            fun(pixel, row_index, column_index);
+        });
+    });
+}
+export function map(array, fun) {
+    array.map(fun);
+}
