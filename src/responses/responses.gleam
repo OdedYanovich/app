@@ -1,3 +1,4 @@
+import array
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/list
@@ -7,7 +8,7 @@ import root.{
   type Model, Credit, EndDmg, Fight, Hub, Model, StartDmg, add_effect,
   effectless, hub_transition_key,
 }
-import view/image.{add_moving_pixel, finished}
+import view/image.{add_moving_pixel}
 
 const command_keys_temp = ["s", "d", "f", "j", "k", "l"]
 
@@ -15,7 +16,20 @@ fn fight_action_responses() {
   use key <- list.map(command_keys_temp)
   #(key, fn(model: Model) {
     use <- guard(
-      model.image |> finished,
+      model.required_combo |> list.take(1) != [model.latest_key_press],
+      Model(..model, hp: model.hp -. 8.0)
+        |> effectless,
+    )
+    let #(selected_column, seed) =
+      array.length(model.image.available_column_indices) - 1
+      |> random.int(0, _)
+      |> random.step(model.seed)
+    use <- guard(
+      model.image.available_column_indices |> array.length == 1
+        && model.image.moving_pixels
+      |> array.get(selected_column)
+      |> array.length
+        == model.image.rows - 1,
       Model(
         ..model,
         mod: Hub,
@@ -25,16 +39,18 @@ fn fight_action_responses() {
       )
         |> add_effect(fn(dispatch) { dispatch(EndDmg) }),
     )
-    use <- guard(
-      model.required_combo |> list.take(1) != [model.latest_key_press],
-      Model(..model, hp: model.hp -. 8.0)
-        |> effectless,
-    )
-    let #(selected_column, seed) =
-      random.int(0, model.image.columns - 1 - model.image.full_columns)
-      |> random.step(model.seed)
-    let image = add_moving_pixel(selected_column, model.image)
+    let image = add_moving_pixel(model.image, selected_column)
 
+    Model(
+      ..model,
+      hp: model.hp +. 8.0,
+      seed:,
+      required_combo: model.required_combo
+        |> list.drop(1)
+        |> list.append(model.fight_character_set |> list.sample(1)),
+      image:,
+    )
+    |> effectless
     // let image = {
     //   use image, column, index <- list.index_fold(
     //     model.image.moving_pixels,
@@ -68,17 +84,6 @@ fn fight_action_responses() {
     //       )
     //     },
     //   )
-
-    Model(
-      ..model,
-      hp: model.hp +. 8.0,
-      seed:,
-      required_combo: model.required_combo
-        |> list.drop(1)
-        |> list.append(model.fight_character_set |> list.sample(1)),
-      image:,
-    )
-    |> effectless
   })
 }
 

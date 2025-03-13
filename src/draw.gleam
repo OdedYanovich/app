@@ -13,7 +13,9 @@ pub fn draw_frame(model: Model, program_duration) {
   start_drawing()
   let time_elapsed = program_duration -. model.program_duration
   let image = draw_and_update_moving_pixels(model.image, time_elapsed)
+  let image=todo
   draw_stationary_pixels(image)
+  Model(..model, image:, program_duration:)
   // let stationary_pixels =
   //   Image(
   //     {
@@ -32,11 +34,10 @@ pub fn draw_frame(model: Model, program_duration) {
   //       True
   //     },
   //     model.stationary_pixels.full_columns,
-  //   )
-  Model(..model, image:, program_duration:)
+    // )
 }
 
-@external(javascript, "../jsffi.mjs", "startDrawing")
+@external(javascript, "./jsffi.mjs", "startDrawing")
 fn start_drawing() -> Nil
 // @external(javascript, "../jsffi.mjs", "draw")
 // fn draw(x: Float, y: Float, row: Int, column: Int) -> Nil

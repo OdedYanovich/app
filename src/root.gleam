@@ -46,19 +46,19 @@ pub type Model {
 
 pub type Image {
   Image(
-    stationary_pixels: Array,
-    moving_pixels: List(List(MovingPixel)),
-    columns_fullness: Array,
-    full_columns: Int,
+    stationary_pixels: Array(Array(Bool)),
+    moving_pixels: Array(Array(MovingPixel)),
+    available_column_indices: Array(Int),
+    columns_fullness: Array(Int),
     rows: Int,
     columns: Int,
     spawn_offset: Position,
     stopping_offset: Position,
+    // full_columns: Int,
   )
 }
 
-pub type Array =
-  Dynamic
+pub type Array(t)
 
 pub type Position =
   #(Float, Float)

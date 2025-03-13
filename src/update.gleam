@@ -1,4 +1,3 @@
-import array.{new_array}
 import draw.{draw_frame}
 import gleam/dict
 import gleam/dynamic/decode
@@ -8,9 +7,10 @@ import gleam/string
 import prng/seed
 import responses/responses.{entering_hub}
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Image, Keydown, Model, Resize,
-  StartDmg, add_effect, effectless,
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, Resize, StartDmg,
+  add_effect, effectless,
 }
+import view/image
 
 pub fn update(model: Model, msg: Msg) {
   case msg {
@@ -56,16 +56,7 @@ pub fn init(_flags) {
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
-    image: Image(
-      stationary_pixels: new_array(8 * 8),
-      moving_pixels: [],
-      columns_fullness: new_array(8),
-      full_columns: 0,
-      rows: 8,
-      columns: 8,
-      spawn_offset: #(400.0, 800.0),
-      stopping_offset: #(400.0, 400.0),
-    ),
+    image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
     seed: seed.random(),
   )
   |> add_effect(fn(dispatch) {
