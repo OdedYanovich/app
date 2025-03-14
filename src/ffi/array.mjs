@@ -32,15 +32,15 @@ export function set(array, index, val) {
     array[index] = val;
     return array;
 }
-// Remove all that is below
-export function indexArray(size) {
-    return [...Array(size).keys()];
-}
-export function setLast(array, val) {
-    array[val] += 1;
-    return array;
-}
 
-export function last(array) {
-    return array.pop();
-}
+// export function indexArray(size) {
+//     return [...Array(size).keys()];
+// }
+// export function setLast(array, val) {
+//     array[val] += 1;
+//     return array;
+// }
+
+// export function last(array) {
+//     return array.pop();
+// }

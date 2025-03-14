@@ -35,29 +35,27 @@ pub fn new(rows, columns, spawn_offset, stopping_offset) {
   )
 }
 
-pub fn update_moving_pixels(image: Image) {
+pub fn draw_and_update_moving_pixels(image: Image, time_elapsed) {
   use column, column_index <- array.map(image.moving_pixels)
-  let _for_the_type: MovingPixel = column |> array.get(0)
-  case { column |> array.get(0) }.existence_time >=. animation_end_time {
-    True -> {
-      let stationary_pixels =
-        image.stationary_pixels
-        |> array.set(
-          column_index,
-          array.get(image.stationary_pixels, column_index)
-            |> array.set(
-              image.columns_fullness |> array.get(column_index),
-              True,
-            ),
-        )
-      Image(
-        ..image,
-        stationary_pixels:,
-        moving_pixels: array.pop_back(image.moving_pixels).0,
-      )
-    }
-    False -> todo
-  }
+  // let first: MovingPixel = column |> array.get(0)
+  // let #(stationary_pixels_column, moving_pixels_column) = case
+  //   first.existence_time >=. animation_end_time
+  // {
+  //   True -> {
+  //     let stationary_pixels =
+  //       image.stationary_pixels
+  //       |> array.set(
+  //         column_index,
+  //         array.get(image.stationary_pixels, column_index)
+  //           |> array.set(
+  //             image.columns_fullness |> array.get(column_index),
+  //             True,
+  //           ),
+  //       )
+  //     #(stationary_pixels, array.pop_back(image.moving_pixels).0)
+  //   }
+  //   False -> #(image.stationary_pixels |> array.get(column_index), column)
+  // }
   use pixel, row_index <- array.map(column)
   let Pixel(existence_time, position, trajectory) = pixel
 }
@@ -73,7 +71,7 @@ pub fn add_moving_pixel(image: Image, column_index) {
   )
 }
 
-pub fn draw_and_update_moving_pixels(image: Image, time_elapsed) {
+pub fn draw_and_update_moving_pixels_(image: Image, time_elapsed) {
   let moving_pixels = {
     // use column, index <- array.map(image.moving_pixels)
     // case column |> array.last {

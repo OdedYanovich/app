@@ -1,23 +1,20 @@
-import root.{type Array}
+import root.{type Array, type MovingPixel}
 
 @external(javascript, "./ffi/array.mjs", "create")
-fn internal_create(size: Int, init: fn(index) -> t) -> Array(t)
+pub fn create(size: Int, init: fn(index) -> t) -> Array(t)
 
-pub fn create(size: Int, init: fn(index) -> t) {
-  let t: Array(t) = internal_create(size, init)
-  t
-}
+// pub fn create(size: Int, init: fn(index) -> t) {
+//   let t: Array(t) = internal_create(size, init)
+//   t
+// }
 
 @external(javascript, "./ffi/array.mjs", "map")
-fn internal_map(
-  array: Array(t),
-  callback: fn(element, index) -> t,
-) -> Array(t)
+pub fn map(array: Array(t), callback: fn(element, index) -> t) -> Array(t)
 
-pub fn map(array: Array(t), callback: fn(element, index) -> t) {
-  let t: Array(t) = internal_map(array, callback)
-  t
-}
+// pub fn map(array: Array(t), callback: fn(element, index) -> t) {
+//   let t: Array(t) = internal_map(array, callback)
+//   t
+// }
 
 @external(javascript, "./ffi/array.mjs", "iter")
 pub fn iter(array: Array(t), callback: fn(element, index) -> Nil) -> Nil
@@ -30,6 +27,12 @@ pub fn get(array: Array(t), index: Int) {
   let t: t = internal_get(array, index)
   t
 }
+
+@external(javascript, "./ffi/array.mjs", "set")
+pub fn set(array: Array(t), index: Int, val: t) -> Array(t)
+
+@external(javascript, "./ffi/array.mjs", "length")
+pub fn length(array: Array(t)) -> Int
 
 @external(javascript, "./ffi/array.mjs", "push")
 pub fn push(array: Array(t), val: t) -> Array(t)
@@ -48,18 +51,16 @@ pub fn splice(array: Array(t), index: Int, amount: Int) -> #(Array(t), Array(t))
 //     val -> Some(val)
 //   }
 // }
+@external(javascript, "./ffi/image.mjs", "createNew")
+pub fn create_image(rows: Int, columns: Int) -> Nil
 
-@external(javascript, "./ffi/array.mjs", "setLast")
-pub fn set_last(array: Array(t), val: t) -> Array(t)
+@external(javascript, "./ffi/image.mjs", "addMovingPixel")
+pub fn add_moving_pixel(column_index: Int, pixel: MovingPixel) -> Nil
+// @external(javascript, "./ffi/array.mjs", "setLast")
+// pub fn set_last(array: Array(t), val: t) -> Array(t)
 
-@external(javascript, "./ffi/array.mjs", "indexArray")
-pub fn index_array(size: Int) -> Array(Int)
+// @external(javascript, "./ffi/array.mjs", "indexArray")
+// pub fn index_array(size: Int) -> Array(Int)
 
-@external(javascript, "./ffi/array.mjs", "length")
-pub fn length(array: Array(t)) -> Int
-
-@external(javascript, "./ffi/array.mjs", "last")
-pub fn last(array: Array(t)) -> t
-
-@external(javascript, "./ffi/array.mjs", "set")
-pub fn set(array: Array(t), index: Int, val: t) -> Array(t)
+// @external(javascript, "./ffi/array.mjs", "last")
+// pub fn last(array: Array(t)) -> t
