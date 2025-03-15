@@ -1,0 +1,21 @@
+responses 47: Make modulo of presses counter selection determine button
+responses: Make mod transitions use callbacks so they could be written i separate files
+idea: Generalize and exclude possibilities for the correct next level
+responses: Set and check the phase's timer
+root: Massage for mod transition
+update: Move update into app
+update: Make a single dictionary during initialization and a responses dictionary
+responses: Remove effects
+add metronome sound
+persistent memory
+Level selector
+
+far future:
+rebuild with "The entry point"
+check command line testing server
+slowness permission: Defining phases in which it is less punishing to make mistakes or be slow
+Image: With arrays, transparent pixels for non square images, make the pixels push each other, shot pixels from multiple directions, 
+deconstruct the image to rebuild it in reverse, support different image sizes
+bugs: resize caused blur, frame drops
+game mod: Memory challenge, remember the hidden buttons
+Visuals that express the correct io

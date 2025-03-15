@@ -24,10 +24,9 @@ type Response =
 pub type Model {
   Model(
     mod: Mods,
-    last_mod: Mods,
+    level: Level,
     latest_key_press: String,
     required_combo: List(String),
-    fight_character_set: List(String),
     volume: Int,
     responses: Dict(String, Response),
     hp: Float,
@@ -58,6 +57,25 @@ pub type Image {
   )
 }
 
+pub type Level {
+  Level(
+    initial_presses: Int,
+    buttons: List(String),
+    phase: Phase,
+    transition_rules: fn(Int) -> Phase,
+    press_counter: Int,
+  )
+}
+
+pub type Phase {
+  Phase(
+    press_per_minute: Int,
+    press_per_mistake: Int,
+    time: Float,
+    buttons: List(String),
+  )
+}
+
 pub type Array(t)
 
 pub type Position =
@@ -67,18 +85,11 @@ pub type MovingPixel {
   Pixel(existence_time: Float, position: Position, trajectory: Position)
 }
 
+pub const all_command_keys = ["s", "d", "f", "j", "k", "l", "w", "i"]
+
 pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
-
-// pub fn moving_pixel_spawn_offset() {
-//   #(
-//     pixel_spawn_offset.0 -. int.to_float({ image_rows * pixel_dimensions }),
-//     pixel_spawn_offset.1 -. int.to_float({ image_columns * pixel_dimensions }),
-//   )
-// }
-
-pub const hub_transition_key = "z"
 
 pub fn add_effect(responses, effect) {
   #(responses, effect.from(effect))
@@ -87,3 +98,9 @@ pub fn add_effect(responses, effect) {
 pub fn effectless(responses) {
   #(responses, effect.none())
 }
+// pub fn moving_pixel_spawn_offset() {
+//   #(
+//     pixel_spawn_offset.0 -. int.to_float({ image_rows * pixel_dimensions }),
+//     pixel_spawn_offset.1 -. int.to_float({ image_columns * pixel_dimensions }),
+//   )
+// }

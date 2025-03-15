@@ -4,7 +4,7 @@ import gleam/list
 import lustre/attribute
 import lustre/element/html
 import responses/hub.{volume_buttons}
-import root.{type Model, Credit, Fight, Hub, hub_transition_key}
+import root.{type Model, Credit, Fight, Hub}
 import view/css.{
   Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }
@@ -54,7 +54,7 @@ pub fn view(model: Model) {
       case model.mod {
         Hub -> {
           [
-            hub_transition_key <> " fight",
+            "z fight",
             "x reset dungeon",
             "c credits",
             "made by Oded Yanovich",
@@ -72,12 +72,13 @@ pub fn view(model: Model) {
                   #("width", "100%"),
                   #("height", "100%"),
                   #("place-items", "center"),
-                  #("background-color", case
-                    model.timer >. model.program_duration
-                  {
-                    True -> "green"
-                    False -> "blue"
-                  }),
+                  #(
+                    "background-color",
+                    case model.timer >. model.program_duration {
+                      True -> "green"
+                      False -> "blue"
+                    },
+                  ),
                 ]),
               ],
               volume_buttons
@@ -109,19 +110,19 @@ pub fn view(model: Model) {
         }
         Fight -> {
           [
-            hub_transition_key <> " Hub",
+            "z Hub",
             "required combo: "
               <> model.required_combo
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
             "current level: " <> model.selected_level |> int.to_string,
             "relevant buttons: "
-              <> model.fight_character_set
+              <> model.level.buttons
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
           ]
           |> text_to_elements
         }
         Credit -> {
-          [hub_transition_key <> " Hub", "todo"]
+          ["z Hub", "todo"]
           |> text_to_elements
           |> list.append([
             html.img([

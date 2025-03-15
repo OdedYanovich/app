@@ -6,24 +6,23 @@ import gleam/option.{None, Some}
 import gleam/result.{try}
 import gleam/string
 import prng/seed
-import responses/responses.{entering_hub}
+import responses/hub. {entering_hub}
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Model, Resize, StartDmg,
-  add_effect, effectless,
+  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Level, Model, Phase,
+  Resize, StartDmg, add_effect, effectless,
 }
 
 pub fn update(model: Model, msg: Msg) {
   case msg {
-    Draw(program_duration) ->
-      draw_frame(model, program_duration) |> root.effectless
+    Draw(program_duration) -> draw_frame(model, program_duration) |> effectless
 
-    Keydown(key) -> {
-      case model.responses |> dict.get(key |> string.lowercase) {
-        Ok(response) -> response(Model(..model, latest_key_press: key))
+    Keydown(latest_key_press) -> {
+      case model.responses |> dict.get(latest_key_press |> string.lowercase) {
+        Ok(response) -> response(Model(..model, latest_key_press:))
         Error(_) -> model |> effectless
       }
     }
-    Dmg -> Model(..model, hp: model.hp -. 0.2) |> effectless
+    Dmg -> Model(..model, hp: model.hp -. 0.02) |> effectless
     StartDmg(dispatch) ->
       Model(
         ..model,
@@ -40,12 +39,20 @@ pub fn update(model: Model, msg: Msg) {
 }
 
 pub fn init(_flags) {
+  let meaningless_phase =
+    Phase(buttons: [], press_per_minute: 0, press_per_mistake: 0, time: 0.0)
   Model(
     mod: Hub,
-    last_mod: Hub,
+    level: Level(
+      buttons: [],
+      initial_presses: 0,
+      phase: meaningless_phase,
+      transition_rules: fn(_state) { meaningless_phase },
+      press_counter: 0,
+    ),
     latest_key_press: "F",
     required_combo: [],
-    fight_character_set: [],
+    // fight_character_set: [],
     volume: 50,
     responses: entering_hub()
       |> dict.from_list,
