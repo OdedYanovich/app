@@ -1,5 +1,4 @@
 import gleam/dict.{type Dict}
-import gleam/dynamic/decode.{type Dynamic}
 import gleam/option.{type Option}
 import lustre/effect
 import prng/seed
@@ -25,6 +24,7 @@ type Response =
 pub type Model {
   Model(
     mod: Mods,
+    last_mod: Mods,
     latest_key_press: String,
     required_combo: List(String),
     fight_character_set: List(String),
@@ -38,7 +38,7 @@ pub type Model {
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
-    image: Image,
+    // image: Image,
     seed: seed.Seed,
     // effect: effect.Effect(Msg),
   )
@@ -67,27 +67,15 @@ pub type MovingPixel {
   Pixel(existence_time: Float, position: Position, trajectory: Position)
 }
 
-// pub const pixel_spawn_offset = #(400.0, 800.0)
-
-// pub const pixel_stopping_offset = #(400.0, 400.0)
-
 pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
-
-// pub const image_rows = 8
-
-// pub const image_columns = 8
 
 // pub fn moving_pixel_spawn_offset() {
 //   #(
 //     pixel_spawn_offset.0 -. int.to_float({ image_rows * pixel_dimensions }),
 //     pixel_spawn_offset.1 -. int.to_float({ image_columns * pixel_dimensions }),
 //   )
-// }
-
-// pub fn difference_between_first_moving_and_stationary_pixel() {
-//   image_rows * 4
 // }
 
 pub const hub_transition_key = "z"

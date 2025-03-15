@@ -3,18 +3,8 @@ import root.{type Array, type MovingPixel}
 @external(javascript, "./ffi/array.mjs", "create")
 pub fn create(size: Int, init: fn(index) -> t) -> Array(t)
 
-// pub fn create(size: Int, init: fn(index) -> t) {
-//   let t: Array(t) = internal_create(size, init)
-//   t
-// }
-
 @external(javascript, "./ffi/array.mjs", "map")
 pub fn map(array: Array(t), callback: fn(element, index) -> t) -> Array(t)
-
-// pub fn map(array: Array(t), callback: fn(element, index) -> t) {
-//   let t: Array(t) = internal_map(array, callback)
-//   t
-// }
 
 @external(javascript, "./ffi/array.mjs", "iter")
 pub fn iter(array: Array(t), callback: fn(element, index) -> Nil) -> Nil

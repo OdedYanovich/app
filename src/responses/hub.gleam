@@ -25,3 +25,7 @@ pub fn change_volume(change, model: Model) {
 pub fn level_buttons(buttons, current_level) {
   buttons |> list.take(current_level + 1)
 }
+
+// type Level {
+//   Level(button_count: Int, required_presses: Int)
+// }

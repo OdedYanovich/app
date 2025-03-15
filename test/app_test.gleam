@@ -1,5 +1,5 @@
-import array
-import root.{Pixel}
+// import array
+// import root.{Pixel}
 
 // import gleam/io
 
@@ -19,6 +19,7 @@ pub fn main() {
   // // |> array.length
   // |> io.debug
 
-  array.create_image(8, 8)
-  array.add_moving_pixel(4, Pixel(3.2, #(2.0, 2.0), #(1.0, 1.0)))
+  // array.create_image(8, 8)
+  // array.add_moving_pixel(4, Pixel(3.2, #(2.0, 2.0), #(1.0, 1.0)))
+  1
 }

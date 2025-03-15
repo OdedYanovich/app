@@ -1,9 +1,5 @@
-// Move to /ffi
-import { pixel_dimensions } from "./root.mjs";
 let ctx;
 
-const img = new Image(8, 8);
-img.src = "/assets/foo.png";
 export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
         ctx = document.getElementById("canvas").getContext("2d");
@@ -29,19 +25,6 @@ export function sandCanvasSize() {
 export function startDrawing() {
     ctx.rect(0, 0, innerWidth, innerHeight);
     ctx.fill();
-}
-export function draw(x, y, row, column) {
-    ctx.drawImage(
-        img,
-        row,
-        column,
-        1,
-        1,
-        x,
-        y,
-        pixel_dimensions,
-        pixel_dimensions,
-    );
 }
 export function startHpLose(handler) {
     return setInterval(handler, 1);
