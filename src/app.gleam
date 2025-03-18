@@ -1,5 +1,6 @@
+import initialization.{init}
 import lustre
-import update.{init, update}
+import update.{update}
 import view/view.{view}
 
 pub fn main() {

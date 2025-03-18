@@ -1,12 +1,21 @@
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 import lustre/effect
+
 // import prng/seed
 
 pub type Mods {
-  Hub
-  Fight
+  Hub(volume_animation_timer: Float)
+  Fight(responses: Dict(String, FightResponse), hp: Float, level: Level)
   Credit
+}
+
+pub fn id(mod) {
+  case mod {
+    Hub(_) -> 0
+    Fight(_, _, _) -> 1
+    Credit -> 2
+  }
 }
 
 pub type Msg {
@@ -21,19 +30,18 @@ pub type Msg {
 pub type Response =
   fn(Model) -> #(Model, effect.Effect(Msg))
 
+type FightResponse =
+  fn(Model, String) -> #(Model, effect.Effect(Msg))
+
 pub type Model {
   Model(
     mod: Mods,
-    level: Level,
-    latest_key_press: String,
     required_combo: List(String),
     volume: Int,
-    responses: Dict(String, Response),
-    hp: Float,
+    responses: Dict(#(Int, String), Response),
     hp_lose_interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,
-    timer: Float,
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
@@ -59,6 +67,7 @@ pub type Image {
 
 pub type Level {
   Level(
+    // hp: Float,
     initial_presses: Int,
     buttons: List(String),
     phase: Phase,
@@ -98,9 +107,3 @@ pub fn add_effect(responses, effect) {
 pub fn effectless(responses) {
   #(responses, effect.none())
 }
-// pub fn moving_pixel_spawn_offset() {
-//   #(
-//     pixel_spawn_offset.0 -. int.to_float({ image_rows * pixel_dimensions }),
-//     pixel_spawn_offset.1 -. int.to_float({ image_columns * pixel_dimensions }),
-//   )
-// }

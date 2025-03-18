@@ -1,9 +1,9 @@
 import gleam/float
 import gleam/int
 import gleam/list
+import initialization.{volume_buttons}
 import lustre/attribute
 import lustre/element/html
-import responses/hub.{volume_buttons}
 import root.{type Model, Credit, Fight, Hub}
 import view/css.{
   Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
@@ -43,16 +43,19 @@ pub fn view(model: Model) {
           css.box_sizing(BorderBox),
           css.left(REM(0.0)),
           css.top(REM(0.0)),
-          #(
-            "background",
-            "linear-gradient(to left, rgba(0, 255, 0,0.3) "
-              <> model.hp |> float.round |> int.to_string
-              <> "%, rgba(0,0,0,0))",
-          ),
+          case model.mod {
+            Fight(_, hp, _) -> #(
+              "background",
+              "linear-gradient(to left, rgba(0, 255, 0,0.3) "
+                <> hp |> float.round |> int.to_string
+                <> "%, rgba(0,0,0,0))",
+            )
+            _ -> #("", "")
+          },
         ]),
       ],
       case model.mod {
-        Hub -> {
+        Hub(timer) -> {
           [
             "z fight",
             "x reset dungeon",
@@ -72,13 +75,10 @@ pub fn view(model: Model) {
                   #("width", "100%"),
                   #("height", "100%"),
                   #("place-items", "center"),
-                  #(
-                    "background-color",
-                    case model.timer >. model.program_duration {
-                      True -> "green"
-                      False -> "blue"
-                    },
-                  ),
+                  #("background-color", case timer >. model.program_duration {
+                    True -> "green"
+                    False -> "blue"
+                  }),
                 ]),
               ],
               volume_buttons
@@ -108,7 +108,7 @@ pub fn view(model: Model) {
             ),
           ])
         }
-        Fight -> {
+        Fight(_, _, level) -> {
           [
             "z Hub",
             "required combo: "
@@ -116,7 +116,7 @@ pub fn view(model: Model) {
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
             "current level: " <> model.selected_level |> int.to_string,
             "relevant buttons: "
-              <> model.level.buttons
+              <> level.buttons
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
           ]
           |> text_to_elements
