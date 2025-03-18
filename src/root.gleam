@@ -1,7 +1,7 @@
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 import lustre/effect
-import prng/seed
+// import prng/seed
 
 pub type Mods {
   Hub
@@ -18,7 +18,7 @@ pub type Msg {
   Resize(Int, Int)
 }
 
-type Response =
+pub type Response =
   fn(Model) -> #(Model, effect.Effect(Msg))
 
 pub type Model {
@@ -37,8 +37,8 @@ pub type Model {
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
+    // seed: seed.Seed,
     // image: Image,
-    seed: seed.Seed,
     // effect: effect.Effect(Msg),
   )
 }

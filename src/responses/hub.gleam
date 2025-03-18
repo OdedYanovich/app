@@ -4,9 +4,8 @@ import gleam/list
 import responses/credit.{entering_credit}
 import responses/fight.{entering_fight}
 
-// import responses/hub.{change_volume, level_buttons, volume_buttons}
 import root.{
-  type Model, Credit, Fight, Level, Model, Phase, StartDmg, add_effect,
+  type Model, Credit, Fight, Hub, Level, Model, Phase, StartDmg, add_effect,
   all_command_keys, effectless,
 }
 
@@ -21,9 +20,35 @@ pub fn entering_hub() {
   |> list.map(fn(key_val) { #(key_val.0, change_volume(key_val.1, _)) })
   |> list.append([
     #("z", fn(model) {
+      model
+      |> morph(Fight)
+      |> add_effect(fn(dispatch) { dispatch(StartDmg(dispatch)) })
+    }),
+    #("c", fn(model) { model |> morph(Credit) |> effectless }),
+    #("k", fn(model) {
+      Model(..model, selected_level: case model.selected_level {
+        1 -> 1
+        n -> n - 1
+      })
+      |> effectless
+    }),
+    #("l", fn(model) {
+      Model(..model, selected_level: case model.selected_level {
+        n if n == model.unlocked_levels -> n
+        n -> n + 1
+      })
+      |> effectless
+    }),
+  ])
+}
+
+pub fn morph(model, mod) {
+  case mod {
+    Hub -> todo
+    Fight ->
       Model(
         ..model,
-        mod: Fight,
+        mod:,
         level: Level(
           buttons: all_command_keys
             |> level_buttons(model.selected_level),
@@ -52,31 +77,8 @@ pub fn entering_hub() {
         responses: entering_fight(entering_hub)
           |> dict.from_list,
       )
-      |> add_effect(fn(dispatch) { dispatch(StartDmg(dispatch)) })
-    }),
-    #("c", fn(model) {
-      Model(..model, mod: Credit, responses: entering_credit(entering_hub))
-      |> effectless
-    }),
-  ])
-  |> list.append([
-    #("k", fn(model) {
-      Model(..model, selected_level: case model.selected_level {
-        1 -> 1
-        n -> n - 1
-      })
-      |> effectless
-    }),
-  ])
-  |> list.append([
-    #("l", fn(model) {
-      Model(..model, selected_level: case model.selected_level {
-        n if n == model.unlocked_levels -> n
-        n -> n + 1
-      })
-      |> effectless
-    }),
-  ])
+    Credit -> Model(..model, mod:, responses: entering_credit(entering_hub))
+  }
 }
 
 pub const volume_buttons = [

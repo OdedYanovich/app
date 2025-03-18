@@ -5,14 +5,14 @@ import gleam/dynamic/decode
 import gleam/option.{None, Some}
 import gleam/result.{try}
 import gleam/string
-import prng/seed
+// import prng/seed
 import responses/hub. {entering_hub}
 import root.{
-  type Model, type Msg, Dmg, Draw, EndDmg, Hub, Keydown, Level, Model, Phase,
+  type Model, Dmg, Draw, EndDmg, Hub, Keydown, Level, Model, Phase,
   Resize, StartDmg, add_effect, effectless,
 }
 
-pub fn update(model: Model, msg: Msg) {
+pub fn update(model, msg) {
   case msg {
     Draw(program_duration) -> draw_frame(model, program_duration) |> effectless
 
@@ -65,7 +65,7 @@ pub fn init(_flags) {
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
     // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
-    seed: seed.random(),
+    // seed: seed.random(),
   )
   |> add_effect(fn(dispatch) {
     use event <- init_js(
