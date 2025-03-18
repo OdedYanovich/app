@@ -2,7 +2,6 @@ responses: During fights, the presses counter's modulo will determine the next b
 idea: Generalize and exclude possibilities for the correct next level
 responses: Set and check the phase's timer
 root: Massage for mod transition
-update: Move update into app
 update: Make a single dictionary during initialization and a responses dictionary
 responses: Remove effects
 add metronome sound
@@ -14,6 +13,7 @@ root: Move level field to the fight's contractor
 update 17: use guards for KeyDown
 difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
 sound: Find 3 metronome like sounds then make them play in the bpm of the player then add instruments
+root 43: Move hp_lose_interval_id to Hub
 
 far future:
 rebuild with "The entry point"

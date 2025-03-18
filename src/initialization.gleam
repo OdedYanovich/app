@@ -46,7 +46,7 @@ pub fn init(_flags) {
 }
 
 fn responses() {
-  let meaningless_phase =
+  let phase =
     Phase(buttons: [], press_per_minute: 0, press_per_mistake: 0, time: 0.0)
   let fight =
     Fight(
@@ -55,8 +55,8 @@ fn responses() {
       level: Level(
         buttons: [],
         initial_presses: 0,
-        phase: meaningless_phase,
-        transition_rules: fn(_state) { meaningless_phase },
+        phase:,
+        transition_rules: fn(_state) { phase },
         press_counter: 0,
       ),
     )
@@ -92,7 +92,7 @@ fn responses() {
 fn morph_to(model, mod) {
   case mod {
     Hub(_) -> Model(..model, mod: Hub(0.0))
-    Fight(responses, hp, _level,) ->
+    Fight(responses, hp, _level) ->
       Model(
         ..model,
         mod: Fight(
