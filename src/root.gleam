@@ -6,16 +6,38 @@ import lustre/effect
 
 pub type Mods {
   Hub(volume_animation_timer: Float)
-  Fight(responses: Dict(String, FightResponse), hp: Float, level: Level)
+  Fight(
+    responses: Dict(String, FightResponse),
+    hp: Float,
+    required_press: String,
+    initial_presses: Int,
+    buttons: List(String),
+    phases: List(Phase),
+    press_counter: Int,
+  )
   Credit
+}
+
+pub type Phase {
+  Phase(
+    press_per_minute: Int,
+    press_per_mistake: Int,
+    time: Float,
+    buttons: List(String),
+    next_phase: fn(Int) -> Int,
+  )
 }
 
 pub fn id(mod) {
   case mod {
     Hub(_) -> 0
-    Fight(_, _, _) -> 1
+    Fight(_, _, _, _, _, _, _) -> 1
     Credit -> 2
   }
+}
+
+pub type Level {
+  Level
 }
 
 pub type Msg {
@@ -36,7 +58,6 @@ type FightResponse =
 pub type Model {
   Model(
     mod: Mods,
-    required_combo: List(String),
     volume: Int,
     responses: Dict(#(Int, String), Response),
     hp_lose_interval_id: Option(Int),
@@ -61,27 +82,6 @@ pub type Image {
     columns: Int,
     spawn_offset: Position,
     stopping_offset: Position,
-    // full_columns: Int,
-  )
-}
-
-pub type Level {
-  Level(
-    // hp: Float,
-    initial_presses: Int,
-    buttons: List(String),
-    phase: Phase,
-    transition_rules: fn(Int) -> Phase,
-    press_counter: Int,
-  )
-}
-
-pub type Phase {
-  Phase(
-    press_per_minute: Int,
-    press_per_mistake: Int,
-    time: Float,
-    buttons: List(String),
   )
 }
 
@@ -100,9 +100,9 @@ pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
 
-pub fn add_effect(responses, effect) {
-  #(responses, effect.from(effect))
-}
+// pub fn add_effect(responses, effect) {
+//   #(responses, effect.from(effect))
+// }
 
 pub fn effectless(responses) {
   #(responses, effect.none())

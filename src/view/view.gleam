@@ -44,7 +44,15 @@ pub fn view(model: Model) {
           css.left(REM(0.0)),
           css.top(REM(0.0)),
           case model.mod {
-            Fight(_, hp, _) -> #(
+            Fight(
+              _responses,
+              hp,
+              _required_press,
+              _initial_presses,
+              _buttons,
+              _phases,
+              _press_counter,
+            ) -> #(
               "background",
               "linear-gradient(to left, rgba(0, 255, 0,0.3) "
                 <> hp |> float.round |> int.to_string
@@ -108,15 +116,22 @@ pub fn view(model: Model) {
             ),
           ])
         }
-        Fight(_, _, level) -> {
+        Fight(
+          _responses,
+          _hp,
+          required_press,
+          _initial_presses,
+          buttons,
+          _phases,
+          _press_counter,
+        ) -> {
           [
             "z Hub",
-            "required combo: "
-              <> model.required_combo
-            |> list.fold("", fn(state, addition) { state <> " " <> addition }),
+            "required combo: " <> required_press,
+            // |> list.fold("", fn(state, addition) { state <> " " <> addition }),
             "current level: " <> model.selected_level |> int.to_string,
             "relevant buttons: "
-              <> level.buttons
+              <> buttons
             |> list.fold("", fn(state, addition) { state <> " " <> addition }),
           ]
           |> text_to_elements

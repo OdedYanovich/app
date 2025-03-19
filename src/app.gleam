@@ -27,7 +27,7 @@ pub fn main() {
             Ok(response) -> response(model)
             Error(_) ->
               case model.mod {
-                Fight(responses, _hp, _level) ->
+                Fight(responses, _hp, _rp, _ip, _b, _ph, _pc) ->
                   case responses |> dict.get(latest_key_press) {
                     Ok(response) -> response(model, latest_key_press)
                     Error(_) -> model |> effectless
@@ -38,8 +38,27 @@ pub fn main() {
         }
         Dmg -> {
           case model.mod {
-            Fight(responses, hp, level) ->
-              Model(..model, mod: Fight(responses:, hp: hp -. 0.02, level:))
+            Fight(
+              responses,
+              hp,
+              required_press,
+              initial_presses,
+              buttons,
+              phases,
+              press_counter,
+            ) ->
+              Model(
+                ..model,
+                mod: Fight(
+                  responses:,
+                  hp: hp -. 0.02,
+                  required_press:,
+                  initial_presses:,
+                  buttons:,
+                  phases:,
+                  press_counter:,
+                ),
+              )
 
             _ -> model
           }
