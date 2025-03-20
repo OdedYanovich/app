@@ -8,8 +8,8 @@ import gleam/option.{None}
 import gleam/result.{try}
 import lustre/effect
 import root.{
-  type Model, Credit, Draw, EndDmg, Fight, Hub, Keydown, Model, Phase, Resize,
-  StartDmg, all_command_keys, id,
+  type Identification, type Model, Credit, CreditId, Draw, EndDmg, Fight,
+  FightId, Hub, HubId, Keydown, Model, Phase, Resize, StartDmg, all_command_keys,
 }
 
 pub fn init(_flags) {
@@ -49,54 +49,44 @@ pub fn init(_flags) {
 }
 
 fn responses() {
-  let fight =
-    Fight(
-      fight_responses(),
-      hp: 5.0,
-      buttons: [],
-      initial_presses: 0,
-      phases: [],
-      press_counter: 0,
-      required_press: "",
-    )
-  volume_buttons
+  volume_buttons_and_changes
   |> list.map(fn(key_val) {
-    #(#(Hub(0.0) |> id, key_val.0), change_volume(key_val.1, _))
+    #(#(HubId, key_val.0), change_volume(key_val.1, _))
   })
   |> list.append([
-    #(#(Hub(0.0) |> id, "z"), fn(model) {
+    #(#(HubId, "z"), fn(model) {
       model
-      |> morph_to(fight)
+      |> morph_to(FightId)
     }),
-    #(#(Hub(0.0) |> id, "c"), fn(model) { model |> morph_to(Credit) }),
-    #(#(Hub(0.0) |> id, "k"), change_level(_, -1)),
-    #(#(Hub(0.0) |> id, "l"), change_level(_, 1)),
-    #(#(fight |> id, "z"), fn(model) {
+    #(#(HubId, "c"), fn(model) { model |> morph_to(CreditId) }),
+    #(#(HubId, "k"), change_level(_, -1)),
+    #(#(HubId, "l"), change_level(_, 1)),
+    #(#(FightId, "z"), fn(model) {
       model
-      |> morph_to(Hub(0.0))
+      |> morph_to(HubId)
     }),
-    #(#(Credit |> id, "z"), fn(model) {
+    #(#(CreditId, "z"), fn(model) {
       model
-      |> morph_to(Hub(0.0))
+      |> morph_to(HubId)
     }),
   ])
   |> dict.from_list
 }
 
-fn morph_to(model: Model, mod) {
+fn morph_to(model: Model, mod: Identification) {
   case mod {
-    Hub(_) -> #(Model(..model, mod: Hub(0.0)), case model.mod {
+    HubId -> #(Model(..model, mod: Hub(0.0)), case model.mod {
       Fight(_, _, _, _, _, _, _) ->
         effect.from(fn(dispatch) { dispatch(EndDmg) })
       _ -> effect.none()
     })
 
-    Fight(responses, hp, _level, _required_press, _, _, _) -> #(
+    FightId -> #(
       Model(
         ..model,
         mod: Fight(
-          responses:,
-          hp:,
+          responses: fight_responses(),
+          hp: 5.0,
           buttons: all_command_keys
             |> level_buttons(model.selected_level),
           initial_presses: 20,
@@ -120,11 +110,11 @@ fn morph_to(model: Model, mod) {
       ),
       fn(dispatch) { dispatch(StartDmg(dispatch)) } |> effect.from,
     )
-    Credit -> #(Model(..model, mod:), effect.none())
+    CreditId -> #(Model(..model, mod: Credit), effect.none())
   }
 }
 
-pub const volume_buttons = [
+pub const volume_buttons_and_changes = [
   #("q", -25),
   #("w", -10),
   #("e", -5),
@@ -137,11 +127,10 @@ pub const volume_buttons = [
 
 fn change_volume(change, model: Model) {
   let assert Hub(timer) = model.mod
-  let mod = Hub(timer +. 500.0)
   #(
     Model(
       ..model,
-      mod:,
+      mod: Hub(timer +. 500.0),
       volume: int.max(int.min(model.volume + change, 100), 0),
     ),
     effect.none(),
@@ -175,19 +164,18 @@ fn fight_responses() {
         phases,
         press_counter,
       ) = model.mod
+      let mod =
+        Fight(
+          responses:,
+          hp:,
+          required_press:,
+          initial_presses:,
+          buttons:,
+          phases:,
+          press_counter:,
+        )
       use <- guard(required_press != latest_key_press, #(
-        Model(
-          ..model,
-          mod: Fight(
-            responses,
-            hp -. 8.0,
-            required_press,
-            initial_presses,
-            buttons,
-            phases,
-            press_counter,
-          ),
-        ),
+        Model(..model, mod: Fight(..mod, hp: hp -. 8.0)),
         effect.none(),
       ))
       use <- guard(
@@ -195,32 +183,20 @@ fn fight_responses() {
         Model(
           ..model,
           unlocked_levels: model.unlocked_levels + 1,
-          mod: Fight(
-            responses:,
-            hp: 5.0,
-            required_press:,
-            initial_presses:,
-            buttons:,
-            phases:,
-            press_counter:,
-          ),
+          mod: Fight(..mod, hp: 5.0),
         )
-          |> morph_to(Hub(0.0)),
+          |> morph_to(HubId),
       )
       #(
         Model(
           ..model,
           mod: Fight(
-            responses,
-            hp +. 8.0,
+            ..mod,
+            hp: hp +. 8.0,
             required_press: buttons
               |> list.sample(1)
               |> list.first
               |> result.unwrap("s"),
-            initial_presses:,
-            buttons:,
-            phases:,
-            press_counter:,
           ),
           // seed:,
         ),

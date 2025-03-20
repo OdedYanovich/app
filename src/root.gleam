@@ -18,6 +18,12 @@ pub type Mods {
   Credit
 }
 
+pub type Identification {
+  HubId
+  FightId
+  CreditId
+}
+
 pub type Phase {
   Phase(
     press_per_minute: Int,
@@ -28,13 +34,6 @@ pub type Phase {
   )
 }
 
-pub fn id(mod) {
-  case mod {
-    Hub(_) -> 0
-    Fight(_, _, _, _, _, _, _) -> 1
-    Credit -> 2
-  }
-}
 
 pub type Level {
   Level
@@ -59,7 +58,7 @@ pub type Model {
   Model(
     mod: Mods,
     volume: Int,
-    responses: Dict(#(Int, String), Response),
+    responses: Dict(#(Identification, String), Response),
     hp_lose_interval_id: Option(Int),
     unlocked_levels: Int,
     selected_level: Int,

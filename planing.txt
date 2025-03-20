@@ -7,7 +7,11 @@ persistent memory
 Level selector
 difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
 sound: Find 3 metronome like sounds then make them play in the bpm of the player then add instruments
-root 43: Move hp_lose_interval_id to Hub
+root 43: Move hp_lose_interval_id to Fight
+draw HP bar
+animate character transition
+initialization 52: construct fight from current level
+view: Layout for each mod include a pane for a string array
 
 far future:
 rebuild with "The entry point"

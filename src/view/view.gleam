@@ -1,7 +1,7 @@
 import gleam/float
 import gleam/int
 import gleam/list
-import initialization.{volume_buttons}
+import initialization.{volume_buttons_and_changes}
 import lustre/attribute
 import lustre/element/html
 import root.{type Model, Credit, Fight, Hub}
@@ -89,12 +89,12 @@ pub fn view(model: Model) {
                   }),
                 ]),
               ],
-              volume_buttons
-                |> list.flat_map(fn(button__volume_change) {
+              volume_buttons_and_changes
+                |> list.flat_map(fn(button_volume_change) {
                   [
-                    html.div([], [button__volume_change.0 |> html.text]),
+                    html.div([], [button_volume_change.0 |> html.text]),
                     html.div([], [
-                      button__volume_change.1
+                      button_volume_change.1
                       |> int.to_string
                       |> html.text,
                     ]),
