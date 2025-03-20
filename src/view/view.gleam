@@ -6,7 +6,7 @@ import lustre/attribute
 import lustre/element/html
 import root.{type Model, Credit, Fight, Hub}
 import view/css.{
-  Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
+  Absolute, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }
 
 fn text_to_elements(text: List(String)) {
@@ -16,17 +16,17 @@ fn text_to_elements(text: List(String)) {
 
 pub fn view(model: Model) {
   html.div([], [
-    html.canvas([
-      attribute.id("canvas"),
-      attribute.width(model.viewport_width),
-      attribute.height(model.viewport_height),
-      attribute.style([
-        css.position(Absolute),
-        css.background_color(Black),
-        css.left(REM(0.0)),
-        css.top(REM(0.0)),
-      ]),
-    ]),
+    // html.canvas([
+    //   attribute.id("canvas"),
+    //   attribute.width(model.viewport_width),
+    //   attribute.height(model.viewport_height),
+    //   attribute.style([
+    //     css.position(Absolute),
+    //     css.background_color(Black),
+    //     css.left(REM(0.0)),
+    //     css.top(REM(0.0)),
+    //   ]),
+    // ]),
     html.div(
       [
         attribute.style([
@@ -44,15 +44,7 @@ pub fn view(model: Model) {
           css.left(REM(0.0)),
           css.top(REM(0.0)),
           case model.mod {
-            Fight(
-              _responses,
-              hp,
-              _required_press,
-              _initial_presses,
-              _buttons,
-              _phases,
-              _press_counter,
-            ) -> #(
+            Fight(_re, hp, _rp, _ip, _bu, _ph, _pc) -> #(
               "background",
               "linear-gradient(to left, rgba(0, 255, 0,0.3) "
                 <> hp |> float.round |> int.to_string
@@ -116,19 +108,10 @@ pub fn view(model: Model) {
             ),
           ])
         }
-        Fight(
-          _responses,
-          _hp,
-          required_press,
-          _initial_presses,
-          buttons,
-          _phases,
-          _press_counter,
-        ) -> {
+        Fight(_re, _hp, required_press, _ip, buttons, _ph, _pc) -> {
           [
             "z Hub",
             "required combo: " <> required_press,
-            // |> list.fold("", fn(state, addition) { state <> " " <> addition }),
             "current level: " <> model.selected_level |> int.to_string,
             "relevant buttons: "
               <> buttons

@@ -34,7 +34,6 @@ pub type Phase {
   )
 }
 
-
 pub type Level {
   Level
 }

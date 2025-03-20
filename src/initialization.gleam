@@ -1,15 +1,14 @@
-import ffi/gleam/main.{get_viewport_size, init_js}
+import ffi/gleam/main.{get_viewport_size}
 import gleam/bool.{guard}
 import gleam/dict
-import gleam/dynamic/decode
 import gleam/int
 import gleam/list
 import gleam/option.{None}
-import gleam/result.{try}
+import gleam/result
 import lustre/effect
 import root.{
-  type Identification, type Model, Credit, CreditId, Draw, EndDmg, Fight,
-  FightId, Hub, HubId, Keydown, Model, Phase, Resize, StartDmg, all_command_keys,
+  type Identification, type Model, Credit, CreditId, EndDmg, Fight, FightId, Hub,
+  HubId, Model, Phase, StartDmg, all_command_keys,
 }
 
 pub fn init(_flags) {
@@ -27,24 +26,7 @@ pub fn init(_flags) {
       // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
     // seed: seed.random(),
     ),
-    fn(dispatch) {
-      use event <- init_js(
-        fn(program_duration) { dispatch(Draw(program_duration)) },
-        fn(viewport_x, viewport_y) { dispatch(Resize(viewport_x, viewport_y)) },
-      )
-      use #(key, repeat) <- try(
-        decode.run(event, {
-          use key <- decode.field("key", decode.string)
-          use repeat <- decode.field("repeat", decode.bool)
-          decode.success(#(key, repeat))
-        }),
-      )
-      case repeat {
-        True -> Ok(Nil)
-        False -> dispatch(Keydown(key)) |> Ok
-      }
-    }
-      |> effect.from,
+    effect.none(),
   )
 }
 

@@ -1,20 +1,21 @@
 import draw.{draw_frame}
-import ffi/gleam/main.{end_hp_lose, get_viewport_size, init_js, start_hp_lose}
+import ffi/gleam/main.{end_hp_lose, init_js, start_hp_lose}
+import gleam/bool.{guard}
 import gleam/dict
+import gleam/dynamic/decode
 import gleam/option.{None, Some}
+import gleam/result.{try}
 import gleam/string
 import initialization.{init}
-import lustre
+import lustre.{dispatch}
 import root.{
   type Model, Credit, CreditId, Dmg, Draw, EndDmg, Fight, FightId, Hub, HubId,
   Keydown, Model, Resize, StartDmg, effectless,
 }
 import view/view.{view}
-import gleam/result.{try}
-import gleam/dynamic/decode
 
 pub fn main() {
-  let assert Ok(_runtime) =
+  let assert Ok(runtime) =
     fn(model, msg) {
       case msg {
         Draw(program_duration) ->
@@ -81,12 +82,12 @@ pub fn main() {
     }
     |> lustre.application(init, _, view)
     |> lustre.start("#app", Nil)
-}
 
-fn t(dispatch) {
   use event <- init_js(
-    fn(program_duration) { dispatch(Draw(program_duration)) },
-    fn(viewport_x, viewport_y) { dispatch(Resize(viewport_x, viewport_y)) },
+    fn(program_duration) { runtime(dispatch(Draw(program_duration))) },
+    fn(viewport_x, viewport_y) {
+      runtime(dispatch(Resize(viewport_x, viewport_y)))
+    },
   )
   use #(key, repeat) <- try(
     decode.run(event, {
@@ -95,10 +96,8 @@ fn t(dispatch) {
       decode.success(#(key, repeat))
     }),
   )
-  case repeat {
-    True -> Ok(Nil)
-    False -> dispatch(Keydown(key)) |> Ok
-  }
+  use <- guard(repeat, Ok(Nil))
+  runtime(dispatch(Keydown(key))) |> Ok
 }
 
 fn id(mod) {

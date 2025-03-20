@@ -1,10 +1,10 @@
-let ctx;
+// let ctx;
 
 export function init(loop, resize, keydownEvent) {
     requestAnimationFrame(() => {
-        ctx = document.getElementById("canvas").getContext("2d");
-        ctx.imageSmoothingEnabled = false;
-        ctx.fillStyle = "rgba(0,0,0,255)";
+        // ctx = document.getElementById("canvas").getContext("2d");
+        // ctx.imageSmoothingEnabled = false;
+        // ctx.fillStyle = "rgba(0,0,0,255)";
         addEventListener(
             "resize",
             () => {
