@@ -15,7 +15,7 @@ import root.{
 import view/view.{view}
 
 pub fn main() {
-  let assert Ok(runtime) =
+  let assert Ok(update_the_model) =
     fn(model, msg) {
       case msg {
         Draw(program_duration) ->
@@ -40,27 +40,8 @@ pub fn main() {
         }
         Dmg -> {
           case model.mod {
-            Fight(
-              responses,
-              hp,
-              required_press,
-              initial_presses,
-              buttons,
-              phases,
-              press_counter,
-            ) ->
-              Model(
-                ..model,
-                mod: Fight(
-                  responses:,
-                  hp: hp -. 0.02,
-                  required_press:,
-                  initial_presses:,
-                  buttons:,
-                  phases:,
-                  press_counter:,
-                ),
-              )
+            Fight(re, hp, rp, ip, bu, ph, pc) ->
+              Model(..model, mod: Fight(re, hp -. 0.02, rp, ip, bu, ph, pc))
 
             _ -> model
           }
@@ -72,6 +53,7 @@ pub fn main() {
             hp_lose_interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })),
           )
           |> effectless
+        // model |> effectless
         EndDmg -> {
           end_hp_lose(model.hp_lose_interval_id |> option.unwrap(0))
           Model(..model, hp_lose_interval_id: None) |> effectless
@@ -84,9 +66,9 @@ pub fn main() {
     |> lustre.start("#app", Nil)
 
   use event <- init_js(
-    fn(program_duration) { runtime(dispatch(Draw(program_duration))) },
+    fn(program_duration) { update_the_model(dispatch(Draw(program_duration))) },
     fn(viewport_x, viewport_y) {
-      runtime(dispatch(Resize(viewport_x, viewport_y)))
+      update_the_model(dispatch(Resize(viewport_x, viewport_y)))
     },
   )
   use #(key, repeat) <- try(
@@ -97,7 +79,7 @@ pub fn main() {
     }),
   )
   use <- guard(repeat, Ok(Nil))
-  runtime(dispatch(Keydown(key))) |> Ok
+  update_the_model(dispatch(Keydown(key))) |> Ok
 }
 
 fn id(mod) {

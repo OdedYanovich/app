@@ -12,6 +12,7 @@ draw HP bar
 animate character transition
 initialization 52: construct fight from current level
 view: Layout for each mod include a pane for a string array
+mange the runtime in js or replace js_init with pairs of functions for initialization and usage
 
 far future:
 rebuild with "The entry point"

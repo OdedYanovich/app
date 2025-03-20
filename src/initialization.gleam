@@ -4,30 +4,28 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option.{None}
+
 import gleam/result
-import lustre/effect
 import root.{
   type Identification, type Model, Credit, CreditId, EndDmg, Fight, FightId, Hub,
-  HubId, Model, Phase, StartDmg, all_command_keys,
+  HubId, Model, Phase, StartDmg, add_effect, all_command_keys, effectless,
 }
 
 pub fn init(_flags) {
-  #(
-    Model(
-      mod: Hub(0.0),
-      volume: 50,
-      responses: responses(),
-      hp_lose_interval_id: None,
-      unlocked_levels: 3,
-      selected_level: 2,
-      program_duration: 0.0,
-      viewport_width: get_viewport_size().0,
-      viewport_height: get_viewport_size().1,
-      // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
-    // seed: seed.random(),
-    ),
-    effect.none(),
+  Model(
+    mod: Hub(0.0),
+    volume: 50,
+    responses: responses(),
+    hp_lose_interval_id: None,
+    unlocked_levels: 3,
+    selected_level: 2,
+    program_duration: 0.0,
+    viewport_width: get_viewport_size().0,
+    viewport_height: get_viewport_size().1,
+    // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
+  // seed: seed.random(),
   )
+  |> effectless
 }
 
 fn responses() {
@@ -57,13 +55,13 @@ fn responses() {
 
 fn morph_to(model: Model, mod: Identification) {
   case mod {
-    HubId -> #(Model(..model, mod: Hub(0.0)), case model.mod {
-      Fight(_, _, _, _, _, _, _) ->
-        effect.from(fn(dispatch) { dispatch(EndDmg) })
-      _ -> effect.none()
-    })
-
-    FightId -> #(
+    HubId ->
+      Model(..model, mod: Hub(0.0))
+      |> add_effect(case model.mod {
+        Fight(_, _, _, _, _, _, _) -> fn(dispatch) { dispatch(EndDmg) }
+        _ -> fn(_dispatch) { Nil }
+      })
+    FightId -> {
       Model(
         ..model,
         mod: Fight(
@@ -89,10 +87,11 @@ fn morph_to(model: Model, mod: Identification) {
             |> list.first
             |> result.unwrap("s"),
         ),
-      ),
-      fn(dispatch) { dispatch(StartDmg(dispatch)) } |> effect.from,
-    )
-    CreditId -> #(Model(..model, mod: Credit), effect.none())
+        // hp_lose_interval_id: Some(start_hp_lose(fn() { lustre.dispatch(Dmg) })),
+      )
+      |> add_effect(fn(dispatch) { dispatch(StartDmg(dispatch)) })
+    }
+    CreditId -> Model(..model, mod: Credit) |> effectless
   }
 }
 
@@ -109,25 +108,21 @@ pub const volume_buttons_and_changes = [
 
 fn change_volume(change, model: Model) {
   let assert Hub(timer) = model.mod
-  #(
-    Model(
-      ..model,
-      mod: Hub(timer +. 500.0),
-      volume: int.max(int.min(model.volume + change, 100), 0),
-    ),
-    effect.none(),
+  Model(
+    ..model,
+    mod: Hub(timer +. 500.0),
+    volume: int.max(int.min(model.volume + change, 100), 0),
   )
+  |> effectless
 }
 
 fn change_level(model, change) {
-  #(
-    Model(..model, selected_level: case model.selected_level + change {
-      n if n >= model.unlocked_levels -> model.unlocked_levels
-      n if n <= 0 -> 0
-      n -> n
-    }),
-    effect.none(),
-  )
+  Model(..model, selected_level: case model.selected_level + change {
+    n if n >= model.unlocked_levels -> model.unlocked_levels
+    n if n <= 0 -> 0
+    n -> n
+  })
+  |> effectless
 }
 
 fn level_buttons(buttons, current_level) {
@@ -156,10 +151,10 @@ fn fight_responses() {
           phases:,
           press_counter:,
         )
-      use <- guard(required_press != latest_key_press, #(
-        Model(..model, mod: Fight(..mod, hp: hp -. 8.0)),
-        effect.none(),
-      ))
+      use <- guard(
+        required_press != latest_key_press,
+        Model(..model, mod: Fight(..mod, hp: hp -. 8.0)) |> effectless,
+      )
       use <- guard(
         hp >. 80.0,
         Model(
@@ -169,21 +164,19 @@ fn fight_responses() {
         )
           |> morph_to(HubId),
       )
-      #(
-        Model(
-          ..model,
-          mod: Fight(
-            ..mod,
-            hp: hp +. 8.0,
-            required_press: buttons
-              |> list.sample(1)
-              |> list.first
-              |> result.unwrap("s"),
-          ),
-          // seed:,
+      Model(
+        ..model,
+        mod: Fight(
+          ..mod,
+          hp: hp +. 8.0,
+          required_press: buttons
+            |> list.sample(1)
+            |> list.first
+            |> result.unwrap("s"),
         ),
-        effect.none(),
+        // seed:,
       )
+      |> effectless
     })
   })
   |> dict.from_list

@@ -34,9 +34,9 @@ pub type Phase {
   )
 }
 
-pub type Level {
-  Level
-}
+// pub type Level {
+//   Level
+// }
 
 pub type Msg {
   Keydown(String)
@@ -98,9 +98,9 @@ pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
 
-// pub fn add_effect(responses, effect) {
-//   #(responses, effect.from(effect))
-// }
+pub fn add_effect(responses, effect) {
+  #(responses, effect.from(effect))
+}
 
 pub fn effectless(responses) {
   #(responses, effect.none())

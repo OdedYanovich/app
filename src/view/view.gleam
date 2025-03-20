@@ -6,7 +6,7 @@ import lustre/attribute
 import lustre/element/html
 import root.{type Model, Credit, Fight, Hub}
 import view/css.{
-  Absolute, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
+  Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
 }
 
 fn text_to_elements(text: List(String)) {
@@ -16,17 +16,17 @@ fn text_to_elements(text: List(String)) {
 
 pub fn view(model: Model) {
   html.div([], [
-    // html.canvas([
-    //   attribute.id("canvas"),
-    //   attribute.width(model.viewport_width),
-    //   attribute.height(model.viewport_height),
-    //   attribute.style([
-    //     css.position(Absolute),
-    //     css.background_color(Black),
-    //     css.left(REM(0.0)),
-    //     css.top(REM(0.0)),
-    //   ]),
-    // ]),
+    html.canvas([
+      attribute.id("canvas"),
+      attribute.width(model.viewport_width),
+      attribute.height(model.viewport_height),
+      attribute.style([
+        css.position(Absolute),
+        css.background_color(Black),
+        css.left(REM(0.0)),
+        css.top(REM(0.0)),
+      ]),
+    ]),
     html.div(
       [
         attribute.style([
