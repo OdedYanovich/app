@@ -1,16 +1,16 @@
-import draw.{draw_frame}
-import ffi/gleam/main.{end_hp_lose, init_js, start_hp_lose}
+import ffi/gleam/damage.{set_damage_event}
+import ffi/gleam/main.{init_game_loop, init_keydown_event, init_resize_event}
+
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
-import gleam/option.{None, Some}
 import gleam/result.{try}
 import gleam/string
 import initialization.{init}
 import lustre.{dispatch}
 import root.{
-  type Model, Credit, CreditId, Dmg, Draw, EndDmg, Fight, FightId, Hub, HubId,
-  Keydown, Model, Resize, StartDmg, effectless,
+  type Model, Credit, CreditId, Dmg, Draw, Fight, FightId, Hub, HubId, Keydown,
+  Model, Resize,
 }
 import view/view.{view}
 
@@ -19,7 +19,9 @@ pub fn main() {
     fn(model, msg) {
       case msg {
         Draw(program_duration) ->
-          draw_frame(model, program_duration) |> effectless
+          fn(model: Model, program_duration) {
+            Model(..model, program_duration:)
+          }(model, program_duration)
         Keydown(latest_key_press) -> {
           let latest_key_press = latest_key_press |> string.lowercase
           case
@@ -32,9 +34,9 @@ pub fn main() {
                 Fight(responses, _hp, _rp, _ip, _b, _ph, _pc) ->
                   case responses |> dict.get(latest_key_press) {
                     Ok(response) -> response(model, latest_key_press)
-                    Error(_) -> model |> effectless
+                    Error(_) -> model
                   }
-                _ -> model |> effectless
+                _ -> model
               }
           }
         }
@@ -45,32 +47,22 @@ pub fn main() {
 
             _ -> model
           }
-          |> effectless
         }
-        StartDmg(dispatch) ->
-          Model(
-            ..model,
-            hp_lose_interval_id: Some(start_hp_lose(fn() { dispatch(Dmg) })),
-          )
-          |> effectless
-        // model |> effectless
-        EndDmg -> {
-          end_hp_lose(model.hp_lose_interval_id |> option.unwrap(0))
-          Model(..model, hp_lose_interval_id: None) |> effectless
-        }
+
         Resize(viewport_width, viewport_height) ->
-          Model(..model, viewport_width:, viewport_height:) |> effectless
+          Model(..model, viewport_width:, viewport_height:)
       }
     }
-    |> lustre.application(init, _, view)
+    |> lustre.simple(init, _, view)
     |> lustre.start("#app", Nil)
-
-  use event <- init_js(
-    fn(program_duration) { update_the_model(dispatch(Draw(program_duration))) },
-    fn(viewport_x, viewport_y) {
-      update_the_model(dispatch(Resize(viewport_x, viewport_y)))
-    },
-  )
+  init_game_loop(fn(program_duration) {
+    update_the_model(dispatch(Draw(program_duration)))
+  })
+  init_resize_event(fn(viewport_x, viewport_y) {
+    update_the_model(dispatch(Resize(viewport_x, viewport_y)))
+  })
+  set_damage_event(fn() { update_the_model(dispatch(Dmg)) })
+  use event <- init_keydown_event
   use #(key, repeat) <- try(
     decode.run(event, {
       use key <- decode.field("key", decode.string)

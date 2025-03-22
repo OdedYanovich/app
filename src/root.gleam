@@ -1,6 +1,5 @@
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
-import lustre/effect
 
 // import prng/seed
 
@@ -40,18 +39,18 @@ pub type Phase {
 
 pub type Msg {
   Keydown(String)
-  StartDmg(fn(Msg) -> Nil)
+  // StartDmg(fn(Msg) -> Nil)
   Dmg
-  EndDmg
+  // EndDmg
   Draw(Float)
   Resize(Int, Int)
 }
 
 pub type Response =
-  fn(Model) -> #(Model, effect.Effect(Msg))
+  fn(Model) -> Model
 
 type FightResponse =
-  fn(Model, String) -> #(Model, effect.Effect(Msg))
+  fn(Model, String) -> Model
 
 pub type Model {
   Model(
@@ -66,7 +65,6 @@ pub type Model {
     viewport_height: Int,
     // seed: seed.Seed,
     // image: Image,
-    // effect: effect.Effect(Msg),
   )
 }
 
@@ -97,11 +95,3 @@ pub const all_command_keys = ["s", "d", "f", "j", "k", "l", "w", "i"]
 pub const animation_end_time = 3000.0
 
 pub const pixel_dimensions = 50
-
-pub fn add_effect(responses, effect) {
-  #(responses, effect.from(effect))
-}
-
-pub fn effectless(responses) {
-  #(responses, effect.none())
-}

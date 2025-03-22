@@ -1,14 +1,14 @@
+import ffi/gleam/damage.{start_damage_event, stop_damage_event}
 import ffi/gleam/main.{get_viewport_size}
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option.{None}
-
 import gleam/result
 import root.{
-  type Identification, type Model, Credit, CreditId, EndDmg, Fight, FightId, Hub,
-  HubId, Model, Phase, StartDmg, add_effect, all_command_keys, effectless,
+  type Identification, type Model, Credit, CreditId, Fight, FightId, Hub, HubId,
+  Model, Phase, all_command_keys,
 }
 
 pub fn init(_flags) {
@@ -25,7 +25,6 @@ pub fn init(_flags) {
     // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
   // seed: seed.random(),
   )
-  |> effectless
 }
 
 fn responses() {
@@ -55,13 +54,12 @@ fn responses() {
 
 fn morph_to(model: Model, mod: Identification) {
   case mod {
-    HubId ->
+    HubId -> {
+      stop_damage_event()
       Model(..model, mod: Hub(0.0))
-      |> add_effect(case model.mod {
-        Fight(_, _, _, _, _, _, _) -> fn(dispatch) { dispatch(EndDmg) }
-        _ -> fn(_dispatch) { Nil }
-      })
+    }
     FightId -> {
+      start_damage_event()
       Model(
         ..model,
         mod: Fight(
@@ -87,11 +85,9 @@ fn morph_to(model: Model, mod: Identification) {
             |> list.first
             |> result.unwrap("s"),
         ),
-        // hp_lose_interval_id: Some(start_hp_lose(fn() { lustre.dispatch(Dmg) })),
       )
-      |> add_effect(fn(dispatch) { dispatch(StartDmg(dispatch)) })
     }
-    CreditId -> Model(..model, mod: Credit) |> effectless
+    CreditId -> Model(..model, mod: Credit)
   }
 }
 
@@ -113,7 +109,6 @@ fn change_volume(change, model: Model) {
     mod: Hub(timer +. 500.0),
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
-  |> effectless
 }
 
 fn change_level(model, change) {
@@ -122,7 +117,6 @@ fn change_level(model, change) {
     n if n <= 0 -> 0
     n -> n
   })
-  |> effectless
 }
 
 fn level_buttons(buttons, current_level) {
@@ -153,7 +147,7 @@ fn fight_responses() {
         )
       use <- guard(
         required_press != latest_key_press,
-        Model(..model, mod: Fight(..mod, hp: hp -. 8.0)) |> effectless,
+        Model(..model, mod: Fight(..mod, hp: hp -. 8.0)),
       )
       use <- guard(
         hp >. 80.0,
@@ -176,7 +170,6 @@ fn fight_responses() {
         ),
         // seed:,
       )
-      |> effectless
     })
   })
   |> dict.from_list

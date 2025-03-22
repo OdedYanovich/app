@@ -1,7 +1,6 @@
 responses: During fights, the presses counter's modulo will determine the next button
 idea: Generalize and exclude possibilities for the correct next level
 responses: Set and check the phase's timer
-responses: Remove effects
 add metronome sound
 persistent memory
 Level selector
