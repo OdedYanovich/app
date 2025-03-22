@@ -1,8 +1,6 @@
 import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 
-// import prng/seed
-
 pub type Mods {
   Hub(volume_animation_timer: Float)
   Fight(
@@ -10,11 +8,22 @@ pub type Mods {
     hp: Float,
     required_press: String,
     initial_presses: Int,
-    buttons: List(String),
+    // buttons: List(String),
     phases: List(Phase),
     press_counter: Int,
   )
   Credit
+}
+
+
+pub type Phase {
+  Phase(
+    buttons: String,
+    // press_per_minute: Int,
+    // press_per_mistake: Int,
+    // time: Float,
+    // next_phase: fn(Int) -> Int,
+  )
 }
 
 pub type Identification {
@@ -23,26 +32,10 @@ pub type Identification {
   CreditId
 }
 
-pub type Phase {
-  Phase(
-    press_per_minute: Int,
-    press_per_mistake: Int,
-    time: Float,
-    buttons: List(String),
-    next_phase: fn(Int) -> Int,
-  )
-}
-
-// pub type Level {
-//   Level
-// }
-
 pub type Msg {
   Keydown(String)
-  // StartDmg(fn(Msg) -> Nil)
   Dmg
-  // EndDmg
-  Draw(Float)
+  Frame(Float)
   Resize(Int, Int)
 }
 
@@ -63,8 +56,6 @@ pub type Model {
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
-    // seed: seed.Seed,
-    // image: Image,
   )
 }
 
@@ -90,7 +81,7 @@ pub type MovingPixel {
   Pixel(existence_time: Float, position: Position, trajectory: Position)
 }
 
-pub const all_command_keys = ["s", "d", "f", "j", "k", "l", "w", "i"]
+// pub const all_command_keys = "sdfjklwi"//["s", "d", "f", "j", "k", "l", "w", "i"]
 
 pub const animation_end_time = 3000.0
 

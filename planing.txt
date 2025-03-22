@@ -12,6 +12,11 @@ animate character transition
 initialization 52: construct fight from current level
 view: Layout for each mod include a pane for a string array
 mange the runtime in js or replace js_init with pairs of functions for initialization and usage
+level 7: rethink the "unwrap"
+app: make damage taken time independent
+Update the damage on Frame instead of Dmg
+Use program's duration directly with wrapped performance.now (main.mjs)
+Make phases start at index 0
 
 far future:
 rebuild with "The entry point"

@@ -1,5 +1,4 @@
 // let ctx;
-
 // ctx = document.getElementById("canvas").getContext("2d");
 // ctx.imageSmoothingEnabled = false;
 // ctx.fillStyle = "rgba(0,0,0,255)";

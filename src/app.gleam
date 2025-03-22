@@ -9,7 +9,7 @@ import gleam/string
 import initialization.{init}
 import lustre.{dispatch}
 import root.{
-  type Model, Credit, CreditId, Dmg, Draw, Fight, FightId, Hub, HubId, Keydown,
+  type Model, Credit, CreditId, Dmg, Fight, FightId, Frame, Hub, HubId, Keydown,
   Model, Resize,
 }
 import view/view.{view}
@@ -18,7 +18,7 @@ pub fn main() {
   let assert Ok(update_the_model) =
     fn(model, msg) {
       case msg {
-        Draw(program_duration) ->
+        Frame(program_duration) ->
           fn(model: Model, program_duration) {
             Model(..model, program_duration:)
           }(model, program_duration)
@@ -31,7 +31,7 @@ pub fn main() {
             Ok(response) -> response(model)
             Error(_) ->
               case model.mod {
-                Fight(responses, _hp, _rp, _ip, _b, _ph, _pc) ->
+                Fight(responses, _hp, _rp, _ip, _ph, _pc) ->
                   case responses |> dict.get(latest_key_press) {
                     Ok(response) -> response(model, latest_key_press)
                     Error(_) -> model
@@ -42,8 +42,8 @@ pub fn main() {
         }
         Dmg -> {
           case model.mod {
-            Fight(re, hp, rp, ip, bu, ph, pc) ->
-              Model(..model, mod: Fight(re, hp -. 0.02, rp, ip, bu, ph, pc))
+            Fight(re, hp, rp, ip, ph, pc) ->
+              Model(..model, mod: Fight(re, hp -. 0.02, rp, ip, ph, pc))
 
             _ -> model
           }
@@ -56,7 +56,7 @@ pub fn main() {
     |> lustre.simple(init, _, view)
     |> lustre.start("#app", Nil)
   init_game_loop(fn(program_duration) {
-    update_the_model(dispatch(Draw(program_duration)))
+    update_the_model(dispatch(Frame(program_duration)))
   })
   init_resize_event(fn(viewport_x, viewport_y) {
     update_the_model(dispatch(Resize(viewport_x, viewport_y)))
@@ -77,7 +77,7 @@ pub fn main() {
 fn id(mod) {
   case mod {
     Hub(_) -> HubId
-    Fight(_, _, _, _, _, _, _) -> FightId
+    Fight(_, _, _, _, _, _) -> FightId
     Credit -> CreditId
   }
 }

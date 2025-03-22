@@ -5,10 +5,11 @@ import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option.{None}
-import gleam/result
+import gleam/string
+import level.{levels}
 import root.{
   type Identification, type Model, Credit, CreditId, Fight, FightId, Hub, HubId,
-  Model, Phase, all_command_keys,
+  Model, Phase,
 }
 
 pub fn init(_flags) {
@@ -60,30 +61,18 @@ fn morph_to(model: Model, mod: Identification) {
     }
     FightId -> {
       start_damage_event()
+      let phases = levels(model.selected_level)
+      let assert Ok(phase) = phases |> list.first
+      let assert Ok(required_press) = phase.buttons |> string.first
       Model(
         ..model,
         mod: Fight(
-          responses: fight_responses(),
+          responses: fight_responses(phase.buttons),
           hp: 5.0,
-          buttons: all_command_keys
-            |> level_buttons(model.selected_level),
           initial_presses: 20,
-          phases: [
-            Phase(
-              buttons: all_command_keys
-                |> level_buttons(model.selected_level),
-              press_per_minute: 2,
-              press_per_mistake: 8,
-              time: 1000.0,
-              next_phase: fn(_) { 0 },
-            ),
-          ],
+          phases:,
           press_counter: 0,
-          required_press: all_command_keys
-            |> level_buttons(model.selected_level)
-            |> list.sample(1)
-            |> list.first
-            |> result.unwrap("s"),
+          required_press:,
         ),
       )
     }
@@ -119,19 +108,14 @@ fn change_level(model, change) {
   })
 }
 
-fn level_buttons(buttons, current_level) {
-  buttons |> list.take(current_level + 1)
-}
-
-fn fight_responses() {
-  list.map(all_command_keys, fn(key) {
+fn fight_responses(buttons) {
+  list.map(buttons |> string.to_graphemes, fn(key) {
     #(key, fn(model: Model, latest_key_press: String) {
       let assert Fight(
         responses,
         hp,
         required_press,
         initial_presses,
-        buttons,
         phases,
         press_counter,
       ) = model.mod
@@ -141,7 +125,6 @@ fn fight_responses() {
           hp:,
           required_press:,
           initial_presses:,
-          buttons:,
           phases:,
           press_counter:,
         )
@@ -158,17 +141,18 @@ fn fight_responses() {
         )
           |> morph_to(HubId),
       )
+      let assert Ok(phase) = phases |> list.first
+      let assert Ok(#(required_press, rest)) =
+        string.pop_grapheme(phase.buttons)
       Model(
         ..model,
         mod: Fight(
           ..mod,
           hp: hp +. 8.0,
-          required_press: buttons
-            |> list.sample(1)
-            |> list.first
-            |> result.unwrap("s"),
+          required_press:,
+          phases: [Phase(buttons: rest <> required_press)]
+            |> list.append(phases |> list.drop(1)),
         ),
-        // seed:,
       )
     })
   })
