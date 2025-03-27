@@ -1,16 +1,15 @@
 import ffi/gleam/damage.{set_damage_event}
 import ffi/gleam/main.{init_game_loop, init_keydown_event, init_resize_event}
-
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/result.{try}
 import gleam/string
-import initialization.{init}
+import initialization.{init, morph_to}
 import lustre.{dispatch}
 import root.{
-  type Model, Credit, CreditId, Dmg, Fight, FightId, Frame, Hub, HubId, Keydown,
-  Model, Resize,
+  type Model, Credit, CreditId, Dmg, Fight, FightBody, FightId, Frame, Hub,
+  HubId, Keydown, Model, Resize,
 }
 import view/view.{view}
 
@@ -31,9 +30,19 @@ pub fn main() {
             Ok(response) -> response(model)
             Error(_) ->
               case model.mod {
-                Fight(responses, _hp, _rp, _ip, _ph, _pc) ->
-                  case responses |> dict.get(latest_key_press) {
-                    Ok(response) -> response(model, latest_key_press)
+                Fight(fight) ->
+                  case fight.responses |> dict.get(latest_key_press) {
+                    Ok(response) -> {
+                      case response(fight, latest_key_press) {
+                        #(_, True) ->
+                          Model(
+                            ..model,
+                            unlocked_levels: model.unlocked_levels + 1,
+                          )
+                          |> morph_to(HubId)
+                        #(fight, _) -> Model(..model, mod: Fight(fight))
+                      }
+                    }
                     Error(_) -> model
                   }
                 _ -> model
@@ -42,9 +51,11 @@ pub fn main() {
         }
         Dmg -> {
           case model.mod {
-            Fight(re, hp, rp, ip, ph, pc) ->
-              Model(..model, mod: Fight(re, hp -. 0.02, rp, ip, ph, pc))
-
+            Fight(fight) ->
+              Model(
+                ..model,
+                mod: FightBody(..fight, hp: fight.hp -. 0.02) |> Fight,
+              )
             _ -> model
           }
         }
@@ -77,7 +88,7 @@ pub fn main() {
 fn id(mod) {
   case mod {
     Hub(_) -> HubId
-    Fight(_, _, _, _, _, _) -> FightId
+    Fight(_) -> FightId
     Credit -> CreditId
   }
 }

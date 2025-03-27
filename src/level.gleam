@@ -2,7 +2,11 @@ import gleam/option.{None, Some}
 import root.{Phase}
 
 pub fn levels(index) {
-  [[Phase(buttons: "as")], [Phase(buttons: "asd")], [Phase(buttons: "das")]]
+  [
+    [Phase(buttons: "as", max_press_count: -1)],
+    [Phase(buttons: "asd", max_press_count: -1)],
+    [Phase(buttons: "das", max_press_count: -1)],
+  ]
   |> find_by_index(index)
   |> option.unwrap([])
 }

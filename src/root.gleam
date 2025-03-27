@@ -2,8 +2,17 @@ import gleam/dict.{type Dict}
 import gleam/option.{type Option}
 
 pub type Mods {
-  Hub(volume_animation_timer: Float)
-  Fight(
+  Hub(HubBody)
+  Fight(FightBody)
+  Credit
+}
+
+pub type HubBody {
+  HubBody(volume_animation_timer: Float)
+}
+
+pub type FightBody {
+  FightBody(
     responses: Dict(String, FightResponse),
     hp: Float,
     required_press: String,
@@ -12,13 +21,12 @@ pub type Mods {
     phases: List(Phase),
     press_counter: Int,
   )
-  Credit
 }
-
 
 pub type Phase {
   Phase(
     buttons: String,
+    max_press_count: Int,
     // press_per_minute: Int,
     // press_per_mistake: Int,
     // time: Float,
@@ -43,7 +51,7 @@ pub type Response =
   fn(Model) -> Model
 
 type FightResponse =
-  fn(Model, String) -> Model
+  fn(FightBody, String) -> #(FightBody, Bool)
 
 pub type Model {
   Model(

@@ -8,13 +8,13 @@ import gleam/option.{None}
 import gleam/string
 import level.{levels}
 import root.{
-  type Identification, type Model, Credit, CreditId, Fight, FightId, Hub, HubId,
-  Model, Phase,
+  type FightBody, type Identification, type Model, Credit, CreditId, Fight,
+  FightBody, FightId, Hub, HubBody, HubId, Model, Phase,
 }
 
 pub fn init(_flags) {
   Model(
-    mod: Hub(0.0),
+    mod: 0.0 |> HubBody |> Hub,
     volume: 50,
     responses: responses(),
     hp_lose_interval_id: None,
@@ -28,7 +28,7 @@ pub fn init(_flags) {
   )
 }
 
-fn responses() {
+fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) {
   volume_buttons_and_changes
   |> list.map(fn(key_val) {
     #(#(HubId, key_val.0), change_volume(key_val.1, _))
@@ -53,27 +53,28 @@ fn responses() {
   |> dict.from_list
 }
 
-fn morph_to(model: Model, mod: Identification) {
+pub fn morph_to(model: Model, mod: Identification) -> Model {
   case mod {
     HubId -> {
       stop_damage_event()
-      Model(..model, mod: Hub(0.0))
+      Model(..model, mod: 0.0 |> HubBody |> Hub)
     }
     FightId -> {
       start_damage_event()
       let phases = levels(model.selected_level)
       let assert Ok(phase) = phases |> list.first
-      let assert Ok(required_press) = phase.buttons |> string.first
+      let assert Ok(required_press) = phase.buttons |> string.last
       Model(
         ..model,
-        mod: Fight(
-          responses: fight_responses(phase.buttons),
-          hp: 5.0,
-          initial_presses: 20,
-          phases:,
-          press_counter: 0,
-          required_press:,
-        ),
+        mod: FightBody(
+            responses: fight_responses(phase.buttons),
+            hp: 5.0,
+            initial_presses: 20,
+            phases:,
+            press_counter: 0,
+            required_press:,
+          )
+          |> Fight,
       )
     }
     CreditId -> Model(..model, mod: Credit)
@@ -92,10 +93,10 @@ pub const volume_buttons_and_changes = [
 ]
 
 fn change_volume(change, model: Model) {
-  let assert Hub(timer) = model.mod
+  let assert Hub(hub) = model.mod
   Model(
     ..model,
-    mod: Hub(timer +. 500.0),
+    mod: hub.timer +. 500.0 |> HubBody |> Hub,
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
 }
@@ -110,49 +111,24 @@ fn change_level(model, change) {
 
 fn fight_responses(buttons) {
   list.map(buttons |> string.to_graphemes, fn(key) {
-    #(key, fn(model: Model, latest_key_press: String) {
-      let assert Fight(
-        responses,
-        hp,
-        required_press,
-        initial_presses,
-        phases,
-        press_counter,
-      ) = model.mod
-      let mod =
-        Fight(
-          responses:,
-          hp:,
-          required_press:,
-          initial_presses:,
-          phases:,
-          press_counter:,
-        )
-      use <- guard(
-        required_press != latest_key_press,
-        Model(..model, mod: Fight(..mod, hp: hp -. 8.0)),
-      )
-      use <- guard(
-        hp >. 80.0,
-        Model(
-          ..model,
-          unlocked_levels: model.unlocked_levels + 1,
-          mod: Fight(..mod, hp: 5.0),
-        )
-          |> morph_to(HubId),
-      )
-      let assert Ok(phase) = phases |> list.first
+    #(key, fn(mod: FightBody, latest_key_press: String) {
+      use <- guard(mod.required_press != latest_key_press, #(
+        FightBody(..mod, hp: mod.hp -. 8.0),
+        False,
+      ))
+      use <- guard(mod.hp >. 80.0, #(FightBody(..mod, hp: 5.0), True))
+      let assert Ok(phase) = mod.phases |> list.first
       let assert Ok(#(required_press, rest)) =
         string.pop_grapheme(phase.buttons)
-      Model(
-        ..model,
-        mod: Fight(
+      #(
+        FightBody(
           ..mod,
-          hp: hp +. 8.0,
+          hp: mod.hp +. 8.0,
           required_press:,
-          phases: [Phase(buttons: rest <> required_press)]
-            |> list.append(phases |> list.drop(1)),
+          phases: [Phase(buttons: rest <> required_press, max_press_count: -1)]
+            |> list.append(mod.phases |> list.drop(1)),
         ),
+        False,
       )
     })
   })
