@@ -8,8 +8,8 @@ import gleam/option.{None}
 import gleam/string
 import level.{levels}
 import root.{
-  type FightBody, type Identification, type Model, Credit, CreditId, Fight,
-  FightBody, FightId, Hub, HubBody, HubId, Model, Phase,
+  type FightBody, type Identification, type Model, Credit, CreditId, DoNothing,
+  Fight, FightBody, FightId, Hub, HubBody, HubId, Model, Phase, ToHub,
 }
 
 pub fn init(_flags) {
@@ -34,21 +34,12 @@ fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) 
     #(#(HubId, key_val.0), change_volume(key_val.1, _))
   })
   |> list.append([
-    #(#(HubId, "z"), fn(model) {
-      model
-      |> morph_to(FightId)
-    }),
-    #(#(HubId, "c"), fn(model) { model |> morph_to(CreditId) }),
     #(#(HubId, "k"), change_level(_, -1)),
     #(#(HubId, "l"), change_level(_, 1)),
-    #(#(FightId, "z"), fn(model) {
-      model
-      |> morph_to(HubId)
-    }),
-    #(#(CreditId, "z"), fn(model) {
-      model
-      |> morph_to(HubId)
-    }),
+    #(#(HubId, "z"), morph_to(_, FightId)),
+    #(#(HubId, "c"), morph_to(_, CreditId)),
+    #(#(FightId, "z"), morph_to(_, HubId)),
+    #(#(CreditId, "z"), morph_to(_, HubId)),
   ])
   |> dict.from_list
 }
@@ -61,16 +52,23 @@ pub fn morph_to(model: Model, mod: Identification) -> Model {
     }
     FightId -> {
       start_damage_event()
-      let phases = levels(model.selected_level)
-      let assert Ok(phase) = phases |> list.first
-      let assert Ok(required_press) = phase.buttons |> string.last
+      let phases = model.selected_level |> levels
+      let all_buttons =
+        phases
+        |> list.fold("", fn(all_buttons, to_add) {
+          all_buttons <> to_add.buttons
+        })
+      let assert [phase, ..other_phses] = phases
+      let assert Ok(#(required_press, other_buttons)) =
+        string.pop_grapheme(phase.buttons)
       Model(
         ..model,
         mod: FightBody(
-            responses: fight_responses(phase.buttons),
+            responses: fight_responses(all_buttons),
             hp: 5.0,
             initial_presses: 20,
-            phases:,
+            phases: [Phase(..phase, buttons: other_buttons <> required_press)]
+              |> list.append(other_phses),
             press_counter: 0,
             required_press:,
           )
@@ -93,10 +91,9 @@ pub const volume_buttons_and_changes = [
 ]
 
 fn change_volume(change, model: Model) {
-  let assert Hub(hub) = model.mod
   Model(
     ..model,
-    mod: hub.timer +. 500.0 |> HubBody |> Hub,
+    mod: model.program_duration +. 500.0 |> HubBody |> Hub,
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
 }
@@ -111,26 +108,51 @@ fn change_level(model, change) {
 
 fn fight_responses(buttons) {
   list.map(buttons |> string.to_graphemes, fn(key) {
-    #(key, fn(mod: FightBody, latest_key_press: String) {
-      use <- guard(mod.required_press != latest_key_press, #(
-        FightBody(..mod, hp: mod.hp -. 8.0),
-        False,
-      ))
-      use <- guard(mod.hp >. 80.0, #(FightBody(..mod, hp: 5.0), True))
-      let assert Ok(phase) = mod.phases |> list.first
-      let assert Ok(#(required_press, rest)) =
-        string.pop_grapheme(phase.buttons)
-      #(
-        FightBody(
-          ..mod,
-          hp: mod.hp +. 8.0,
-          required_press:,
-          phases: [Phase(buttons: rest <> required_press, max_press_count: -1)]
-            |> list.append(mod.phases |> list.drop(1)),
-        ),
-        False,
+    #(key, fn(fight: FightBody, latest_key_press: String) {
+      use <- guard(
+        fight.required_press != latest_key_press,
+        FightBody(..fight, hp: fight.hp -. 8.0) |> pair(DoNothing),
       )
+      use <- guard(fight.hp >. 80.0, FightBody(..fight, hp: 5.0) |> pair(ToHub))
+      let #(phases, required_press, press_counter) = case fight.phases {
+        [current, next, ..rest]
+          if fight.press_counter + 1 == current.max_press_count
+        -> {
+          let assert Ok(#(required_press, rest_of_buttons)) =
+            string.pop_grapheme(next.buttons)
+          #(
+            [Phase(..next, buttons: rest_of_buttons <> required_press)]
+              |> list.append(rest)
+              |> list.append([current]),
+            required_press,
+            0,
+          )
+        }
+        [current, ..rest] -> {
+          let assert Ok(#(required_press, rest_of_buttons)) =
+            string.pop_grapheme(current.buttons)
+          #(
+            [Phase(..current, buttons: rest_of_buttons <> required_press)]
+              |> list.append(rest),
+            required_press,
+            fight.press_counter + 1,
+          )
+        }
+        _ -> panic
+      }
+      FightBody(
+        ..fight,
+        hp: fight.hp +. 8.0,
+        required_press:,
+        press_counter:,
+        phases:,
+      )
+      |> pair(DoNothing)
     })
   })
   |> dict.from_list
+}
+
+fn pair(a, b) {
+  #(a, b)
 }

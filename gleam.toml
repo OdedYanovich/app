@@ -16,8 +16,8 @@ target = "javascript"
 gleam_stdlib = ">= 0.34.0 and < 2.0.0"
 lustre = ">= 4.6.3 and < 5.0.0"
 # sketch = ">= 4.0.0 and < 5.0.0"
-prng = ">= 4.0.1 and < 5.0.0"
-# funtil = ">= 1.0.0 and < 2.0.0"
+# prng = ">= 4.0.1 and < 5.0.0"
+funtil = ">= 1.0.0 and < 2.0.0"
 
 [dev-dependencies]
 lustre_dev_tools = ">= 1.6.5 and < 2.0.0"
@@ -28,10 +28,3 @@ runtime = "deno"
 [javascript.deno]
 allow_read = ["gleam.toml", "test", "build"]
 
-# [dependencies]
-# the_entry_point = { path = "../the_entry_point" }
-# gleam_stdlib = ">= 0.44.0 and < 2.0.0"
-# wisp = ">= 1.5.3 and < 2.0.0"
-# mist = ">= 4.0.6 and < 5.0.0"
-# gleam_erlang = ">= 0.34.0 and < 1.0.0"
-# lustre = ">= 4.6.4 and < 5.0.0"

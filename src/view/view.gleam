@@ -15,6 +15,87 @@ fn text_to_elements(text: List(String)) {
 }
 
 pub fn view(model: Model) {
+  let #(mod_elements, canvas_mod_attribute) = case model.mod {
+    Hub(hub) -> #(
+      [
+        "z fight",
+        "x reset dungeon",
+        "c credits",
+        "made by Oded Yanovich",
+        "volume: " <> model.volume |> int.to_string,
+      ]
+        |> text_to_elements
+        |> list.append([
+          html.div(
+            [
+              attribute.id("volume"),
+              attribute.style([
+                #("display", "grid"),
+                #("grid-auto-flow", "column"),
+                #("grid-template", "repeat(2, 1fr) / repeat(8, 1fr)"),
+                #("width", "100%"),
+                #("height", "100%"),
+                #("place-items", "center"),
+                #(
+                  "background-color",
+                  case hub.volume_animation_timer >. model.program_duration {
+                    True -> "green"
+                    False -> "blue"
+                  },
+                ),
+              ]),
+            ],
+            volume_buttons_and_changes
+              |> list.flat_map(fn(button_volume_change) {
+                [
+                  html.div([], [button_volume_change.0 |> html.text]),
+                  html.div([], [
+                    button_volume_change.1
+                    |> int.to_string
+                    |> html.text,
+                  ]),
+                ]
+              }),
+          ),
+          html.div(
+            [
+              attribute.style([
+                #("display", "grid"),
+                #("grid-template", "1fr / repeat(3, 1fr)"),
+                #("place-items", "center"),
+                #("width", "100%"),
+                #("height", "100%"),
+              ]),
+            ],
+            ["k", model.selected_level |> int.to_string, "l"]
+              |> text_to_elements,
+          ),
+        ]),
+      #("", ""),
+    )
+    Fight(fight) -> #(
+      [
+        "z go back",
+        "required press: " <> fight.required_press,
+        "current level: " <> model.selected_level |> int.to_string,
+      ]
+        |> text_to_elements,
+      #(
+        "background",
+        "linear-gradient(to left, rgba(0, 255, 0,0.3) "
+          <> fight.hp |> float.round |> int.to_string
+          <> "%, rgba(0,0,0,0))",
+      ),
+    )
+    Credit -> #(
+      ["z Hub", "todo"]
+        |> text_to_elements
+        |> list.append([
+          html.img([attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg")]),
+        ]),
+      #("", ""),
+    )
+  }
   html.div([], [
     html.canvas([
       attribute.id("canvas"),
@@ -43,91 +124,10 @@ pub fn view(model: Model) {
           css.box_sizing(BorderBox),
           css.left(REM(0.0)),
           css.top(REM(0.0)),
-          case model.mod {
-            Fight(fight) -> #(
-              "background",
-              "linear-gradient(to left, rgba(0, 255, 0,0.3) "
-                <> fight.hp |> float.round |> int.to_string
-                <> "%, rgba(0,0,0,0))",
-            )
-            _ -> #("", "")
-          },
+          canvas_mod_attribute,
         ]),
       ],
-      case model.mod {
-        Hub(timer) -> {
-          [
-            "z fight",
-            "x reset dungeon",
-            "c credits",
-            "made by Oded Yanovich",
-            "volume: " <> model.volume |> int.to_string,
-          ]
-          |> text_to_elements
-          |> list.append([
-            html.div(
-              [
-                attribute.id("volume"),
-                attribute.style([
-                  #("display", "grid"),
-                  #("grid-auto-flow", "column"),
-                  #("grid-template", "repeat(2, 1fr) / repeat(8, 1fr)"),
-                  #("width", "100%"),
-                  #("height", "100%"),
-                  #("place-items", "center"),
-                  #("background-color", case timer >. model.program_duration {
-                    True -> "green"
-                    False -> "blue"
-                  }),
-                ]),
-              ],
-              volume_buttons_and_changes
-                |> list.flat_map(fn(button_volume_change) {
-                  [
-                    html.div([], [button_volume_change.0 |> html.text]),
-                    html.div([], [
-                      button_volume_change.1
-                      |> int.to_string
-                      |> html.text,
-                    ]),
-                  ]
-                }),
-            ),
-            html.div(
-              [
-                attribute.style([
-                  #("display", "grid"),
-                  #("grid-template", "1fr / repeat(3, 1fr)"),
-                  #("place-items", "center"),
-                  #("width", "100%"),
-                  #("height", "100%"),
-                ]),
-              ],
-              ["k", model.selected_level |> int.to_string, "l"]
-                |> text_to_elements,
-            ),
-          ])
-        }
-        Fight(fight) -> {
-          [
-            "z Hub",
-            "required combo: " <> fight.required_press,
-            "current level: " <> model.selected_level |> int.to_string,
-            "relevant buttons: " <> fight.required_press,
-            // |> list.fold("", fn(state, addition) { state <> " " <> addition }),
-          ]
-          |> text_to_elements
-        }
-        Credit -> {
-          ["z Hub", "todo"]
-          |> text_to_elements
-          |> list.append([
-            html.img([
-              attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg"),
-            ]),
-          ])
-        }
-      },
+      mod_elements,
     ),
   ])
 }

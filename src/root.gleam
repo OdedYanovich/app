@@ -17,21 +17,15 @@ pub type FightBody {
     hp: Float,
     required_press: String,
     initial_presses: Int,
-    // buttons: List(String),
     phases: List(Phase),
     press_counter: Int,
+    // press_per_minute: Int,
+    // press_per_mistake: Int,
   )
 }
 
 pub type Phase {
-  Phase(
-    buttons: String,
-    max_press_count: Int,
-    // press_per_minute: Int,
-    // press_per_mistake: Int,
-    // time: Float,
-    // next_phase: fn(Int) -> Int,
-  )
+  Phase(buttons: String, max_press_count: Int)
 }
 
 pub type Identification {
@@ -42,7 +36,7 @@ pub type Identification {
 
 pub type Msg {
   Keydown(String)
-  Dmg
+  // Dmg
   Frame(Float)
   Resize(Int, Int)
 }
@@ -51,7 +45,7 @@ pub type Response =
   fn(Model) -> Model
 
 type FightResponse =
-  fn(FightBody, String) -> #(FightBody, Bool)
+  fn(FightBody, String) -> #(FightBody, TransitionFromFight)
 
 pub type Model {
   Model(
@@ -80,16 +74,19 @@ pub type Image {
   )
 }
 
-pub type Array(t)
-
-pub type Position =
-  #(Float, Float)
-
 pub type MovingPixel {
   Pixel(existence_time: Float, position: Position, trajectory: Position)
 }
 
-// pub const all_command_keys = "sdfjklwi"//["s", "d", "f", "j", "k", "l", "w", "i"]
+pub type TransitionFromFight {
+  DoNothing
+  ToHub
+}
+
+pub type Array(t)
+
+pub type Position =
+  #(Float, Float)
 
 pub const animation_end_time = 3000.0
 

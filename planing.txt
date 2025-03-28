@@ -1,25 +1,21 @@
-responses: During fights, the presses counter's modulo will determine the next button
 idea: Generalize and exclude possibilities for the correct next level
-responses: Set and check the phase's timer
-add metronome sound
 persistent memory
-Level selector
 difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
 sound: Find 3 metronome like sounds then make them play in the bpm of the player then add instruments
-root 43: Move hp_lose_interval_id to Fight
-draw HP bar
-animate character transition
+animate characters sliding out of the screen
 initialization 52: construct fight from current level
-view: Layout for each mod include a pane for a string array
 mange the runtime in js or replace js_init with pairs of functions for initialization and usage
-level 7: rethink the "unwrap"
 app: make damage taken time independent
 Update the damage on Frame instead of Dmg
-Use program's duration directly with wrapped performance.now (main.mjs)
-Make phases start at index 0
+goal: make 15 levels with a CountUp level for each 5 of them + Level selector
+goal: color and background picker
+goal: write a relation between the the player's speed and the music's speed and the hp display
+goal: add metronome sound
+
 
 far future:
 rebuild with "The entry point"
+responses: Set and check the phase's timer
 check command line testing server
 slowness permission: Defining phases in which it is less punishing to make mistakes or be slow
 Image: With arrays, transparent pixels for non square images, make the pixels push each other, shot pixels from multiple directions, 
