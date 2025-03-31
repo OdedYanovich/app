@@ -6,8 +6,11 @@ import lustre/attribute
 import lustre/element/html
 import root.{type Model, Credit, Fight, Hub}
 import view/css.{
-  Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, VH, VW, White,
+  Absolute, Black, BorderBox, Center, Column, Fr, Grid, REM, Same, Unique, VH,
+  VW, White, display,
 }
+
+//height, width,Precent,
 
 fn text_to_elements(text: List(String)) {
   use text <- list.map(text)
@@ -22,7 +25,12 @@ pub fn view(model: Model) {
         "x reset dungeon",
         "c credits",
         "made by Oded Yanovich",
-        "volume: " <> model.volume |> int.to_string,
+        "volume: "
+          <> case model.volume > 100 {
+          True -> model.volume - 100
+          False -> model.volume
+        }
+        |> int.to_string,
       ]
         |> text_to_elements
         |> list.append([
@@ -30,7 +38,9 @@ pub fn view(model: Model) {
             [
               attribute.id("volume"),
               attribute.style([
-                #("display", "grid"),
+                display(Grid),
+                //width(Precent(100)),
+                //height(Precent(100)),
                 #("grid-auto-flow", "column"),
                 #("grid-template", "repeat(2, 1fr) / repeat(8, 1fr)"),
                 #("width", "100%"),
@@ -46,14 +56,23 @@ pub fn view(model: Model) {
               ]),
             ],
             volume_buttons_and_changes
+              |> list.map(fn(x) {
+                #(x.0 |> html.text, x.1 |> int.to_string |> html.text)
+              })
+              |> list.append([
+                #(
+                  "o" |> html.text,
+                  case model.volume > 100 {
+                    False -> "mute"
+                    True -> "unmute"
+                  }
+                    |> html.text,
+                ),
+              ])
               |> list.flat_map(fn(button_volume_change) {
                 [
-                  html.div([], [button_volume_change.0 |> html.text]),
-                  html.div([], [
-                    button_volume_change.1
-                    |> int.to_string
-                    |> html.text,
-                  ]),
+                  html.div([], [button_volume_change.0]),
+                  html.div([], [button_volume_change.1]),
                 ]
               }),
           ),
@@ -115,7 +134,7 @@ pub fn view(model: Model) {
           css.width(VW(100)),
           css.height(VH(100)),
           css.display(Grid),
-          css.grid_template(#(5, Fr(1)), #(2, Fr(1))),
+          css.grid_template(Same(#(5, Fr(1))), Unique([Fr(1), Fr(3)])),
           css.place_items(Center),
           css.grid_auto_flow(Column),
           css.color(White),

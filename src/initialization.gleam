@@ -15,7 +15,7 @@ import root.{
 pub fn init(_flags) {
   Model(
     mod: 0.0 |> HubBody |> Hub,
-    volume: 50,
+    volume: 150,
     responses: responses(),
     hp_lose_interval_id: None,
     unlocked_levels: 3,
@@ -31,11 +31,12 @@ pub fn init(_flags) {
 fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) {
   volume_buttons_and_changes
   |> list.map(fn(key_val) {
-    #(#(HubId, key_val.0), change_volume(key_val.1, _))
+    #(#(HubId, key_val.0), change_volume(_, key_val.1))
   })
   |> list.append([
     #(#(HubId, "k"), change_level(_, -1)),
     #(#(HubId, "l"), change_level(_, 1)),
+    #(#(HubId, "o"), mute_toggle),
     #(#(HubId, "z"), morph_to(_, FightId)),
     #(#(HubId, "c"), morph_to(_, CreditId)),
     #(#(FightId, "z"), morph_to(_, HubId)),
@@ -90,12 +91,19 @@ pub const volume_buttons_and_changes = [
   #("i", 25),
 ]
 
-fn change_volume(change, model: Model) {
+fn change_volume(model: Model, change) {
   Model(
     ..model,
     mod: model.program_duration +. 500.0 |> HubBody |> Hub,
     volume: int.max(int.min(model.volume + change, 100), 0),
   )
+}
+
+fn mute_toggle(model: Model) {
+  case model.volume > 100 {
+    True -> Model(..model, volume: model.volume - 100)
+    False -> Model(..model, volume: model.volume + 100)
+  }
 }
 
 fn change_level(model, change) {

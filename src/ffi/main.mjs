@@ -3,28 +3,35 @@
 // ctx.imageSmoothingEnabled = false;
 // ctx.fillStyle = "rgba(0,0,0,255)";
 export function initGameLoop(callback) {
-    function main() {
-        requestAnimationFrame(main);
-        callback(performance.now());
-    }
-    main();
+	function main() {
+		requestAnimationFrame(main);
+		callback(performance.now());
+	}
+	main();
 }
 export function initKeydownEvent(callback) {
-    addEventListener("keydown", callback);
+	var music =
+		document.getElementById("metronome1");
+	console.log(music)
+	let callback2 = (key, repeat) => {
+		music.play();
+		callback(key, repeat)
+	}
+	addEventListener("keydown", callback);
 }
 export function initResizeEvent(callback) {
-    addEventListener(
-        "resize",
-        () => {
-            callback(innerWidth, innerHeight);
-        },
-    );
+	addEventListener(
+		"resize",
+		() => {
+			callback(innerWidth, innerHeight);
+		},
+	);
 }
 
 export function sandCanvasSize() {
-    return [innerWidth, innerHeight];
+	return [innerWidth, innerHeight];
 }
 export function startDrawing() {
-    ctx.rect(0, 0, innerWidth, innerHeight);
-    ctx.fill();
+	ctx.rect(0, 0, innerWidth, innerHeight);
+	ctx.fill();
 }

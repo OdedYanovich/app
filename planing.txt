@@ -11,6 +11,9 @@ goal: make 15 levels with a CountUp level for each 5 of them + Level selector
 goal: color and background picker
 goal: write a relation between the the player's speed and the music's speed and the hp display
 goal: add metronome sound
+css 22: in length_to_string, avoid repetition with list.fold
+view 35: try to uncomment
+discord: Explain how compile time evaluation and parameters could help with the ranged variables
 
 
 far future:

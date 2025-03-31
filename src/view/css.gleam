@@ -1,5 +1,6 @@
 import gleam/float
 import gleam/int
+import gleam/list
 
 pub type Position {
   Absolute
@@ -87,21 +88,30 @@ pub fn display(display) {
   }
 }
 
-pub type Reapet =
-  #(Int, Length)
-
-fn reapet_to_string(reapet: Reapet) {
-  "repeat("
-  <> reapet.0 |> int.to_string
-  <> ","
-  <> reapet.1 |> length_to_string
-  <> ")"
+pub type TrackList {
+  Same(#(Int, Length))
+  Unique(List(Length))
 }
 
-pub fn grid_template(reapet_row, reapet_column) {
+pub fn grid_template(grid_template_rows, grid_template_column) {
+  let to_string = fn(track_list) {
+    case track_list {
+      Same(repeat) ->
+        "repeat("
+        <> repeat.0 |> int.to_string
+        <> ","
+        <> repeat.1 |> length_to_string
+        <> ")"
+
+      Unique(lengths) ->
+        list.fold(lengths, "", fn(return, added) {
+          return <> " " <> added |> length_to_string
+        })
+    }
+  }
   #(
     "grid-template",
-    reapet_row |> reapet_to_string <> "/" <> reapet_column |> reapet_to_string,
+    grid_template_rows |> to_string <> "/" <> grid_template_column |> to_string,
   )
 }
 
