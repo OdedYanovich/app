@@ -1,21 +1,25 @@
 idea: Generalize and exclude possibilities for the correct next level
 persistent memory
 difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
-sound: Find 3 metronome like sounds then make them play in the bpm of the player then add instruments
 animate characters sliding out of the screen
 initialization 52: construct fight from current level
-mange the runtime in js or replace js_init with pairs of functions for initialization and usage
-app: make damage taken time independent
-Update the damage on Frame instead of Dmg
 goal: make 15 levels with a CountUp level for each 5 of them + Level selector
 goal: color and background picker
 goal: write a relation between the the player's speed and the music's speed and the hp display
-goal: add metronome sound
 css 22: in length_to_string, avoid repetition with list.fold
-view 35: try to uncomment
-discord: Explain how compile time evaluation and parameters could help with the ranged variables
-init: extend the ranged variable to hold values beyond the range and use it on the volume
+audio: wrap shared behavior
+web audio api: learn it and write your vision
+Make different function to make elements and display them in the game
+music: increase the tempo and add instruments as the fight escalate
 
+view: make the main div a grid (or FlaxBox) the holds 2 grids.
+A list of element to be displayed in the lesser grid will match the mod,
+the length of the list will match the row count of said grid.
+The main grid's row and columns will match the mod.
+
+view: make a record for the tuple that is represent the unique elements of the mods
+view 35: replace direct attribute with abstraction from css.gleam
+view 30: behavior belongs to audio.gleam
 
 far future:
 rebuild with "The entry point"

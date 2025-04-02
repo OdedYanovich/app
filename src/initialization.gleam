@@ -1,9 +1,7 @@
-import ffi/gleam/damage.{start_damage_event, stop_damage_event}
+import audio.{change_volume, mute_toggle}
 import ffi/gleam/main.{get_viewport_size}
-import ffi/gleam/sound
 import gleam/bool.{guard}
 import gleam/dict
-import gleam/int
 import gleam/list
 import gleam/string
 import level.{levels}
@@ -46,12 +44,8 @@ fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) 
 
 pub fn morph_to(model: Model, mod: Identification) -> Model {
   case mod {
-    HubId -> {
-      stop_damage_event()
-      Model(..model, mod: 0.0 |> HubBody |> Hub)
-    }
+    HubId -> Model(..model, mod: 0.0 |> HubBody |> Hub)
     FightId -> {
-      start_damage_event()
       let phases = model.selected_level.val |> levels
       let all_buttons =
         phases
@@ -89,42 +83,6 @@ pub const volume_buttons_and_changes = [
   #("u", 10),
   #("i", 25),
 ]
-
-fn change_volume(model: Model, change) {
-  Model(
-    ..model,
-    mod: HubBody(model.program_duration +. 500.0) |> Hub,
-    volume: case model.volume.val > model.volume.max {
-      True -> {
-        sound.play(
-          { model.volume.val |> int.to_float }
-          /. { model.volume.max |> int.to_float },
-        )
-        Range(
-          ..model.volume,
-          val: model.volume.val + change - model.volume.max - 1,
-        )
-      }
-      False -> model.volume |> update_range(change)
-    },
-  )
-}
-
-fn mute_toggle(model: Model) {
-  Model(..model, volume: case model.volume.val > model.volume.max {
-    True -> {
-      sound.play(
-        { model.volume.val |> int.to_float }
-        /. { model.volume.max |> int.to_float },
-      )
-      Range(..model.volume, val: model.volume.val - model.volume.max - 1)
-    }
-    False -> {
-      sound.pause()
-      Range(..model.volume, val: model.volume.val + model.volume.max + 1)
-    }
-  })
-}
 
 fn change_level(model, change) {
   Model(..model, selected_level: update_range(model.selected_level, change))

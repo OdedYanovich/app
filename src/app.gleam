@@ -23,7 +23,13 @@ pub fn main() {
               Model(
                 ..model,
                 program_duration:,
-                mod: FightBody(..fight, hp: fight.hp -. 0.08) |> Fight,
+                mod: FightBody(
+                    ..fight,
+                    hp: fight.hp
+                      -. 0.01
+                      *. { program_duration -. model.program_duration },
+                  )
+                  |> Fight,
               )
             _ -> Model(..model, program_duration:)
           }

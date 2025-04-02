@@ -21,18 +21,26 @@ pub fn view(model: Model) {
   let #(mod_elements, canvas_mod_attribute) = case model.mod {
     Hub(hub) -> #(
       [
-        "z fight",
-        "x reset dungeon",
-        "c credits",
-        "made by Oded Yanovich",
-        "volume: "
-          <> case model.volume.val > model.volume.max {
-          True -> model.volume.val - model.volume.max - 1
-          False -> model.volume.val
-        }
-        |> int.to_string,
+        html.div(
+          [attribute.style([#("text-align", "center")])],
+          ["made by", "oded yanovich"]
+            |> text_to_elements,
+        ),
       ]
-        |> text_to_elements
+        |> list.append(
+          [
+            "z fight",
+            "x reset dungeon",
+            "c credits",
+            "volume: "
+              <> case model.volume.val > model.volume.max {
+              True -> model.volume.val - { model.volume.max + 1 }
+              False -> model.volume.val
+            }
+            |> int.to_string,
+          ]
+          |> text_to_elements,
+        )
         |> list.append([
           html.div(
             [
@@ -134,7 +142,7 @@ pub fn view(model: Model) {
           css.width(VW(100)),
           css.height(VH(100)),
           css.display(Grid),
-          css.grid_template(Same(#(5, Fr(1))), Unique([Fr(1), Fr(3)])),
+          css.grid_template(Same(#(4, Fr(1))), Unique([Fr(1), Fr(3)])),
           css.place_items(Center),
           css.grid_auto_flow(Column),
           css.color(White),
