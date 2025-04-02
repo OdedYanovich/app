@@ -1,5 +1,4 @@
 import gleam/dict.{type Dict}
-import gleam/option.{type Option}
 
 pub type Mods {
   Hub(HubBody)
@@ -50,15 +49,25 @@ type FightResponse =
 pub type Model {
   Model(
     mod: Mods,
-    volume: Int,
+    volume: RangedInt,
     responses: Dict(#(Identification, String), Response),
-    hp_lose_interval_id: Option(Int),
-    unlocked_levels: Int,
-    selected_level: Int,
+    selected_level: RangedInt,
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
   )
+}
+
+pub type RangedInt {
+  Range(val: Int, min: Int, max: Int)
+}
+
+pub fn update_range(range: RangedInt, change) {
+  Range(..range, val: case range.val + change {
+    val if val >= range.max -> range.max
+    val if val <= range.min -> range.min
+    val -> val
+  })
 }
 
 pub type Image {

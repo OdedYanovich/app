@@ -26,9 +26,9 @@ pub fn view(model: Model) {
         "c credits",
         "made by Oded Yanovich",
         "volume: "
-          <> case model.volume > 100 {
-          True -> model.volume - 100
-          False -> model.volume
+          <> case model.volume.val > model.volume.max {
+          True -> model.volume.val - model.volume.max - 1
+          False -> model.volume.val
         }
         |> int.to_string,
       ]
@@ -62,7 +62,7 @@ pub fn view(model: Model) {
               |> list.append([
                 #(
                   "o" |> html.text,
-                  case model.volume > 100 {
+                  case model.volume.val > 100 {
                     False -> "mute"
                     True -> "unmute"
                   }
@@ -86,7 +86,7 @@ pub fn view(model: Model) {
                 #("height", "100%"),
               ]),
             ],
-            ["k", model.selected_level |> int.to_string, "l"]
+            ["k", model.selected_level.val |> int.to_string, "l"]
               |> text_to_elements,
           ),
         ]),
@@ -96,7 +96,7 @@ pub fn view(model: Model) {
       [
         "z go back",
         "required press: " <> fight.required_press,
-        "current level: " <> model.selected_level |> int.to_string,
+        "current level: " <> model.selected_level.val |> int.to_string,
       ]
         |> text_to_elements,
       #(

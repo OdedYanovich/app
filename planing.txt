@@ -14,6 +14,7 @@ goal: add metronome sound
 css 22: in length_to_string, avoid repetition with list.fold
 view 35: try to uncomment
 discord: Explain how compile time evaluation and parameters could help with the ranged variables
+init: extend the ranged variable to hold values beyond the range and use it on the volume
 
 
 far future:

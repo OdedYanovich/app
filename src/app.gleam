@@ -9,7 +9,7 @@ import initialization.{init, morph_to}
 import lustre.{dispatch}
 import root.{
   type Model, Credit, CreditId, Fight, FightBody, FightId, Frame, Hub, HubId,
-  Keydown, Model, Resize, ToHub,
+  Keydown, Model, Range, Resize, ToHub,
 }
 import view/view.{view}
 
@@ -43,7 +43,10 @@ pub fn main() {
                         #(_, ToHub) ->
                           Model(
                             ..model,
-                            unlocked_levels: model.unlocked_levels + 1,
+                            selected_level: Range(
+                              ..model.selected_level,
+                              max: model.selected_level.max + 1,
+                            ),
                           )
                           |> morph_to(HubId)
                         #(fight, _) -> Model(..model, mod: Fight(fight))

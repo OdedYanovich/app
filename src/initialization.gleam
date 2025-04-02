@@ -1,25 +1,24 @@
 import ffi/gleam/damage.{start_damage_event, stop_damage_event}
 import ffi/gleam/main.{get_viewport_size}
+import ffi/gleam/sound
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/int
 import gleam/list
-import gleam/option.{None}
 import gleam/string
 import level.{levels}
 import root.{
   type FightBody, type Identification, type Model, Credit, CreditId, DoNothing,
-  Fight, FightBody, FightId, Hub, HubBody, HubId, Model, Phase, ToHub,
+  Fight, FightBody, FightId, Hub, HubBody, HubId, Model, Phase, Range, ToHub,
+  update_range,
 }
 
 pub fn init(_flags) {
   Model(
     mod: 0.0 |> HubBody |> Hub,
-    volume: 150,
+    volume: Range(val: 151, min: 0, max: 100),
     responses: responses(),
-    hp_lose_interval_id: None,
-    unlocked_levels: 3,
-    selected_level: 2,
+    selected_level: Range(2, 0, 3),
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
@@ -53,7 +52,7 @@ pub fn morph_to(model: Model, mod: Identification) -> Model {
     }
     FightId -> {
       start_damage_event()
-      let phases = model.selected_level |> levels
+      let phases = model.selected_level.val |> levels
       let all_buttons =
         phases
         |> list.fold("", fn(all_buttons, to_add) {
@@ -94,24 +93,41 @@ pub const volume_buttons_and_changes = [
 fn change_volume(model: Model, change) {
   Model(
     ..model,
-    mod: model.program_duration +. 500.0 |> HubBody |> Hub,
-    volume: int.max(int.min(model.volume + change, 100), 0),
+    mod: HubBody(model.program_duration +. 500.0) |> Hub,
+    volume: case model.volume.val > model.volume.max {
+      True -> {
+        sound.play(
+          { model.volume.val |> int.to_float }
+          /. { model.volume.max |> int.to_float },
+        )
+        Range(
+          ..model.volume,
+          val: model.volume.val + change - model.volume.max - 1,
+        )
+      }
+      False -> model.volume |> update_range(change)
+    },
   )
 }
 
 fn mute_toggle(model: Model) {
-  case model.volume > 100 {
-    True -> Model(..model, volume: model.volume - 100)
-    False -> Model(..model, volume: model.volume + 100)
-  }
+  Model(..model, volume: case model.volume.val > model.volume.max {
+    True -> {
+      sound.play(
+        { model.volume.val |> int.to_float }
+        /. { model.volume.max |> int.to_float },
+      )
+      Range(..model.volume, val: model.volume.val - model.volume.max - 1)
+    }
+    False -> {
+      sound.pause()
+      Range(..model.volume, val: model.volume.val + model.volume.max + 1)
+    }
+  })
 }
 
 fn change_level(model, change) {
-  Model(..model, selected_level: case model.selected_level + change {
-    n if n >= model.unlocked_levels -> model.unlocked_levels
-    n if n <= 0 -> 0
-    n -> n
-  })
+  Model(..model, selected_level: update_range(model.selected_level, change))
 }
 
 fn fight_responses(buttons) {

@@ -10,13 +10,6 @@ export function initGameLoop(callback) {
 	main();
 }
 export function initKeydownEvent(callback) {
-	var music =
-		document.getElementById("metronome1");
-	console.log(music)
-	let callback2 = (key, repeat) => {
-		music.play();
-		callback(key, repeat)
-	}
 	addEventListener("keydown", callback);
 }
 export function initResizeEvent(callback) {
