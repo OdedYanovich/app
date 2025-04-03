@@ -16,6 +16,7 @@ pub type Color {
   Black
   White
   Green
+  Blue
   RGBA(Length, Length, Length, Length)
 }
 
@@ -24,13 +25,13 @@ fn color_to_string(color) {
     Black -> "black"
     White -> "white"
     Green -> "green"
+    Blue -> "blue"
     RGBA(r, g, b, a) ->
       "rgba("
-      <> r |> length_to_string
-      <> g |> length_to_string
-      <> b |> length_to_string
-      <> a |> length_to_string
-      <> ")"
+      <> [r, g, b, a]
+      |> list.fold("", fn(state, element) {
+        state <> { element |> length_to_string }
+      })
   }
 }
 
@@ -89,18 +90,18 @@ pub fn display(display) {
 }
 
 pub type TrackList {
-  Same(#(Int, Length))
+  Repeat(Int, Length)
   Unique(List(Length))
 }
 
 pub fn grid_template(grid_template_rows, grid_template_column) {
   let to_string = fn(track_list) {
     case track_list {
-      Same(repeat) ->
+      Repeat(repeat_count, length) ->
         "repeat("
-        <> repeat.0 |> int.to_string
+        <> repeat_count |> int.to_string
         <> ","
-        <> repeat.1 |> length_to_string
+        <> length |> length_to_string
         <> ")"
 
       Unique(lengths) ->
@@ -119,8 +120,15 @@ pub type PlaceItems {
   Center
 }
 
+/// shorthand for align-items and justify-items
 pub fn place_items(place_items) {
   case place_items {
+    Center -> #("place-items", "center")
+  }
+}
+
+pub fn align_items(align_items) {
+  case align_items {
     Center -> #("place-items", "center")
   }
 }

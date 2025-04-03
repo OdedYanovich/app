@@ -20,6 +20,8 @@ The main grid's row and columns will match the mod.
 view: make a record for the tuple that is represent the unique elements of the mods
 view 35: replace direct attribute with abstraction from css.gleam
 view 30: behavior belongs to audio.gleam
+view 89: the grid that hub makes uses grid_template even if he makes a single row (unnecessary)
+view: the color of the hp is from an element that will be defined in an element from css.gleam
 
 far future:
 rebuild with "The entry point"
