@@ -28,3 +28,15 @@ export function startDrawing() {
 	ctx.rect(0, 0, innerWidth, innerHeight);
 	ctx.fill();
 }
+export function setStorage(name, val) {
+	localStorage.setItem(name, val)
+}
+export function getStorage(name) {
+	let val = parseInt(localStorage.getItem(name))
+	if (val) {
+		return val
+	} else {
+		return 9999
+	}
+
+}

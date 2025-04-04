@@ -16,9 +16,6 @@ css 55: make a single type for the value in a length and rewrite this function
 
 view: 
 
- make a record for the tuple that is represent the unique elements of the mods
-35: replace direct attribute with abstraction from css.gleam
-30: behavior belongs to audio.gleam
 89: the grid that hub makes and the main grid are using grid_template even if he makes a single row (unnecessary)
  the main grid may be better as a flexbox
  the color of the hp is from an element that will be defined in an element from css.gleam

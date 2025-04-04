@@ -1,3 +1,4 @@
+import audio.{get_val, pass_the_limit}
 import gleam/float
 import gleam/int
 import gleam/list
@@ -32,19 +33,14 @@ pub fn view(model: Model) {
           "z fight",
           "x reset dungeon",
           "c credits",
-          "volume: "
-            <> case model.volume.val > model.volume.max {
-            True -> model.volume.val - { model.volume.max + 1 }
-            False -> model.volume.val
-          }
-          |> int.to_string,
+          "volume: " <> model.volume |> get_val |> int.to_string,
         ]
         |> text_to_elements
       Dependency(
         main_screen: html.div(
           [
             attribute.style(
-              [grid_standard, [grid_template_rows(Repeat(2, Fr(1)))]]
+              [grid_standard, [grid_template_rows(Unique([Fr(2), Fr(1)]))]]
               |> list.flatten,
             ),
           ],
@@ -78,7 +74,7 @@ pub fn view(model: Model) {
                 |> list.append([
                   #(
                     "o" |> html.text,
-                    case model.volume.val > 100 {
+                    case model.volume |> pass_the_limit {
                       False -> "mute"
                       True -> "unmute"
                     }

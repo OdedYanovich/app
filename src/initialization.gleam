@@ -1,5 +1,5 @@
-import audio.{change_volume, mute_toggle}
-import ffi/gleam/main.{get_viewport_size}
+import audio.{change_volume, get_val, mute_toggle}
+import ffi/gleam/main.{get_storage, get_viewport_size, set_storage}
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/list
@@ -16,7 +16,11 @@ pub fn init(_flags) {
     mod: 0.0 |> HubBody |> Hub,
     volume: Range(val: 151, min: 0, max: 100),
     responses: responses(),
-    selected_level: Range(2, 0, 3),
+    selected_level: case get_storage("selected_level") {
+      9999 -> 1
+      lv -> lv
+    }
+      |> Range(0, 3),
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
@@ -46,6 +50,7 @@ pub fn morph_to(model: Model, mod: Identification) -> Model {
   case mod {
     HubId -> Model(..model, mod: 0.0 |> HubBody |> Hub)
     FightId -> {
+      set_storage("selected_level", model.selected_level |> get_val)
       let phases = model.selected_level.val |> levels
       let all_buttons =
         phases
