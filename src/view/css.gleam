@@ -94,26 +94,37 @@ pub type TrackList {
   Unique(List(Length))
 }
 
-pub fn grid_template(grid_template_rows, grid_template_column) {
-  let to_string = fn(track_list) {
-    case track_list {
-      Repeat(repeat_count, length) ->
-        "repeat("
-        <> repeat_count |> int.to_string
-        <> ","
-        <> length |> length_to_string
-        <> ")"
+fn track_list_to_string(track_list) {
+  case track_list {
+    Repeat(repeat_count, length) ->
+      "repeat("
+      <> repeat_count |> int.to_string
+      <> ","
+      <> length |> length_to_string
+      <> ")"
 
-      Unique(lengths) ->
-        list.fold(lengths, "", fn(return, added) {
-          return <> " " <> added |> length_to_string
-        })
-    }
+    Unique(lengths) ->
+      list.fold(lengths, "", fn(return, added) {
+        return <> " " <> added |> length_to_string
+      })
   }
+}
+
+pub fn grid_template(grid_template_rows, grid_template_column) {
   #(
     "grid-template",
-    grid_template_rows |> to_string <> "/" <> grid_template_column |> to_string,
+    grid_template_rows |> track_list_to_string
+      <> "/"
+      <> grid_template_column |> track_list_to_string,
   )
+}
+
+pub fn grid_template_rows(grid_template_rows) {
+  #("grid-template-rows", grid_template_rows |> track_list_to_string)
+}
+
+pub fn grid_template_columns(grid_template_columns) {
+  #("grid-template-columns", grid_template_columns |> track_list_to_string)
 }
 
 pub type PlaceItems {

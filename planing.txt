@@ -1,32 +1,28 @@
-idea: Generalize and exclude possibilities for the correct next level
-persistent memory
 difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
 animate characters sliding out of the screen
 initialization 52: construct fight from current level
 
-goal: make 15 levels with a CountUp level for each 5 of them + Level selector
-goal: color and background picker
-goal: write a relation between the the player's speed and the music's speed and the hp display
-goal: sell the player customization option for progress
+goal:
 
-css 22: in length_to_string, avoid repetition with list.fold
-audio: wrap shared behavior
-web audio api: learn it and write your vision
-Make different function to make elements and display them in the game
-music: increase the tempo and add instruments as the fight escalate
+make 15 levels with a CountUp level for each 5 of them + Level selector
+ color and background picker
+ write a relation between the the player's speed and the music's speed and the hp display
+ sell the player customization option for progress
+ persistent memory
+ difficulty sliders
+ make different amount of instruments play together to reflect the player's progress
 
-view: make the main div a grid (or FlaxBox) the holds 2 grids.
-A list of element to be displayed in the lesser grid will match the mod,
-the length of the list will match the row count of said grid.
-The main grid's row and columns will match the mod.
+css 55: make a single type for the value in a length and rewrite this function
 
-view: make a record for the tuple that is represent the unique elements of the mods
-view 35: replace direct attribute with abstraction from css.gleam
-view 30: behavior belongs to audio.gleam
-view 89: the grid that hub makes and the main grid are using grid_template even if he makes a single row (unnecessary)
-view: the main grid may be better as a flexbox
-view: the color of the hp is from an element that will be defined in an element from css.gleam
-view: maybe grid_auto_flow can be removed
+view: 
+
+ make a record for the tuple that is represent the unique elements of the mods
+35: replace direct attribute with abstraction from css.gleam
+30: behavior belongs to audio.gleam
+89: the grid that hub makes and the main grid are using grid_template even if he makes a single row (unnecessary)
+ the main grid may be better as a flexbox
+ the color of the hp is from an element that will be defined in an element from css.gleam
+ maybe grid_auto_flow can be removed
 maybe remove the "modeBody"
 rename the main canvas's id and mabye an id is unnecessary or at least the name may be given from a const
 
