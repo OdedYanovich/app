@@ -4,7 +4,6 @@ let gainNode
 let audioContext
 let track
 export function play(volume) {
-	console.log(volume)
 	if (firstTime) {
 		firstTime = false
 		audioContext = new AudioContext()
@@ -18,4 +17,11 @@ export function play(volume) {
 export function pause() {
 	audioElement.pause();
 }
-
+const audioElements = [document.getElementById("clap"), document.getElementById("cymbal3")]
+export function simplePlay(id) {
+	audioElements[id].play()
+}
+export function changeVolume(volume) {
+	audioElements.forEach((sound) => sound.volume = volume
+	)
+}

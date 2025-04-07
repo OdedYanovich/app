@@ -5,26 +5,26 @@ import root.{
 }
 
 pub fn change_volume(model: Model, change) {
-  Model(
-    ..model,
-    mod: HubBody(model.program_duration +. 500.0) |> Hub,
-    volume: case model.volume |> pass_the_limit {
-      True -> {
-        let val = model.volume.val + change - { model.volume.max + 1 }
-        sound.play(
-          { val |> int.to_float } /. { model.volume.max |> int.to_float },
-        )
-        Range(..model.volume, val:)
-      }
-      False -> {
-        let volume = model.volume |> update_range(change)
-        sound.play(
-          { volume.val |> int.to_float } /. { model.volume.max |> int.to_float },
-        )
-        volume
-      }
-    },
+  let volume = case model.volume |> pass_the_limit {
+    True -> {
+      let val = model.volume.val + change - { model.volume.max + 1 }
+      //   sound.play(
+      //     { val |> int.to_float } /. { model.volume.max |> int.to_float },
+      //   )
+      Range(..model.volume, val:)
+    }
+    False -> {
+      let volume = model.volume |> update_range(change)
+      //   sound.play(
+      //     { volume.val |> int.to_float } /. { model.volume.max |> int.to_float },
+      //   )
+      volume
+    }
+  }
+  sound.change_volume(
+    { volume.val |> int.to_float } /. { volume.max |> int.to_float },
   )
+  Model(..model, mod: HubBody(model.program_duration +. 500.0) |> Hub, volume:)
 }
 
 pub fn mute_toggle(model: Model) {
@@ -32,13 +32,13 @@ pub fn mute_toggle(model: Model) {
     case model.volume |> pass_the_limit {
       True -> {
         let val = model.volume.val - { model.volume.max + 1 }
-        sound.play(
-          { val |> int.to_float } /. { model.volume.max |> int.to_float },
-        )
+        //       sound.play(
+        //         { val |> int.to_float } /. { model.volume.max |> int.to_float },
+        //       )
         Range(..model.volume, val:)
       }
       False -> {
-        sound.pause()
+        //      sound.pause()
         Range(..model.volume, val: model.volume.val + model.volume.max + 1)
       }
     }

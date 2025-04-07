@@ -14,9 +14,9 @@ import view/css.{
   width,
 }
 
-fn text_to_elements(text: List(String)) {
+fn text_to_elements(text: List(String), attributes) {
   use text <- list.map(text)
-  html.div([], [html.text(text)])
+  html.div(attributes, [html.text(text)])
 }
 
 pub fn view(model: Model) {
@@ -35,7 +35,9 @@ pub fn view(model: Model) {
           "c credits",
           "volume: " <> model.volume |> get_val |> int.to_string,
         ]
-        |> text_to_elements
+        |> text_to_elements([
+          attribute.style([#("animation", "growAndFade 3s infinite ease-out")]),
+        ])
       Dependency(
         main_screen: html.div(
           [
@@ -96,7 +98,7 @@ pub fn view(model: Model) {
                 ),
               ],
               ["k", model.selected_level.val |> int.to_string, "l"]
-                |> text_to_elements,
+                |> text_to_elements([]),
             ),
           ],
         ),
@@ -126,7 +128,7 @@ pub fn view(model: Model) {
           "required press: " <> fight.required_press,
           "current level: " <> model.selected_level.val |> int.to_string,
         ]
-        |> text_to_elements
+        |> text_to_elements([])
 
       Dependency(
         main_screen: html.div(
@@ -174,12 +176,12 @@ pub fn view(model: Model) {
     Credit -> {
       let side_screen_content =
         ["z Hub", "todo"]
-        |> text_to_elements
+        |> text_to_elements([])
         |> list.append([
           html.div(
             [attribute.style([place_items(Center)])],
             ["made by", "oded yanovich"]
-              |> text_to_elements,
+              |> text_to_elements([]),
           ),
         ])
       Dependency(
@@ -244,6 +246,7 @@ pub fn view(model: Model) {
               css.top(REM(0.0)),
             ],
             grid_standard,
+            // attribute.style([#("transition", "700ms")])
           ]
           |> list.flatten,
         ),

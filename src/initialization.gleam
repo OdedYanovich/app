@@ -7,8 +7,8 @@ import gleam/string
 import level.{levels}
 import root.{
   type FightBody, type Identification, type Model, Credit, CreditId, DoNothing,
-  Fight, FightBody, FightId, Hub, HubBody, HubId, Model, Phase, Range, ToHub,
-  update_range,
+  Fight, FightBody, FightId, Hub, HubBody, HubId, Model, Phase, Range, Sound,
+  ToHub, update_range,
 }
 
 pub fn init(_flags) {
@@ -24,6 +24,10 @@ pub fn init(_flags) {
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
+    sounds: [
+      Sound(id: 0, timer: 0.0, interval: 0.5),
+      Sound(id: 1, timer: 0.0, interval: 0.8),
+    ],
     // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
   // seed: seed.random(),
   )

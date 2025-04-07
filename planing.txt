@@ -1,6 +1,5 @@
 difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
 animate characters sliding out of the screen
-initialization 52: construct fight from current level
 
 goal:
 
@@ -11,6 +10,7 @@ make 15 levels with a CountUp level for each 5 of them + Level selector
  persistent memory
  difficulty sliders
  make different amount of instruments play together to reflect the player's progress
+ sliders for minimum action speed
 
 css 55: make a single type for the value in a length and rewrite this function
 

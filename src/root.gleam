@@ -55,6 +55,7 @@ pub type Model {
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
+    sounds: List(Sound),
   )
 }
 
@@ -68,6 +69,10 @@ pub fn update_range(range: RangedInt, change) {
     val if val <= range.min -> range.min
     val -> val
   })
+}
+
+pub type Sound {
+  Sound(id: Int, timer: Float, interval: Float)
 }
 
 pub type Image {

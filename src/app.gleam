@@ -1,15 +1,17 @@
-//import ffi/gleam/damage.{set_damage_event}
+import audio
 import ffi/gleam/main.{init_game_loop, init_keydown_event, init_resize_event}
+import ffi/gleam/sound
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
+import gleam/list
 import gleam/result.{try}
 import gleam/string
 import initialization.{init, morph_to}
 import lustre.{dispatch}
 import root.{
   type Model, Credit, CreditId, Fight, FightBody, FightId, Frame, Hub, HubId,
-  Keydown, Model, Range, Resize, ToHub,
+  Keydown, Model, Range, Resize, Sound, ToHub,
 }
 import view/view.{view}
 
@@ -17,7 +19,21 @@ pub fn main() {
   let assert Ok(update_the_model) =
     fn(model: Model, msg) {
       case msg {
-        Frame(program_duration) ->
+        Frame(program_duration) -> {
+          let sounds =
+            model.sounds
+            |> list.map(fn(sound) {
+              case
+                sound.timer <. model.program_duration
+                && !audio.pass_the_limit(model.volume)
+              {
+                True -> {
+                  sound.simple_play(sound.id)
+                  Sound(..sound, timer: sound.timer +. sound.interval)
+                }
+                False -> sound
+              }
+            })
           case model.mod {
             Fight(fight) ->
               Model(
@@ -30,9 +46,11 @@ pub fn main() {
                       *. { program_duration -. model.program_duration },
                   )
                   |> Fight,
+                sounds:,
               )
-            _ -> Model(..model, program_duration:)
+            _ -> Model(..model, program_duration:, sounds:)
           }
+        }
         Keydown(latest_key_press) -> {
           let latest_key_press = latest_key_press |> string.lowercase
           case
