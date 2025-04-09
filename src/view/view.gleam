@@ -2,13 +2,12 @@ import audio.{get_val, pass_the_limit}
 import gleam/float
 import gleam/int
 import gleam/list
-import initialization.{volume_buttons_and_changes}
 import lustre/attribute
 import lustre/element
 import lustre/element/html
 import root.{
   type Model, type Msg, After, Before, Credit, Fight, Hub, StableMod,
-  mod_transition_time,
+  mod_transition_time, volume_buttons_and_changes,
 }
 import view/css.{
   Absolute, Black, Blue, BorderBox, Center, Column, Fr, Green, Grid, Precent,
