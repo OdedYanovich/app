@@ -23,6 +23,15 @@ view:
 maybe remove the "modeBody"
 rename the main canvas's id and mabye an id is unnecessary or at least the name may be given from a const
 
+
+Transparent letter behind each letter to make it easier to see with effects in the background.
+Audio visualizer.
+Back to single canvas.
+Exciting state when entering the game.
+Get time function instead of a variable.
+Time units wrapper
+
+
 far future:
 rebuild with "The entry point"
 responses: Set and check the phase's timer

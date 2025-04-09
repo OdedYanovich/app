@@ -6,7 +6,10 @@ import initialization.{volume_buttons_and_changes}
 import lustre/attribute
 import lustre/element
 import lustre/element/html
-import root.{type Model, type Msg, Credit, Fight, Hub}
+import root.{
+  type Model, type Msg, After, Before, Credit, Fight, Hub, StableMod,
+  mod_transition_time,
+}
 import view/css.{
   Absolute, Black, Blue, BorderBox, Center, Column, Fr, Green, Grid, Precent,
   REM, Repeat, Unique, White, background_color, display, grid_auto_flow,
@@ -26,6 +29,21 @@ pub fn view(model: Model) {
     height(Precent(100)),
     place_items(Center),
   ]
+  let transition_animation = case model.mod_transition {
+    After(_) -> #(
+      "animation",
+      "entrance "
+        <> mod_transition_time /. 1000.0 |> float.to_string
+        <> "s ease-out",
+    )
+    Before(_, _) -> #(
+      "animation",
+      "exiting "
+        <> mod_transition_time /. 1000.0 |> float.to_string
+        <> "s ease-out",
+    )
+    StableMod -> #("", "")
+  }
   let Dependency(main_screen, side_screen) = case model.mod {
     Hub(hub) -> {
       let side_screen_content =
@@ -35,9 +53,7 @@ pub fn view(model: Model) {
           "c credits",
           "volume: " <> model.volume |> get_val |> int.to_string,
         ]
-        |> text_to_elements([
-          attribute.style([#("animation", "growAndFade 3s infinite ease-out")]),
-        ])
+        |> text_to_elements([attribute.style([transition_animation])])
       Dependency(
         main_screen: html.div(
           [
@@ -63,6 +79,7 @@ pub fn view(model: Model) {
                         },
                       ),
                       grid_template(Repeat(2, Fr(1)), Repeat(8, Fr(1))),
+                      transition_animation,
                     ],
                     grid_standard,
                   ]
@@ -70,23 +87,21 @@ pub fn view(model: Model) {
                 ),
               ],
               volume_buttons_and_changes
-                |> list.map(fn(x) {
-                  #(x.0 |> html.text, x.1 |> int.to_string |> html.text)
-                })
+                |> list.map(fn(x) { #(x.0, x.1 |> int.to_string) })
                 |> list.append([
-                  #(
-                    "o" |> html.text,
-                    case model.volume |> pass_the_limit {
-                      False -> "mute"
-                      True -> "unmute"
-                    }
-                      |> html.text,
-                  ),
+                  #("o", case model.volume |> pass_the_limit {
+                    False -> "mute"
+                    True -> "unmute"
+                  }),
                 ])
                 |> list.flat_map(fn(button_volume_change) {
                   [
-                    html.div([], [button_volume_change.0]),
-                    html.div([], [button_volume_change.1]),
+                    html.div([attribute.style([transition_animation])], [
+                      button_volume_change.0 |> html.text,
+                    ]),
+                    html.div([attribute.style([transition_animation])], [
+                      button_volume_change.1 |> html.text,
+                    ]),
                   ]
                 }),
             ),
@@ -98,7 +113,7 @@ pub fn view(model: Model) {
                 ),
               ],
               ["k", model.selected_level.val |> int.to_string, "l"]
-                |> text_to_elements([]),
+                |> text_to_elements([attribute.style([transition_animation])]),
             ),
           ],
         ),
@@ -128,7 +143,7 @@ pub fn view(model: Model) {
           "required press: " <> fight.required_press,
           "current level: " <> model.selected_level.val |> int.to_string,
         ]
-        |> text_to_elements([])
+        |> text_to_elements([attribute.style([transition_animation])])
 
       Dependency(
         main_screen: html.div(
@@ -147,6 +162,7 @@ pub fn view(model: Model) {
                     Fr(1),
                   )),
                 ],
+                [transition_animation],
                 grid_standard,
               ]
               |> list.flatten,
@@ -176,10 +192,10 @@ pub fn view(model: Model) {
     Credit -> {
       let side_screen_content =
         ["z Hub", "todo"]
-        |> text_to_elements([])
+        |> text_to_elements([attribute.style([transition_animation])])
         |> list.append([
           html.div(
-            [attribute.style([place_items(Center)])],
+            [attribute.style([place_items(Center), transition_animation])],
             ["made by", "oded yanovich"]
               |> text_to_elements([]),
           ),
@@ -188,7 +204,10 @@ pub fn view(model: Model) {
         main_screen: html.div(
           [
             attribute.style(
-              [grid_standard, [grid_template_rows(Repeat(2, Fr(1)))]]
+              [
+                grid_standard,
+                [grid_template_rows(Repeat(2, Fr(1))), transition_animation],
+              ]
               |> list.flatten,
             ),
           ],

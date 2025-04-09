@@ -27,6 +27,12 @@ pub type Phase {
   Phase(buttons: String, max_press_count: Int)
 }
 
+pub type ModTransition {
+  Before(timer: Float, new_mod: Identification)
+  StableMod
+  After(timer: Float)
+}
+
 pub type Identification {
   HubId
   FightId
@@ -35,7 +41,6 @@ pub type Identification {
 
 pub type Msg {
   Keydown(String)
-  // Dmg
   Frame(Float)
   Resize(Int, Int)
 }
@@ -49,6 +54,7 @@ type FightResponse =
 pub type Model {
   Model(
     mod: Mods,
+    mod_transition: ModTransition,
     volume: RangedInt,
     responses: Dict(#(Identification, String), Response),
     selected_level: RangedInt,
@@ -70,6 +76,19 @@ pub fn update_range(range: RangedInt, change) {
     val -> val
   })
 }
+
+pub const volume_buttons_and_changes = [
+  #("q", -25),
+  #("w", -10),
+  #("e", -5),
+  #("r", -1),
+  #("t", 1),
+  #("y", 5),
+  #("u", 10),
+  #("i", 25),
+]
+
+pub const mod_transition_time = 1000.0
 
 pub type Sound {
   Sound(id: Int, timer: Float, interval: Float)

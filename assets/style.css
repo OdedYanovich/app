@@ -5,10 +5,6 @@ html, body {
 	overflow: hidden;
 	/* background-color: blue; */
 }
-/* #canvas{
-	width: 700px;
-	height: 700px;
-} */
 #volume > div {
 	font-family: "Roboto", sans-serif;
 	position: relative;
@@ -18,25 +14,46 @@ html, body {
 	overflow: hidden;
 }
 
-@keyframes growAndFade {
+@keyframes entrance {
 	0% {
-		/*opacity: 0.25;*/
-		transform: scale(1);
+		opacity: 0;
+		transform: scale(0.3);
+	        filter: hue-rotate(180deg);
 	}
-
 	100% {
-		 opacity: 0; 
-		transform: scale(2.72);
+		opacity: 1; 
+		transform: scale(1);
+		filter: hue-rotate(0deg)
 	}
 }
-@keyframes growAndFade {
+
+@keyframes exiting {
 	0% {
-		/*opacity: 0.25;*/
+		opacity: 1; 
 		transform: scale(1);
+		filter: hue-rotate(0deg)
+	}
+	100% {
+		opacity: 0;
+		transform: scale(0.3);
+	        filter: hue-rotate(180deg);
 	}
 
-	100% {
-		 opacity: 0; 
-		transform: scale(2.72);
-	}
 }
+
+/*@keyframes growAndFade {*/
+/*	0% {*/
+/*		/*opacity: 0.25;*/*/
+/*		transform: scale(1);*/
+/*	}*/
+/**/
+/*	100% {*/
+/*		 opacity: 0; */
+/*		transform: scale(2.72);*/
+/*	}*/
+/*}*/
+
+/* #canvas{
+	width: 700px;
+	height: 700px;
+} */
