@@ -3,6 +3,7 @@ import gleam/dict.{type Dict}
 pub type Mods {
   Hub(HubBody)
   Fight(FightBody)
+  IntroductoryFight(FightBody)
   Credit
 }
 
@@ -37,6 +38,7 @@ pub type Identification {
   HubId
   FightId
   CreditId
+  IntroductoryFightId
 }
 
 pub type Msg {

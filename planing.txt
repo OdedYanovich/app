@@ -3,33 +3,29 @@ animate characters sliding out of the screen
 
 goal:
 
-make 15 levels with a CountUp level for each 5 of them + Level selector
- color and background picker
- write a relation between the the player's speed and the music's speed and the hp display
- sell the player customization option for progress
+ Multiple Endless levels that are related to the preceding levels
+ Level selector
+ Music reflects the player's press-per-minute 
  persistent memory
  difficulty sliders
  make different amount of instruments play together to reflect the player's progress
  sliders for minimum action speed
-
-css 55: make a single type for the value in a length and rewrite this function
-
-view: 
-
-89: the grid that hub makes and the main grid are using grid_template even if he makes a single row (unnecessary)
- the main grid may be better as a flexbox
- the color of the hp is from an element that will be defined in an element from css.gleam
- maybe grid_auto_flow can be removed
-maybe remove the "modeBody"
-rename the main canvas's id and mabye an id is unnecessary or at least the name may be given from a const
+ Response to the player's press-per-minute 
 
 
-Transparent letter behind each letter to make it easier to see with effects in the background.
-Audio visualizer.
-Back to single canvas.
+Transparent letter behind each letter to prevent the audio visualizer from hiding them.
 Exciting state when entering the game.
 Get time function instead of a variable.
 Time units wrapper
+Move volume's children properties to view.gleam
+
+fight:
+
+  First attack starts the music
+  Use initial_presses
+  Some problem with the way fight calls morph as soon as the fight is over
+
+Don't distinguish between incorrect presses and unrelated presses
 
 
 far future:
@@ -42,3 +38,4 @@ deconstruct the image to rebuild it in reverse, support different image sizes
 bugs: resize caused blur, frame drops
 game mod: Memory challenge, remember the hidden buttons
 Visuals that express the correct io
+Color and background picker with payed customization.

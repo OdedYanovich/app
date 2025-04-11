@@ -9,14 +9,14 @@ import gleam/dynamic/decode
 import gleam/list
 import gleam/result.{try}
 import gleam/string
-import initialization.{init}
+import initialization.{fight_responses, init}
 import level.{levels}
 import lustre.{dispatch}
 import root.{
   type FightBody, type Identification, type Model, After, Before, Credit,
-  CreditId, DoNothing, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
-  Keydown, Model, Phase, Range, Resize, Sound, StableMod, ToHub,
-  mod_transition_time,
+  CreditId, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
+  IntroductoryFight, IntroductoryFightId, Keydown, Model, Phase, Range, Resize,
+  Sound, StableMod, ToHub, mod_transition_time,
 }
 import view/view.{view}
 
@@ -71,6 +71,11 @@ pub fn main() {
             Error(_) ->
               case model.mod {
                 Fight(fight) ->
+                  //   use response <-
+                  //     result.try_recover(
+                  //       fight.responses |> dict.get(latest_key_press),Error(model)
+                  //     )
+                  //     |> result.unwrap_both
                   case fight.responses |> dict.get(latest_key_press) {
                     Ok(response) -> {
                       case response(fight, latest_key_press) {
@@ -88,6 +93,53 @@ pub fn main() {
                     }
                     Error(_) -> model
                   }
+                //  Model(
+                //    ..model,
+                //    mod: 0.0 |> HubBody |> Hub,
+                //    mod_transition: After(model.program_duration +. mod_transition_time),
+                //    responses: model.responses
+                //      |> dict.insert(#(FightId, "z"), fn(model) {
+                //        Model(
+                //          ..model,
+                //          mod_transition: Before(
+                //            model.program_duration +. mod_transition_time,
+                //            HubId,
+                //          ),
+                //        )
+                //      }),
+                //  )
+                IntroductoryFight(fight) ->
+                  case fight.responses |> dict.get(latest_key_press) {
+                    Ok(response) -> {
+                      case response(fight, latest_key_press) {
+                        #(_, ToHub) ->
+                          Model(
+                            ..model,
+                            responses: model.responses
+                              |> dict.insert(#(FightId, "z"), fn(model) {
+                                Model(
+                                  ..model,
+                                  mod_transition: Before(
+                                    model.program_duration
+                                      +. mod_transition_time,
+                                    HubId,
+                                  ),
+                                )
+                                //|> morph_to(HubId)
+                              }),
+                            mod_transition: Before(
+                              model.program_duration +. mod_transition_time,
+                              HubId,
+                            ),
+                          )
+                          |> morph_to(HubId)
+                        #(fight, _) ->
+                          Model(..model, mod: IntroductoryFight(fight))
+                      }
+                    }
+                    Error(_) -> model
+                  }
+
                 _ -> model
               }
           }
@@ -121,6 +173,7 @@ fn id(mod) {
     Hub(_) -> HubId
     Fight(_) -> FightId
     Credit -> CreditId
+    IntroductoryFight(_) -> IntroductoryFightId
   }
 }
 
@@ -164,54 +217,23 @@ pub fn morph_to(model: Model, mod: Identification) -> Model {
         mod: Credit,
         mod_transition: After(model.program_duration +. mod_transition_time),
       )
+    IntroductoryFightId -> panic
+    //   Model(
+    //     ..model,
+    //     mod: 0.0 |> HubBody |> Hub,
+    //     mod_transition: After(model.program_duration +. mod_transition_time),
+    //     responses: model.responses
+    //       |> dict.insert(#(FightId, "z"), fn(model) {
+    //         Model(
+    //           ..model,
+    //           mod_transition: Before(
+    //             model.program_duration +. mod_transition_time,
+    //             HubId,
+    //           ),
+    //         )
+    //       }),
+    //   )
   }
-}
-
-fn fight_responses(buttons) {
-  list.map(buttons |> string.to_graphemes, fn(key) {
-    #(key, fn(fight: FightBody, latest_key_press: String) {
-      use <- guard(
-        fight.required_press != latest_key_press,
-        FightBody(..fight, hp: fight.hp -. 8.0) |> pair(DoNothing),
-      )
-      use <- guard(fight.hp >. 80.0, FightBody(..fight, hp: 5.0) |> pair(ToHub))
-      let #(phases, required_press, press_counter) = case fight.phases {
-        [current, next, ..rest]
-          if fight.press_counter + 1 == current.max_press_count
-        -> {
-          let assert Ok(#(required_press, rest_of_buttons)) =
-            string.pop_grapheme(next.buttons)
-          #(
-            [Phase(..next, buttons: rest_of_buttons <> required_press)]
-              |> list.append(rest)
-              |> list.append([current]),
-            required_press,
-            0,
-          )
-        }
-        [current, ..rest] -> {
-          let assert Ok(#(required_press, rest_of_buttons)) =
-            string.pop_grapheme(current.buttons)
-          #(
-            [Phase(..current, buttons: rest_of_buttons <> required_press)]
-              |> list.append(rest),
-            required_press,
-            fight.press_counter + 1,
-          )
-        }
-        _ -> panic
-      }
-      FightBody(
-        ..fight,
-        hp: fight.hp +. 8.0,
-        required_press:,
-        press_counter:,
-        phases:,
-      )
-      |> pair(DoNothing)
-    })
-  })
-  |> dict.from_list
 }
 
 fn pair(a, b) {

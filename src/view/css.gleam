@@ -92,6 +92,7 @@ pub fn display(display) {
 pub type TrackList {
   Repeat(Int, Length)
   Unique(List(Length))
+  SubGrid
 }
 
 fn track_list_to_string(track_list) {
@@ -107,6 +108,7 @@ fn track_list_to_string(track_list) {
       list.fold(lengths, "", fn(return, added) {
         return <> " " <> added |> length_to_string
       })
+    SubGrid -> "subgrid"
   }
 }
 
@@ -125,6 +127,29 @@ pub fn grid_template_rows(grid_template_rows) {
 
 pub fn grid_template_columns(grid_template_columns) {
   #("grid-template-columns", grid_template_columns |> track_list_to_string)
+}
+
+pub type Area {
+  Area(String)
+}
+
+pub fn grid_template_areas(areas: List(List(Area))) {
+  #(
+    "grid-template-areas",
+    list.fold(areas, "", fn(areas, row) {
+      areas
+      <> list.fold(row, "\"", fn(row, area) {
+        let Area(area) = area
+        row <> " " <> area
+      })
+      <> "\"\n"
+    }),
+  )
+}
+
+pub fn grid_area(area: Area) {
+  let Area(area) = area
+  #("grid-area", area)
 }
 
 pub type PlaceItems {
