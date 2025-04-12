@@ -25,7 +25,10 @@ fight:
   Use initial_presses
   Some problem with the way fight calls morph as soon as the fight is over
 
-Don't distinguish between incorrect presses and unrelated presses
+Don't distinguish between incorrect presses and unrelated presses.
+Morphism from IntrodactaryFight should be wrapped in a function
+Lots of repetition between Fight and IntroductoryFight in view.gleam
+Add an hp minimum
 
 
 far future:

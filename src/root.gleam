@@ -13,7 +13,7 @@ pub type HubBody {
 
 pub type FightBody {
   FightBody(
-    responses: Dict(String, FightResponse),
+    // responses: Dict(String, FightResponse),
     hp: Float,
     required_press: String,
     initial_presses: Int,
@@ -47,18 +47,12 @@ pub type Msg {
   Resize(Int, Int)
 }
 
-pub type Response =
-  fn(Model) -> Model
-
-type FightResponse =
-  fn(FightBody, String) -> #(FightBody, TransitionFromFight)
-
 pub type Model {
   Model(
     mod: Mods,
     mod_transition: ModTransition,
     volume: RangedInt,
-    responses: Dict(#(Identification, String), Response),
+    responses: Dict(#(Identification, String), fn(Model) -> Model),
     selected_level: RangedInt,
     program_duration: Float,
     viewport_width: Int,
@@ -90,7 +84,7 @@ pub const volume_buttons_and_changes = [
   #("i", 25),
 ]
 
-pub const mod_transition_time = 1000.0
+pub const mod_transition_time = 400.0
 
 pub type Sound {
   Sound(id: Int, timer: Float, interval: Float)

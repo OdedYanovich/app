@@ -200,7 +200,6 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            //Add button const
             ["c Hub", "todo"]
               |> text_to_elements([attribute.style([transition_animation])])
               |> list.append([
@@ -285,7 +284,6 @@ pub fn view(model: Model) {
           |> list.flatten,
         ),
       ],
-      //[side_screen, main_screen],
       content,
     ),
   ]
