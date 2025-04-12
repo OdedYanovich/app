@@ -5,10 +5,9 @@ import gleam/dict
 import gleam/list
 import gleam/string
 import root.{
-  type FightBody, type Model, Before, CreditId, DoNothing, Fight, FightBody,
-  FightId, Hub, HubBody, HubId, IntroductoryFight, Model, Phase, Range, Sound,
-  StableMod, ToHub, mod_transition_time, update_range,
-  volume_buttons_and_changes,
+  type FightBody, type Model, Before, CreditId, DoNothing, FightBody, FightId,
+  HubId, IntroductoryFight, Model, Phase, Range, Sound, StableMod, ToHub,
+  mod_transition_time, update_range, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -19,9 +18,9 @@ pub fn init(_flags) {
       initial_presses: 20,
       phases: [Phase(buttons: "td", max_press_count: -1)],
       press_counter: 0,
-      required_press: "t",
+      required_press: "d",
     )
-      |> Fight,
+      |> IntroductoryFight,
     mod_transition: StableMod,
     volume: Range(val: 151, min: 0, max: 100),
     responses: responses(),
@@ -66,15 +65,6 @@ fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) 
     //#(#(FightId, "z"), transition(_, HubId)),
   ])
   |> dict.from_list
-  |> dict.insert(#(FightId, "z"), fn(model) {
-    Model(
-      ..model,
-      mod_transition: Before(
-        model.program_duration +. mod_transition_time,
-        HubId,
-      ),
-    )
-  })
 }
 
 pub fn fight_responses(buttons) {

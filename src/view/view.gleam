@@ -126,15 +126,8 @@ pub fn view(model: Model) {
           ),
         ],
         areas: {
-          let line = fn(options, area) {
-            options |> list.append([area, area, area])
-          }
-          grid_template_areas([
-            [options] |> line(volume),
-            [options] |> line(volume),
-            [options] |> line(volume),
-            [options] |> line(level_selector),
-          ])
+          let line = fn(area) { [options] |> list.append([area, area, area]) }
+          [line(volume), line(volume), line(volume), line(level_selector)]
         },
       )
     }
@@ -184,7 +177,7 @@ pub fn view(model: Model) {
         ],
         areas: {
           let line = [options, action, action, action]
-          grid_template_areas([line, line, line])
+          [line, line, line]
         },
       )
     }
@@ -221,7 +214,7 @@ pub fn view(model: Model) {
         ],
         areas: {
           let line = [options, credit, credit, credit]
-          grid_template_areas([line, line, line])
+          [line, line, line]
         },
       )
     }
@@ -248,12 +241,13 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            [],
+            ["required press: " <> fight.required_press]
+              |> text_to_elements([attribute.style([transition_animation])]),
           ),
         ],
         areas: {
           let line = [action, action, action]
-          grid_template_areas([line, line, line])
+          [line, line, line]
         },
       )
     }
@@ -283,7 +277,7 @@ pub fn view(model: Model) {
               css.box_sizing(BorderBox),
               css.left(REM(0.0)),
               css.top(REM(0.0)),
-              areas,
+              grid_template_areas(areas),
             ],
             grid_standard,
             // attribute.style([#("transition", "700ms")])
@@ -299,5 +293,5 @@ pub fn view(model: Model) {
 }
 
 type ModDependent {
-  Dependency(content: List(element.Element(Msg)), areas: #(String, String))
+  Dependency(content: List(element.Element(Msg)), areas: List(List(Area)))
 }
