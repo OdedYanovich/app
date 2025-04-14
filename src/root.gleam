@@ -49,9 +49,9 @@ pub type Model {
   Model(
     mod: Mods,
     mod_transition: ModTransition,
-    volume: RangedInt,
+    volume: RangedVal(Int),
     responses: Dict(#(Identification, String), fn(Model) -> Model),
-    selected_level: RangedInt,
+    selected_level: RangedVal(Int),
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
@@ -60,15 +60,23 @@ pub type Model {
   )
 }
 
-pub type RangedInt {
-  Range(val: Int, min: Int, max: Int)
+pub type RangedVal(t) {
+  // Range(val: Int, min: Int, max: Int)
+  Range(val: t, min: t, max: t)
 }
 
-// Range(val: t, min: t, max: t,add:fn(t,t)->t,cmp:fn(t,t)->t)
-pub fn update_range(range: RangedInt, change) {
+pub fn update_ranged_int(range: RangedVal(Int), change) {
   Range(..range, val: case range.val + change {
     val if val >= range.max -> range.max
     val if val <= range.min -> range.min
+    val -> val
+  })
+}
+
+pub fn update_ranged_float(range: RangedVal(Float), change) {
+  Range(..range, val: case range.val +. change {
+    val if val >=. range.max -> range.max
+    val if val <=. range.min -> range.min
     val -> val
   })
 }

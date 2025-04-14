@@ -1,7 +1,7 @@
 import ffi/gleam/sound
 import gleam/int
 import root.{
-  type Model, type RangedInt, Hub, HubBody, Model, Range, update_range,
+  type Model, type RangedVal, Hub, HubBody, Model, Range, update_ranged_int,
 }
 
 pub fn change_volume(model: Model, change) {
@@ -14,7 +14,7 @@ pub fn change_volume(model: Model, change) {
       Range(..model.volume, val:)
     }
     False -> {
-      let volume = model.volume |> update_range(change)
+      let volume = model.volume |> update_ranged_int(change)
       //   sound.play(
       //     { volume.val |> int.to_float } /. { model.volume.max |> int.to_float },
       //   )
@@ -38,13 +38,13 @@ pub fn mute_toggle(model: Model) {
   })
 }
 
-pub fn get_val(range: RangedInt) {
+pub fn get_val(range: RangedVal(Int)) {
   case range |> pass_the_limit {
     True -> range.val - { range.max + 1 }
     False -> range.val
   }
 }
 
-pub fn pass_the_limit(range: RangedInt) {
+pub fn pass_the_limit(range: RangedVal(Int)) {
   range.val > range.max
 }

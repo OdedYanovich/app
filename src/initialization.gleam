@@ -6,7 +6,7 @@ import level
 import root.{
   type FightBody, type Model, Before, CreditId, FightBody, FightId, HubId,
   IntroductoryFight, IntroductoryFightId, Model, Range, StableMod,
-  mod_transition_time, update_range, volume_buttons_and_changes,
+  mod_transition_time, update_ranged_int, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -50,7 +50,10 @@ pub fn init(_flags) {
 
 fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) {
   let change_level = fn(model, change) {
-    Model(..model, selected_level: update_range(model.selected_level, change))
+    Model(
+      ..model,
+      selected_level: update_ranged_int(model.selected_level, change),
+    )
   }
   let transition = fn(model, id) {
     Model(
