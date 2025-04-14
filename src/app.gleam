@@ -10,12 +10,12 @@ import gleam/list
 import gleam/result.{try}
 import gleam/string
 import initialization.{init}
-import level.{levels}
+import level.{levels, next_button, required_button}
 import lustre.{dispatch}
 import root.{
   type FightBody, type Identification, type Model, After, Before, Credit,
   CreditId, DoNothing, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
-  IntroductoryFight, IntroductoryFightId, Keydown, Model, Phase, Range, Resize,
+  IntroductoryFight, IntroductoryFightId, Keydown, Model, Range, Resize,
   StableMod, ToHub, mod_transition_time,
 }
 import view/view.{view}
@@ -46,12 +46,13 @@ pub fn main() {
               Model(
                 ..model,
                 program_duration:,
-                mod: FightBody(
-                    ..fight,
-                    hp: fight.hp
+                mod: FightBody(..fight, hp: case fight.hp {
+                    hp if hp >. 0.0 ->
+                      hp
                       -. 0.01
-                      *. { program_duration -. model.program_duration },
-                  )
+                      *. { program_duration -. model.program_duration }
+                    _ -> 0.0
+                  })
                   |> Fight,
                 sound_timer:,
               )
@@ -109,7 +110,7 @@ pub fn main() {
                       Model(
                         ..model,
                         responses: model.responses
-                          |> dict.insert(#(FightId, "z"), morph_to(_, HubId)),
+                          |> dict.insert(#(FightId, "]"), morph_to(_, HubId)),
                       )
                       |> morph_to(HubId)
                     #(fight, _) -> Model(..model, mod: IntroductoryFight(fight))
@@ -144,49 +145,13 @@ pub fn main() {
 }
 
 fn fight_response(fight: FightBody, latest_key_press: String) {
-  use <- guard(
-    fight.required_press != latest_key_press,
-    FightBody(..fight, hp: fight.hp -. 8.0) |> pair(DoNothing),
-  )
-  use <- guard(fight.hp >. 80.0, FightBody(..fight, hp: 5.0) |> pair(ToHub))
-  let #(phases, required_press, press_counter) = case fight.phases {
-    [current, next, ..rest]
-      if fight.press_counter + 1 == current.max_press_count
-    -> {
-      let assert Ok(#(required_press, rest_of_buttons)) =
-        string.pop_grapheme(next.buttons)
-      #(
-        [Phase(..next, buttons: rest_of_buttons <> required_press)]
-          |> list.append(rest)
-          |> list.append([current]),
-        required_press,
-        0,
-      )
-    }
-    [current, ..rest] -> {
-      let assert Ok(#(required_press, rest_of_buttons)) =
-        string.pop_grapheme(current.buttons)
-      #(
-        [Phase(..current, buttons: rest_of_buttons <> required_press)]
-          |> list.append(rest),
-        required_press,
-        fight.press_counter + 1,
-      )
-    }
-    _ -> panic
-  }
-  FightBody(
-    ..fight,
-    hp: fight.hp +. 8.0,
-    required_press:,
-    press_counter:,
-    phases:,
-  )
-  |> pair(DoNothing)
-}
-
-fn pair(a, b) {
-  #(a, b)
+  use <- guard(required_button(echo fight) != latest_key_press, #(
+    FightBody(..fight, hp: fight.hp -. 8.0),
+    DoNothing,
+  ))
+  let fight = next_button(fight)
+  use <- guard(fight.hp >. 80.0, #(fight, ToHub))
+  #(FightBody(..fight, hp: fight.hp +. 8.0), DoNothing)
 }
 
 fn id(mod) {
@@ -210,17 +175,14 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
     HubId -> 0.0 |> HubBody |> Hub |> after
     FightId -> {
       set_storage("selected_level", model.selected_level |> get_val)
-      let phases = model.selected_level.val |> levels
-      let assert [phase, ..other_phses] = phases
-      let assert Ok(#(required_press, other_buttons)) =
-        string.pop_grapheme(phase.buttons)
+      let #(indecies, buttons) = model.selected_level.val |> levels
       FightBody(
         hp: 5.0,
         initial_presses: 20,
-        phases: [Phase(..phase, buttons: other_buttons <> required_press)]
-          |> list.append(other_phses),
         press_counter: 0,
-        required_press:,
+        // required_press:,
+        buttons:,
+        indecies:,
       )
       |> Fight
       |> after

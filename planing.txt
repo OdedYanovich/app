@@ -27,6 +27,7 @@ wrap the timer
 Mute will pause the music
 First action will start the music
 victory transition will have an animation
+Make RangedInt polymorphic
 
 far future:
 rebuild with "The entry point"

@@ -1,5 +1,7 @@
 import gleam/dict.{type Dict}
 
+// import gleam/javascript/array.{type Array}
+
 pub type Mods {
   Hub(HubBody)
   Fight(FightBody)
@@ -13,19 +15,15 @@ pub type HubBody {
 
 pub type FightBody {
   FightBody(
-    // responses: Dict(String, FightResponse),
     hp: Float,
-    required_press: String,
+    // required_press: String,
     initial_presses: Int,
-    phases: List(Phase),
+    buttons: List(String),
+    indecies: List(Int),
     press_counter: Int,
     // press_per_minute: Int,
     // press_per_mistake: Int,
   )
-}
-
-pub type Phase {
-  Phase(buttons: String, max_press_count: Int)
 }
 
 pub type ModTransition {
@@ -66,6 +64,7 @@ pub type RangedInt {
   Range(val: Int, min: Int, max: Int)
 }
 
+// Range(val: t, min: t, max: t,add:fn(t,t)->t,cmp:fn(t,t)->t)
 pub fn update_range(range: RangedInt, change) {
   Range(..range, val: case range.val + change {
     val if val >= range.max -> range.max
@@ -89,10 +88,10 @@ pub const mod_transition_time = 400.0
 
 pub type Image {
   Image(
-    stationary_pixels: Array(Array(Bool)),
-    moving_pixels: Array(Array(MovingPixel)),
-    available_column_indices: Array(Int),
-    columns_fullness: Array(Int),
+    stationary_pixels: OldArray(OldArray(Bool)),
+    moving_pixels: OldArray(OldArray(MovingPixel)),
+    available_column_indices: OldArray(Int),
+    columns_fullness: OldArray(Int),
     rows: Int,
     columns: Int,
     spawn_offset: Position,
@@ -109,7 +108,7 @@ pub type TransitionFromFight {
   ToHub
 }
 
-pub type Array(t)
+pub type OldArray(t)
 
 pub type Position =
   #(Float, Float)

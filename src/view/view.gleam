@@ -2,6 +2,7 @@ import audio.{get_val, pass_the_limit}
 import gleam/float
 import gleam/int
 import gleam/list
+import level.{required_button}
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -64,7 +65,7 @@ pub fn view(model: Model) {
           |> list.flatten,
         ),
       ],
-      ["required press: " <> fight.required_press]
+      ["required press: " <> required_button(fight)]
         |> text_to_elements([attribute.style([transition_animation])]),
     )
   }
@@ -75,7 +76,7 @@ pub fn view(model: Model) {
       let volume = Area("c")
       let level_picker = Area("d")
       let level_selector = Area("b")
-
+      let level_selector_buttons = ["a", "s", "d", "f", "z", "x", "c", "v"]
       Dependency(
         content: [
           html.div(
@@ -105,7 +106,7 @@ pub fn view(model: Model) {
             volume_buttons_and_changes
               |> list.map(fn(x) { #(x.0, x.1 |> int.to_string) })
               |> list.append([
-                #("o", case model.volume |> pass_the_limit {
+                #("[", case model.volume |> pass_the_limit {
                   False -> "mute"
                   True -> "unmute"
                 }),
@@ -123,13 +124,12 @@ pub fn view(model: Model) {
           ),
           html.div(
             [
-              // attribute.id("level_selector"),
               attribute.style(
                 [
                   [
                     grid_area(level_selector),
                     grid_auto_flow(Column),
-                    grid_template(Repeat(3, Fr(1)), Repeat(3, Fr(1))),
+                    grid_template(Repeat(4, Fr(1)), Repeat(4, Fr(1))),
                     transition_animation,
                   ],
                   grid_standard,
@@ -137,7 +137,18 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+            [["", "g", "h", "j"]]
+              |> list.append(
+                list.range(1, 3)
+                |> list.map(fn(_row) {
+                  [""]
+                  |> list.append(
+                    list.range(1, 3)
+                    |> list.map(fn(n) { n |> int.to_string }),
+                  )
+                }),
+              )
+              |> list.flatten
               |> list.flat_map(fn(level) {
                 [
                   html.div([attribute.style([transition_animation])], [
@@ -156,7 +167,7 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            ["k", model.selected_level.val |> int.to_string, "l"]
+            ["-", model.selected_level.val |> int.to_string, "="]
               |> text_to_elements([attribute.style([transition_animation])]),
           ),
           html.div(
@@ -170,9 +181,9 @@ pub fn view(model: Model) {
               ),
             ],
             [
-              "z fight",
+              "] fight",
               "x reset dungeon",
-              "c credits",
+              "' credits",
               "volume: " <> model.volume |> get_val |> int.to_string,
             ]
               |> text_to_elements([attribute.style([transition_animation])]),
@@ -206,7 +217,7 @@ pub fn view(model: Model) {
             ],
             [
               "z go back",
-              "required press: " <> fight.required_press,
+              "required press: " <> required_button(fight),
               "current level: " <> model.selected_level.val |> int.to_string,
             ]
               |> text_to_elements([attribute.style([transition_animation])]),

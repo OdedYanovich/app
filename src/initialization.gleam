@@ -2,27 +2,34 @@ import audio.{change_volume, mute_toggle}
 import ffi/gleam/main.{get_storage, get_viewport_size}
 import gleam/dict
 import gleam/list
+import level
 import root.{
   type FightBody, type Model, Before, CreditId, FightBody, FightId, HubId,
-  IntroductoryFight, IntroductoryFightId, Model, Phase, Range, StableMod,
+  IntroductoryFight, IntroductoryFightId, Model, Range, StableMod,
   mod_transition_time, update_range, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
-  Model(
-    mod: FightBody(
+  let #(indecies, buttons) = level.levels(0)
+  let fight =
+    FightBody(
       hp: 65.0,
       initial_presses: 20,
-      phases: [Phase(buttons: "td", max_press_count: -1)],
+      buttons:,
+      indecies:,
       press_counter: 0,
-      required_press: "d",
     )
-      |> IntroductoryFight,
+  Model(
+    mod: fight |> IntroductoryFight,
     mod_transition: StableMod,
-    volume: Range(val: 121, min: 0, max: 100),
+    volume: Range(val: 111, min: 0, max: 100),
     responses: [
-      #(#(IntroductoryFightId, "d"), fn(model) {
-        Model(..mute_toggle(model), responses: responses())
+      #(#(IntroductoryFightId, level.required_button(fight)), fn(model) {
+        Model(
+          ..mute_toggle(model),
+          responses: responses(),
+          mod: FightBody(..fight, hp: fight.hp -. 8.0) |> IntroductoryFight,
+        )
       }),
     ]
       |> dict.from_list,
@@ -56,12 +63,12 @@ fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) 
     #(#(HubId, key_val.0), change_volume(_, key_val.1))
   })
   |> list.append([
-    #(#(HubId, "k"), change_level(_, -1)),
-    #(#(HubId, "l"), change_level(_, 1)),
-    #(#(HubId, "o"), mute_toggle),
-    #(#(HubId, "z"), transition(_, FightId)),
-    #(#(HubId, "c"), transition(_, CreditId)),
-    #(#(CreditId, "c"), transition(_, HubId)),
+    #(#(HubId, "-"), change_level(_, -1)),
+    #(#(HubId, "="), change_level(_, 1)),
+    #(#(HubId, "["), mute_toggle),
+    #(#(HubId, "]"), transition(_, FightId)),
+    #(#(HubId, "'"), transition(_, CreditId)),
+    #(#(CreditId, "'"), transition(_, HubId)),
   ])
   |> dict.from_list
 }

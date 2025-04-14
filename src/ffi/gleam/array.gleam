@@ -1,38 +1,42 @@
-import root.{type Array, type MovingPixel}
+import root.{type MovingPixel, type OldArray}
 
 @external(javascript, "./ffi/array.mjs", "create")
-pub fn create(size: Int, init: fn(index) -> t) -> Array(t)
+pub fn create(size: Int, init: fn(index) -> t) -> OldArray(t)
 
 @external(javascript, "./ffi/array.mjs", "map")
-pub fn map(array: Array(t), callback: fn(element, index) -> t) -> Array(t)
+pub fn map(array: OldArray(t), callback: fn(element, index) -> t) -> OldArray(t)
 
 @external(javascript, "./ffi/array.mjs", "iter")
-pub fn iter(array: Array(t), callback: fn(element, index) -> Nil) -> Nil
+pub fn iter(array: OldArray(t), callback: fn(element, index) -> Nil) -> Nil
 
 /// If index >= length -> Nil
 @external(javascript, "./ffi/array.mjs", "get")
-fn internal_get(array: Array(t), index: Int) -> t
+fn internal_get(array: OldArray(t), index: Int) -> t
 
-pub fn get(array: Array(t), index: Int) {
+pub fn get(array: OldArray(t), index: Int) {
   let t: t = internal_get(array, index)
   t
 }
 
 @external(javascript, "./ffi/array.mjs", "set")
-pub fn set(array: Array(t), index: Int, val: t) -> Array(t)
+pub fn set(array: OldArray(t), index: Int, val: t) -> OldArray(t)
 
 @external(javascript, "./ffi/array.mjs", "length")
-pub fn length(array: Array(t)) -> Int
+pub fn length(array: OldArray(t)) -> Int
 
 @external(javascript, "./ffi/array.mjs", "push")
-pub fn push(array: Array(t), val: t) -> Array(t)
+pub fn push(array: OldArray(t), val: t) -> OldArray(t)
 
 /// Empty array will be paired with Nil
 @external(javascript, "./ffi/array.mjs", "popBack")
-pub fn pop_back(array: Array(t)) -> #(Array(t), t)
+pub fn pop_back(array: OldArray(t)) -> #(OldArray(t), t)
 
 @external(javascript, "./ffi/array.mjs", "splice")
-pub fn splice(array: Array(t), index: Int, amount: Int) -> #(Array(t), Array(t))
+pub fn splice(
+  array: OldArray(t),
+  index: Int,
+  amount: Int,
+) -> #(OldArray(t), OldArray(t))
 
 // pub fn get(array: Array(t), index: Int) -> Option(t) {
 //   decode.run(internal_get(array, index), dynamic)
