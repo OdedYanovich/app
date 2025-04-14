@@ -14,22 +14,19 @@ goal:
 
 
 Transparent letter behind each letter to prevent the audio visualizer from hiding them.
-Exciting state when entering the game.
 Get time function instead of a variable.
-Time units wrapper
-Move volume's children properties to view.gleam
 
 fight:
-
-  First attack starts the music
   Use initial_presses
-  Some problem with the way fight calls morph as soon as the fight is over
 
-Don't distinguish between incorrect presses and unrelated presses.
-Morphism from IntrodactaryFight should be wrapped in a function
-Lots of repetition between Fight and IntroductoryFight in view.gleam
 Add an hp minimum
+Music doesn't sync
+First action doesn't switch the required button
+wrap the timer
 
+Mute will pause the music
+First action will start the music
+victory transition will have an animation
 
 far future:
 rebuild with "The entry point"

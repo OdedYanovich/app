@@ -4,8 +4,8 @@ import gleam/dict
 import gleam/list
 import root.{
   type FightBody, type Model, Before, CreditId, FightBody, FightId, HubId,
-  IntroductoryFight, Model, Phase, Range, Sound, StableMod, mod_transition_time,
-  update_range, volume_buttons_and_changes,
+  IntroductoryFight, IntroductoryFightId, Model, Phase, Range, StableMod,
+  mod_transition_time, update_range, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -19,8 +19,13 @@ pub fn init(_flags) {
     )
       |> IntroductoryFight,
     mod_transition: StableMod,
-    volume: Range(val: 151, min: 0, max: 100),
-    responses: responses(),
+    volume: Range(val: 121, min: 0, max: 100),
+    responses: [
+      #(#(IntroductoryFightId, "d"), fn(model) {
+        Model(..mute_toggle(model), responses: responses())
+      }),
+    ]
+      |> dict.from_list,
     selected_level: case get_storage("selected_level") {
       9999 -> 1
       lv -> lv
@@ -29,10 +34,8 @@ pub fn init(_flags) {
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
-    sounds: [
-      Sound(id: 0, timer: 0.0, interval: 0.5),
-      Sound(id: 1, timer: 0.0, interval: 0.8),
-    ],
+    sounds: [0, 1, 2, 3],
+    sound_timer: 0.0,
     // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
   // seed: seed.random(),
   )

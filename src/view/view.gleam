@@ -6,8 +6,8 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import root.{
-  type Model, type Msg, After, Before, Credit, Fight, Hub, IntroductoryFight,
-  StableMod, mod_transition_time, volume_buttons_and_changes,
+  type FightBody, type Model, type Msg, After, Before, Credit, Fight, Hub,
+  IntroductoryFight, StableMod, mod_transition_time, volume_buttons_and_changes,
 }
 import view/css.{
   type Area, Absolute, Area, Black, Blue, BorderBox, Center, Column, Fr, Green,
@@ -43,11 +43,39 @@ pub fn view(model: Model) {
     )
     StableMod -> #("", "")
   }
+  let fight_area = Area("b")
+  let fight_main_body = fn(fight: FightBody) {
+    html.div(
+      [
+        attribute.style(
+          [
+            [
+              #(
+                "background",
+                "linear-gradient(to left, rgba(0, 255, 0,0.3) "
+                  <> fight.hp |> float.round |> int.to_string
+                  <> "%, rgba(0,0,0,0))",
+              ),
+              grid_area(fight_area),
+              transition_animation,
+            ],
+            grid_standard,
+          ]
+          |> list.flatten,
+        ),
+      ],
+      ["required press: " <> fight.required_press]
+        |> text_to_elements([attribute.style([transition_animation])]),
+    )
+  }
+
   let Dependency(content, areas) = case model.mod {
     Hub(hub) -> {
-      let options = Area("side")
-      let volume = Area("volume")
-      let level_selector = Area("level_selector")
+      let options = Area("a")
+      let volume = Area("c")
+      let level_picker = Area("d")
+      let level_selector = Area("b")
+
       Dependency(
         content: [
           html.div(
@@ -95,10 +123,35 @@ pub fn view(model: Model) {
           ),
           html.div(
             [
+              // attribute.id("level_selector"),
+              attribute.style(
+                [
+                  [
+                    grid_area(level_selector),
+                    grid_auto_flow(Column),
+                    grid_template(Repeat(3, Fr(1)), Repeat(3, Fr(1))),
+                    transition_animation,
+                  ],
+                  grid_standard,
+                ]
+                |> list.flatten,
+              ),
+            ],
+            ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+              |> list.flat_map(fn(level) {
+                [
+                  html.div([attribute.style([transition_animation])], [
+                    level |> html.text,
+                  ]),
+                ]
+              }),
+          ),
+          html.div(
+            [
               attribute.style(
                 [
                   grid_standard,
-                  [grid_area(level_selector), grid_template_columns(SubGrid)],
+                  [grid_area(level_picker), grid_template_columns(SubGrid)],
                 ]
                 |> list.flatten,
               ),
@@ -127,36 +180,20 @@ pub fn view(model: Model) {
         ],
         areas: {
           let line = fn(area) { [options] |> list.append([area, area, area]) }
-          [line(volume), line(volume), line(volume), line(level_selector)]
+          [
+            line(volume),
+            line(level_selector),
+            line(level_selector),
+            line(level_picker),
+          ]
         },
       )
     }
     Fight(fight) -> {
-      let options = Area("options")
-      let action = Area("action")
+      let options = Area("a")
       Dependency(
         content: [
-          html.div(
-            [
-              attribute.style(
-                [
-                  [
-                    #(
-                      "background",
-                      "linear-gradient(to left, rgba(0, 255, 0,0.3) "
-                        <> fight.hp |> float.round |> int.to_string
-                        <> "%, rgba(0,0,0,0))",
-                    ),
-                    grid_area(action),
-                  ],
-                  [transition_animation],
-                  grid_standard,
-                ]
-                |> list.flatten,
-              ),
-            ],
-            [],
-          ),
+          fight_main_body(fight),
           html.div(
             [
               attribute.style(
@@ -176,14 +213,14 @@ pub fn view(model: Model) {
           ),
         ],
         areas: {
-          let line = [options, action, action, action]
+          let line = [options, fight_area, fight_area, fight_area]
           [line, line, line]
         },
       )
     }
     Credit -> {
-      let options = Area("options")
-      let credit = Area("credit")
+      let options = Area("a")
+      let credit = Area("b")
       Dependency(
         content: [
           html.img([
@@ -217,39 +254,8 @@ pub fn view(model: Model) {
         },
       )
     }
-    IntroductoryFight(fight) -> {
-      let action = Area("action")
-      Dependency(
-        content: [
-          html.div(
-            [
-              attribute.style(
-                [
-                  [
-                    #(
-                      "background",
-                      "linear-gradient(to left, rgba(0, 255, 0,0.3) "
-                        <> fight.hp |> float.round |> int.to_string
-                        <> "%, rgba(0,0,0,0))",
-                    ),
-                    grid_area(action),
-                  ],
-                  [transition_animation],
-                  grid_standard,
-                ]
-                |> list.flatten,
-              ),
-            ],
-            ["required press: " <> fight.required_press]
-              |> text_to_elements([attribute.style([transition_animation])]),
-          ),
-        ],
-        areas: {
-          let line = [action, action, action]
-          [line, line, line]
-        },
-      )
-    }
+    IntroductoryFight(fight) ->
+      Dependency(content: [fight_main_body(fight)], areas: [[fight_area]])
   }
   [
     html.canvas([
@@ -279,7 +285,6 @@ pub fn view(model: Model) {
               grid_template_areas(areas),
             ],
             grid_standard,
-            // attribute.style([#("transition", "700ms")])
           ]
           |> list.flatten,
         ),

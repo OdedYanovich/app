@@ -16,7 +16,7 @@ import root.{
   type FightBody, type Identification, type Model, After, Before, Credit,
   CreditId, DoNothing, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
   IntroductoryFight, IntroductoryFightId, Keydown, Model, Phase, Range, Resize,
-  Sound, StableMod, ToHub, mod_transition_time,
+  StableMod, ToHub, mod_transition_time,
 }
 import view/view.{view}
 
@@ -25,23 +25,21 @@ pub fn main() {
     fn(model: Model, msg) {
       case msg {
         Frame(program_duration) -> {
-          let sounds =
-            model.sounds
-            |> list.map(fn(sound) {
-              case
-                sound.timer <. model.program_duration
-                && !audio.pass_the_limit(model.volume)
-              {
-                True -> {
-                  sound.simple_play(sound.id)
-                  Sound(..sound, timer: sound.timer +. sound.interval)
-                }
-                False -> sound
-              }
-            })
+          let sound_timer = case
+            model.sound_timer <. model.program_duration
+            && !audio.pass_the_limit(model.volume)
+          {
+            True -> {
+              model.sounds
+              |> list.map(fn(sound) { sound.simple_play(sound) })
+              model.sound_timer +. 2.0
+            }
+            False -> model.sound_timer
+          }
+
           case model.mod, model.mod_transition {
             _, Before(timer, id) if timer <. model.program_duration ->
-              morph_to(model, id)
+              morphism(model, id)
             _, After(timer) if timer <. model.program_duration ->
               Model(..model, mod_transition: StableMod)
             Fight(fight), _ ->
@@ -55,7 +53,7 @@ pub fn main() {
                       *. { program_duration -. model.program_duration },
                   )
                   |> Fight,
-                sounds:,
+                sound_timer:,
               )
             IntroductoryFight(fight), _ ->
               Model(
@@ -68,13 +66,22 @@ pub fn main() {
                       *. { program_duration -. model.program_duration },
                   )
                   |> IntroductoryFight,
-                sounds:,
+                sound_timer:,
               )
-            _, _ -> Model(..model, program_duration:, sounds:)
+            _, _ -> Model(..model, program_duration:, sound_timer:)
           }
         }
         Keydown(latest_key_press) -> {
           let latest_key_press = latest_key_press |> string.lowercase
+          let morph_to = fn(model, id) {
+            Model(
+              ..model,
+              mod_transition: Before(
+                model.program_duration +. mod_transition_time,
+                id,
+              ),
+            )
+          }
           use <- guard(model.mod_transition != StableMod, model)
           case
             model.responses
@@ -102,19 +109,7 @@ pub fn main() {
                       Model(
                         ..model,
                         responses: model.responses
-                          |> dict.insert(#(FightId, "z"), fn(model) {
-                            Model(
-                              ..model,
-                              mod_transition: Before(
-                                model.program_duration +. mod_transition_time,
-                                HubId,
-                              ),
-                            )
-                          }),
-                        mod_transition: Before(
-                          model.program_duration +. mod_transition_time,
-                          HubId,
-                        ),
+                          |> dict.insert(#(FightId, "z"), morph_to(_, HubId)),
                       )
                       |> morph_to(HubId)
                     #(fight, _) -> Model(..model, mod: IntroductoryFight(fight))
@@ -148,7 +143,7 @@ pub fn main() {
   update_the_model(dispatch(Keydown(key))) |> Ok
 }
 
-pub fn fight_response(fight: FightBody, latest_key_press: String) {
+fn fight_response(fight: FightBody, latest_key_press: String) {
   use <- guard(
     fight.required_press != latest_key_press,
     FightBody(..fight, hp: fight.hp -. 8.0) |> pair(DoNothing),
@@ -203,40 +198,34 @@ fn id(mod) {
   }
 }
 
-pub fn morph_to(model: Model, mod: Identification) -> Model {
+pub fn morphism(model: Model, mod: Identification) -> Model {
+  let after = fn(mod) {
+    Model(
+      ..model,
+      mod:,
+      mod_transition: After(model.program_duration +. mod_transition_time),
+    )
+  }
   case mod {
-    HubId ->
-      Model(
-        ..model,
-        mod: 0.0 |> HubBody |> Hub,
-        mod_transition: After(model.program_duration +. mod_transition_time),
-      )
+    HubId -> 0.0 |> HubBody |> Hub |> after
     FightId -> {
       set_storage("selected_level", model.selected_level |> get_val)
       let phases = model.selected_level.val |> levels
       let assert [phase, ..other_phses] = phases
       let assert Ok(#(required_press, other_buttons)) =
         string.pop_grapheme(phase.buttons)
-      Model(
-        ..model,
-        mod: FightBody(
-            hp: 5.0,
-            initial_presses: 20,
-            phases: [Phase(..phase, buttons: other_buttons <> required_press)]
-              |> list.append(other_phses),
-            press_counter: 0,
-            required_press:,
-          )
-          |> Fight,
-        mod_transition: After(model.program_duration +. mod_transition_time),
+      FightBody(
+        hp: 5.0,
+        initial_presses: 20,
+        phases: [Phase(..phase, buttons: other_buttons <> required_press)]
+          |> list.append(other_phses),
+        press_counter: 0,
+        required_press:,
       )
+      |> Fight
+      |> after
     }
-    CreditId ->
-      Model(
-        ..model,
-        mod: Credit,
-        mod_transition: After(model.program_duration +. mod_transition_time),
-      )
+    CreditId -> after(Credit)
     IntroductoryFightId -> panic
   }
 }

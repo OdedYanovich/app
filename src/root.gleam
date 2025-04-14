@@ -57,7 +57,8 @@ pub type Model {
     program_duration: Float,
     viewport_width: Int,
     viewport_height: Int,
-    sounds: List(Sound),
+    sounds: List(Int),
+    sound_timer: Float,
   )
 }
 
@@ -85,10 +86,6 @@ pub const volume_buttons_and_changes = [
 ]
 
 pub const mod_transition_time = 400.0
-
-pub type Sound {
-  Sound(id: Int, timer: Float, interval: Float)
-}
 
 pub type Image {
   Image(

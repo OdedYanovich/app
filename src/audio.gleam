@@ -28,19 +28,12 @@ pub fn change_volume(model: Model, change) {
 }
 
 pub fn mute_toggle(model: Model) {
-  Model(..model, volume: {
-    case model.volume |> pass_the_limit {
-      True -> {
-        let val = model.volume.val - { model.volume.max + 1 }
-        //       sound.play(
-        //         { val |> int.to_float } /. { model.volume.max |> int.to_float },
-        //       )
-        Range(..model.volume, val:)
-      }
-      False -> {
-        //      sound.pause()
-        Range(..model.volume, val: model.volume.val + model.volume.max + 1)
-      }
+  Model(..model, volume: case model.volume |> pass_the_limit {
+    True ->
+      Range(..model.volume, val: model.volume.val - { model.volume.max + 1 })
+    False -> {
+      sound.pause()
+      Range(..model.volume, val: model.volume.val + model.volume.max + 1)
     }
   })
 }

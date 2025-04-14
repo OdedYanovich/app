@@ -14,14 +14,21 @@ export function play(volume) {
 	track.connect(gainNode).connect(audioContext.destination);
 	audioElement.play();
 }
-export function pause() {
-	audioElement.pause();
-}
-const audioElements = [document.getElementById("clap"), document.getElementById("cymbal3")]
+//export function pause() {
+//	audioElement.pause();
+//}
+
+//const audioElements = [document.getElementById("clap"), document.getElementById("cymbal3")]
+
+const audioElements = [document.getElementById("set1-1"), document.getElementById("set1-2"), document.getElementById("set1-3"), document.getElementById("set1-4")]
 export function simplePlay(id) {
 	audioElements[id].play()
 }
 export function changeVolume(volume) {
 	audioElements.forEach((sound) => sound.volume = volume
+	)
+}
+export function pause() {
+	audioElements.forEach((sound) => sound.pause()
 	)
 }
