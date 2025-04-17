@@ -200,6 +200,10 @@ pub fn box_sizing(box_sizing) {
 pub type Angle {
   Left
 }
+
+pub fn animation(str) {
+  #("animation", str)
+}
 // fn direction_to_string(direction) {
 //   case direction {
 //     Left -> "to left"

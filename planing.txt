@@ -12,7 +12,6 @@ goal:
  sliders for minimum action speed
  Response to the player's press-per-minute 
 
-
 Transparent letter behind each letter to prevent the audio visualizer from hiding them.
 Get time function instead of a variable.
 
@@ -27,7 +26,8 @@ wrap the timer
 Mute will pause the music
 First action will start the music
 victory transition will have an animation
-Make RangedInt polymorphic
+Sand an sound id array from js to initialization 
+initialization 29: make the value of the init_volume share a source with value of the volume constructor
 
 far future:
 rebuild with "The entry point"

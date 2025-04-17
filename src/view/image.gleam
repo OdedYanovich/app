@@ -1,4 +1,4 @@
-import ffi/gleam/array
+import ffi/array
 import gleam/bool.{guard}
 import gleam/int
 import root.{type Image, Image, Pixel, pixel_dimensions}

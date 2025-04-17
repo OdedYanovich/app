@@ -1,8 +1,8 @@
 import audio.{get_val}
-import ffi/gleam/main.{
+import ffi/main.{
   init_game_loop, init_keydown_event, init_resize_event, set_storage,
 }
-import ffi/gleam/sound
+import ffi/sound
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
@@ -31,12 +31,23 @@ pub fn main() {
           {
             True -> {
               model.sounds
-              |> list.map(fn(sound) { sound.simple_play(sound) })
+              |> list.map(fn(sound) { sound.play(sound) })
               model.sound_timer +. 2.0
             }
             False -> model.sound_timer
           }
-
+          let update = fn(fight: FightBody) {
+            case fight.hp {
+              hp if hp >. 0.0 ->
+                FightBody(
+                  ..fight,
+                  hp: hp
+                    -. 0.01
+                    *. { program_duration -. model.program_duration },
+                )
+              _ -> FightBody(..fight, hp: 0.0)
+            }
+          }
           case model.mod, model.mod_transition {
             _, Before(timer, id) if timer <. model.program_duration ->
               morphism(model, id)
@@ -46,27 +57,14 @@ pub fn main() {
               Model(
                 ..model,
                 program_duration:,
-                mod: FightBody(..fight, hp: case fight.hp {
-                    hp if hp >. 0.0 ->
-                      hp
-                      -. 0.01
-                      *. { program_duration -. model.program_duration }
-                    _ -> 0.0
-                  })
-                  |> Fight,
+                mod: Fight(update(fight)),
                 sound_timer:,
               )
             IntroductoryFight(fight), _ ->
               Model(
                 ..model,
                 program_duration:,
-                mod: FightBody(
-                    ..fight,
-                    hp: fight.hp
-                      -. 0.01
-                      *. { program_duration -. model.program_duration },
-                  )
-                  |> IntroductoryFight,
+                mod: IntroductoryFight(update(fight)),
                 sound_timer:,
               )
             _, _ -> Model(..model, program_duration:, sound_timer:)
@@ -145,7 +143,7 @@ pub fn main() {
 }
 
 fn fight_response(fight: FightBody, latest_key_press: String) {
-  use <- guard(required_button(echo fight) != latest_key_press, #(
+  use <- guard(required_button(fight) != latest_key_press, #(
     FightBody(..fight, hp: fight.hp -. 8.0),
     DoNothing,
   ))

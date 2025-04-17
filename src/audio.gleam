@@ -1,4 +1,4 @@
-import ffi/gleam/sound
+import ffi/sound
 import gleam/int
 import root.{
   type Model, type RangedVal, Hub, HubBody, Model, Range, update_ranged_int,
@@ -6,20 +6,13 @@ import root.{
 
 pub fn change_volume(model: Model, change) {
   let volume = case model.volume |> pass_the_limit {
-    True -> {
-      let val = model.volume.val + change - { model.volume.max + 1 }
-      //   sound.play(
-      //     { val |> int.to_float } /. { model.volume.max |> int.to_float },
-      //   )
-      Range(..model.volume, val:)
-    }
-    False -> {
-      let volume = model.volume |> update_ranged_int(change)
-      //   sound.play(
-      //     { volume.val |> int.to_float } /. { model.volume.max |> int.to_float },
-      //   )
-      volume
-    }
+    True ->
+      Range(
+        ..model.volume,
+        val: model.volume.val + change - { model.volume.max + 1 },
+      )
+
+    False -> model.volume |> update_ranged_int(change)
   }
   sound.change_volume(
     { volume.val |> int.to_float } /. { volume.max |> int.to_float },
@@ -45,6 +38,13 @@ pub fn get_val(range: RangedVal(Int)) {
   }
 }
 
+// pub fn get_val_float(range: RangedVal(Int)){
+//   case range |> pass_the_limit {
+//     True -> range.val - { range.max + 1 }
+//     False -> range.val
+//   }
+//     { volume.val |> int.to_float } /. { volume.max |> int.to_float }
+// }
 pub fn pass_the_limit(range: RangedVal(Int)) {
   range.val > range.max
 }

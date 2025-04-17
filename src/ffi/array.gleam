@@ -1,16 +1,16 @@
 import root.{type MovingPixel, type OldArray}
 
-@external(javascript, "./ffi/array.mjs", "create")
+@external(javascript, "./js/array.mjs", "create")
 pub fn create(size: Int, init: fn(index) -> t) -> OldArray(t)
 
-@external(javascript, "./ffi/array.mjs", "map")
+@external(javascript, "./js/array.mjs", "map")
 pub fn map(array: OldArray(t), callback: fn(element, index) -> t) -> OldArray(t)
 
-@external(javascript, "./ffi/array.mjs", "iter")
+@external(javascript, "./js/array.mjs", "iter")
 pub fn iter(array: OldArray(t), callback: fn(element, index) -> Nil) -> Nil
 
 /// If index >= length -> Nil
-@external(javascript, "./ffi/array.mjs", "get")
+@external(javascript, "./js/array.mjs", "get")
 fn internal_get(array: OldArray(t), index: Int) -> t
 
 pub fn get(array: OldArray(t), index: Int) {
@@ -18,20 +18,20 @@ pub fn get(array: OldArray(t), index: Int) {
   t
 }
 
-@external(javascript, "./ffi/array.mjs", "set")
+@external(javascript, "./js/array.mjs", "set")
 pub fn set(array: OldArray(t), index: Int, val: t) -> OldArray(t)
 
-@external(javascript, "./ffi/array.mjs", "length")
+@external(javascript, "./js/array.mjs", "length")
 pub fn length(array: OldArray(t)) -> Int
 
-@external(javascript, "./ffi/array.mjs", "push")
+@external(javascript, "./js/array.mjs", "push")
 pub fn push(array: OldArray(t), val: t) -> OldArray(t)
 
 /// Empty array will be paired with Nil
-@external(javascript, "./ffi/array.mjs", "popBack")
+@external(javascript, "./js/array.mjs", "popBack")
 pub fn pop_back(array: OldArray(t)) -> #(OldArray(t), t)
 
-@external(javascript, "./ffi/array.mjs", "splice")
+@external(javascript, "./js/array.mjs", "splice")
 pub fn splice(
   array: OldArray(t),
   index: Int,
@@ -45,10 +45,10 @@ pub fn splice(
 //     val -> Some(val)
 //   }
 // }
-@external(javascript, "./ffi/image.mjs", "createNew")
+@external(javascript, "./js/image.mjs", "createNew")
 pub fn create_image(rows: Int, columns: Int) -> Nil
 
-@external(javascript, "./ffi/image.mjs", "addMovingPixel")
+@external(javascript, "./js/image.mjs", "addMovingPixel")
 pub fn add_moving_pixel(column_index: Int, pixel: MovingPixel) -> Nil
 // @external(javascript, "./ffi/array.mjs", "setLast")
 // pub fn set_last(array: Array(t), val: t) -> Array(t)

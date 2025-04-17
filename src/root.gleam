@@ -1,7 +1,5 @@
 import gleam/dict.{type Dict}
 
-// import gleam/javascript/array.{type Array}
-
 pub type Mods {
   Hub(HubBody)
   Fight(FightBody)

@@ -1,5 +1,6 @@
 import audio.{change_volume, mute_toggle}
-import ffi/gleam/main.{get_storage, get_viewport_size}
+import ffi/main.{get_storage, get_viewport_size}
+import ffi/sound
 import gleam/dict
 import gleam/list
 import level
@@ -25,6 +26,7 @@ pub fn init(_flags) {
     volume: Range(val: 111, min: 0, max: 100),
     responses: [
       #(#(IntroductoryFightId, level.required_button(fight)), fn(model) {
+        sound.init_audio(0.1)
         Model(
           ..mute_toggle(model),
           responses: responses(),
@@ -66,12 +68,12 @@ fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) 
     #(#(HubId, key_val.0), change_volume(_, key_val.1))
   })
   |> list.append([
-    #(#(HubId, "-"), change_level(_, -1)),
-    #(#(HubId, "="), change_level(_, 1)),
-    #(#(HubId, "["), mute_toggle),
+    #(#(HubId, "k"), change_level(_, -1)),
+    #(#(HubId, "l"), change_level(_, 1)),
+    #(#(HubId, "o"), mute_toggle),
     #(#(HubId, "]"), transition(_, FightId)),
-    #(#(HubId, "'"), transition(_, CreditId)),
-    #(#(CreditId, "'"), transition(_, HubId)),
+    #(#(HubId, "["), transition(_, CreditId)),
+    #(#(CreditId, "["), transition(_, HubId)),
   ])
   |> dict.from_list
 }

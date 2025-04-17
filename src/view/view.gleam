@@ -12,8 +12,8 @@ import root.{
 }
 import view/css.{
   type Area, Absolute, Area, Black, Blue, BorderBox, Center, Column, Fr, Green,
-  Grid, Precent, REM, Repeat, SubGrid, White, background_color, display,
-  grid_area, grid_auto_flow, grid_template, grid_template_areas,
+  Grid, Precent, REM, Repeat, SubGrid, White, animation, background_color,
+  display, grid_area, grid_auto_flow, grid_template, grid_template_areas,
   grid_template_columns, grid_template_rows, height, place_items, width,
 }
 
@@ -30,18 +30,19 @@ pub fn view(model: Model) {
     place_items(Center),
   ]
   let transition_animation = case model.mod_transition {
-    After(_) -> #(
-      "animation",
-      "entrance "
+    After(_) ->
+      animation(
+        "entrance "
         <> mod_transition_time /. 1000.0 |> float.to_string
         <> "s ease-out",
-    )
-    Before(_, _) -> #(
-      "animation",
-      "exiting "
+      )
+    Before(_, _) ->
+      animation(
+        "exiting "
         <> mod_transition_time /. 1000.0 |> float.to_string
-        <> "s ease-out",
-    )
+        <> "s ease-out"
+        <> " forwards",
+      )
     StableMod -> #("", "")
   }
   let fight_area = Area("b")
@@ -106,7 +107,7 @@ pub fn view(model: Model) {
             volume_buttons_and_changes
               |> list.map(fn(x) { #(x.0, x.1 |> int.to_string) })
               |> list.append([
-                #("[", case model.volume |> pass_the_limit {
+                #("o", case model.volume |> pass_the_limit {
                   False -> "mute"
                   True -> "unmute"
                 }),
@@ -137,7 +138,7 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            [["", "g", "h", "j"]]
+            [[""] |> list.append(level_selector_buttons |> list.take(3))]
               |> list.append(
                 list.range(1, 3)
                 |> list.map(fn(_row) {
@@ -167,7 +168,7 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            ["-", model.selected_level.val |> int.to_string, "="]
+            ["j", model.selected_level.val |> int.to_string, "k"]
               |> text_to_elements([attribute.style([transition_animation])]),
           ),
           html.div(
@@ -183,7 +184,7 @@ pub fn view(model: Model) {
             [
               "] fight",
               "x reset dungeon",
-              "' credits",
+              "[ credits",
               "volume: " <> model.volume |> get_val |> int.to_string,
             ]
               |> text_to_elements([attribute.style([transition_animation])]),
@@ -248,7 +249,7 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            ["c Hub", "todo"]
+            ["[ Hub", "todo"]
               |> text_to_elements([attribute.style([transition_animation])])
               |> list.append([
                 html.div(
