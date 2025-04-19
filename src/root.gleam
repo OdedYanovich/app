@@ -14,7 +14,8 @@ pub type HubBody {
 pub type FightBody {
   FightBody(
     hp: Float,
-    // required_press: String,
+    last_button_group: ButtonGroup,
+    wanted_action: ButtonGroup,
     initial_presses: Int,
     buttons: List(String),
     indecies: List(Int),
@@ -22,6 +23,14 @@ pub type FightBody {
     // press_per_minute: Int,
     // press_per_mistake: Int,
   )
+}
+
+pub type ButtonGroup {
+  None
+  ChangeLeft
+  ChangeRight
+  StayLeft
+  StayRight
 }
 
 pub type ModTransition {
@@ -59,9 +68,10 @@ pub type Model {
 }
 
 pub type RangedVal(t) {
-  // Range(val: Int, min: Int, max: Int)
   Range(val: t, min: t, max: t)
 }
+
+pub type Initialized
 
 pub fn update_ranged_int(range: RangedVal(Int), change) {
   Range(..range, val: case range.val + change {
@@ -92,33 +102,4 @@ pub const volume_buttons_and_changes = [
 
 pub const mod_transition_time = 400.0
 
-pub type Image {
-  Image(
-    stationary_pixels: OldArray(OldArray(Bool)),
-    moving_pixels: OldArray(OldArray(MovingPixel)),
-    available_column_indices: OldArray(Int),
-    columns_fullness: OldArray(Int),
-    rows: Int,
-    columns: Int,
-    spawn_offset: Position,
-    stopping_offset: Position,
-  )
-}
-
-pub type MovingPixel {
-  Pixel(existence_time: Float, position: Position, trajectory: Position)
-}
-
-pub type TransitionFromFight {
-  DoNothing
-  ToHub
-}
-
-pub type OldArray(t)
-
-pub type Position =
-  #(Float, Float)
-
 pub const animation_end_time = 3000.0
-
-pub const pixel_dimensions = 50

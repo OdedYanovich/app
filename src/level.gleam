@@ -4,25 +4,25 @@ import root.{type FightBody, FightBody}
 
 import gleam/javascript/array
 
-pub fn levels(selected_level) {
+pub fn gevels(selected_level) {
   let levels =
-    [[0, 1], [0, 1, 1], [0, 1, 2], [0, 1, 2, 2], [0, 1, 1, 2]]
+    [
+      Level(1, []),
+      Level(2, []),
+      Level(3, [2]),
+      Level(3, []),
+      Level(4, [3]),
+      Level(4, []),
+      Level(5, [4]),
+    ]
     |> array.from_list
-  // let level_indecies = get_by_index(levels, selected_level)
-  let assert Ok(level_indecies) = levels |> array.get(selected_level)
-  #(
-    level_indecies,
-    buttons
-      |> list.sample(
-        level_indecies
-        |> list.fold(-1, fn(acc, item) {
-          case item + 1 > acc {
-            True -> item + 1
-            False -> acc
-          }
-        }),
-      ),
-  )
+  let assert Ok(level) = levels |> array.get(selected_level)
+  use #(counters, group_length), group <- list.fold(level.groups, #([], 0))
+  #(counters, group_length + 1)
+}
+
+pub type Level {
+  Level(length: Int, groups: List(Int))
 }
 
 pub fn next_button(fight: FightBody) {

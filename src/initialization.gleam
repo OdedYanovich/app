@@ -6,7 +6,7 @@ import gleam/list
 import level
 import root.{
   type FightBody, type Model, Before, CreditId, FightBody, FightId, HubId,
-  IntroductoryFight, IntroductoryFightId, Model, Range, StableMod,
+  IntroductoryFight, IntroductoryFightId, Model, None, Range, StableMod,
   mod_transition_time, update_ranged_int, volume_buttons_and_changes,
 }
 
@@ -19,6 +19,8 @@ pub fn init(_flags) {
       buttons:,
       indecies:,
       press_counter: 0,
+      last_button_group: None,
+      wanted_action: None,
     )
   Model(
     mod: fight |> IntroductoryFight,

@@ -1,42 +1,66 @@
-difficulty: Make sliders for presses per minute/mistake that could be raised to lower the maximal press count
-animate characters sliding out of the screen
+view 85: Make a const that is shared by the functions that are related to the volume element
 
-goal:
+Progress:
+  Timestamp/mistake
+  compute progress in presses instead of abstract points
+  set minimum
 
- Multiple Endless levels that are related to the preceding levels
+Animation: 
+  transition
+  menu
+  characters in fight
+  victory 
+
+Visuals:
+  Transparent letter behind each letter to prevent the audio visualizer from hiding them.
+  Level selector:
+    selected row by gets a grid/area
+    fill grid it with selected buttons + reverse button
+    update buttons
+
+Input:
+  Mod gives a set of inputs that will be excepted to it's entry point (response)
+  Single map
+
+Timer:
+  Don't store
+  Shared logic
+
+Audio: 
+  Schedule
+  Song:
+    stored as a stack of pairs of tracks
+    played as a stuck of tracks from the stored stack
+    transition:
+      temporary response to a stack change
+      can be a track or a effect
+    a track can be accelerated to a shared maximum as a response to good play
+
+Goal:
  Level selector
- Music reflects the player's press-per-minute 
+ Dynamic ost
  persistent memory
- difficulty sliders
- make different amount of instruments play together to reflect the player's progress
- sliders for minimum action speed
- Response to the player's press-per-minute 
 
-Transparent letter behind each letter to prevent the audio visualizer from hiding them.
-Get time function instead of a variable.
+Updates:
+  cross platform
+  endless levels 
+  histogram
 
-fight:
-  Use initial_presses
+Sequel:
+  Migrate to Wisp
 
-Add an hp minimum
-Music doesn't sync
-First action doesn't switch the required button
-wrap the timer
+Quality Assurance:
+  Optimization
+  
+Far future:
+  Image: 
+    With arrays
+    Transparent pixels for non square images
+    Pixels pushing each other
+    Shot pixels from multiple directions
+    Deconstruct to rebuild in reverse
+    Support different sizes
 
-Mute will pause the music
-First action will start the music
-victory transition will have an animation
-Sand an sound id array from js to initialization 
-initialization 29: make the value of the init_volume share a source with value of the volume constructor
-
-far future:
-rebuild with "The entry point"
-responses: Set and check the phase's timer
-check command line testing server
-slowness permission: Defining phases in which it is less punishing to make mistakes or be slow
-Image: With arrays, transparent pixels for non square images, make the pixels push each other, shot pixels from multiple directions, 
-deconstruct the image to rebuild it in reverse, support different image sizes
-bugs: resize caused blur, frame drops
 game mod: Memory challenge, remember the hidden buttons
 Visuals that express the correct io
 Color and background picker with payed customization.

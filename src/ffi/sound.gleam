@@ -1,6 +1,3 @@
-// @external(javascript, "./js/sound.mjs", "play")
-// pub fn play(volume: Float) -> Nil
-//
 @external(javascript, "./js/sound.mjs", "pause")
 pub fn pause() -> Nil
 
