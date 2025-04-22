@@ -4,6 +4,7 @@
 // import gleam/io
 
 pub fn main() {
+  echo 7 |> int.bitwise_and(int.bitwise_shift_left(1, 0))
   // let arr = array.create(3, fn(index) { index })
 
   // arr

@@ -2,7 +2,7 @@ import audio.{get_val, pass_the_limit}
 import gleam/float
 import gleam/int
 import gleam/list
-import level.{required_button}
+import level.{displayed_button}
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -66,7 +66,7 @@ pub fn view(model: Model) {
           |> list.flatten,
         ),
       ],
-      ["required press: " <> required_button(fight)]
+      ["required press: " <> displayed_button(fight)]
         |> text_to_elements([attribute.style([transition_animation])]),
     )
   }
@@ -218,7 +218,7 @@ pub fn view(model: Model) {
             ],
             [
               "z go back",
-              "required press: " <> required_button(fight),
+              "required press: " <> displayed_button(fight),
               "current level: " <> model.selected_level.val |> int.to_string,
             ]
               |> text_to_elements([attribute.style([transition_animation])]),

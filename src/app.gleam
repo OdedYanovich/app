@@ -10,7 +10,7 @@ import gleam/list
 import gleam/result.{try}
 import gleam/string
 import initialization.{init}
-import level.{levels, next_button, required_button}
+import level
 import lustre.{dispatch}
 import root.{
   type FightBody, type Identification, type Model, After, Before, ChangeLeft,
@@ -179,11 +179,11 @@ pub fn main() {
 }
 
 fn fight_response(fight: FightBody, latest_key_press: String) {
-  use <- guard(required_button(fight) != latest_key_press, #(
+  use <- guard(level.displayed_button(fight) != latest_key_press, #(
     FightBody(..fight, hp: fight.hp -. 8.0),
     DoNothing,
   ))
-  let fight = next_button(fight)
+  let fight = level.next_action(fight, fight.last_button_group)
   use <- guard(fight.hp >. 80.0, #(fight, ToHub))
   #(FightBody(..fight, hp: fight.hp +. 8.0), DoNothing)
 }
@@ -214,9 +214,9 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
         hp: 5.0,
         initial_presses: 20,
         press_counter: 0,
-        // required_press:,
-        buttons:,
-        indecies:,
+        level: level.get_level(model.selected_level |> get_val),
+        // last_button_group: ButtonGroup,
+        wanted_action: ButtonGroup,
       )
       |> Fight
       |> after

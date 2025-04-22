@@ -11,13 +11,11 @@ import root.{
 }
 
 pub fn init(_flags) {
-  let #(indecies, buttons) = level.levels(0)
   let fight =
     FightBody(
       hp: 65.0,
       initial_presses: 20,
-      buttons:,
-      indecies:,
+      level: level.get_level(0),
       press_counter: 0,
       last_button_group: None,
       wanted_action: None,
@@ -27,7 +25,7 @@ pub fn init(_flags) {
     mod_transition: StableMod,
     volume: Range(val: 111, min: 0, max: 100),
     responses: [
-      #(#(IntroductoryFightId, level.required_button(fight)), fn(model) {
+      #(#(IntroductoryFightId, level.displayed_button(fight)), fn(model) {
         sound.init_audio(0.1)
         Model(
           ..mute_toggle(model),

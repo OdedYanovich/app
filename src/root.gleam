@@ -14,14 +14,23 @@ pub type HubBody {
 pub type FightBody {
   FightBody(
     hp: Float,
+    level: Level,
     last_button_group: ButtonGroup,
     wanted_action: ButtonGroup,
     initial_presses: Int,
-    buttons: List(String),
-    indecies: List(Int),
     press_counter: Int,
     // press_per_minute: Int,
     // press_per_mistake: Int,
+  )
+}
+
+pub type Level {
+  Level(
+    sequence_map: Int,
+    length: Int,
+    current_map: Int,
+    current_index: Int,
+    curent_counter: Bool,
   )
 }
 
@@ -65,6 +74,11 @@ pub type Model {
     sounds: List(Int),
     sound_timer: Float,
   )
+}
+
+pub type T {
+  DoNothing
+  ToHub
 }
 
 pub type RangedVal(t) {
