@@ -1,42 +1,50 @@
-import root.{type MovingPixel, type OldArray}
+// import root.{type MovingPixel, type OldArray}
+//
+// @external(javascript, "./js/array.mjs", "create")
+// pub fn create(size: Int, init: fn(index) -> t) -> OldArray(t)
+//
+// @external(javascript, "./js/array.mjs", "map")
+// pub fn map(array: OldArray(t), callback: fn(element, index) -> t) -> OldArray(t)
+//
+// @external(javascript, "./js/array.mjs", "iter")
+// pub fn iter(array: OldArray(t), callback: fn(element, index) -> Nil) -> Nil
+//
+// /// If index >= length -> Nil
+// @external(javascript, "./js/array.mjs", "get")
+// fn internal_get(array: OldArray(t), index: Int) -> t
+//
+// pub fn get(array: OldArray(t), index: Int) {
+//   let t: t = internal_get(array, index)
+//   t
+// }
+//
+// @external(javascript, "./js/array.mjs", "set")
+// pub fn set(array: OldArray(t), index: Int, val: t) -> OldArray(t)
+//
+// @external(javascript, "./js/array.mjs", "length")
+// pub fn length(array: OldArray(t)) -> Int
+//
+// @external(javascript, "./js/array.mjs", "push")
+// pub fn push(array: OldArray(t), val: t) -> OldArray(t)
+//
+// /// Empty array will be paired with Nil
+// @external(javascript, "./js/array.mjs", "popBack")
+// pub fn pop_back(array: OldArray(t)) -> #(OldArray(t), t)
+//
+// @external(javascript, "./js/array.mjs", "splice")
+// pub fn splice(
+//   array: OldArray(t),
+//   index: Int,
+//   amount: Int,
+// ) -> #(OldArray(t), OldArray(t))
+//
+// @external(javascript, "./js/image.mjs", "createNew")
+// pub fn create_image(rows: Int, columns: Int) -> Nil
+//
+// @external(javascript, "./js/image.mjs", "addMovingPixel")
+// pub fn add_moving_pixel(column_index: Int, pixel: MovingPixel) -> Nil
 
-@external(javascript, "./js/array.mjs", "create")
-pub fn create(size: Int, init: fn(index) -> t) -> OldArray(t)
-
-@external(javascript, "./js/array.mjs", "map")
-pub fn map(array: OldArray(t), callback: fn(element, index) -> t) -> OldArray(t)
-
-@external(javascript, "./js/array.mjs", "iter")
-pub fn iter(array: OldArray(t), callback: fn(element, index) -> Nil) -> Nil
-
-/// If index >= length -> Nil
-@external(javascript, "./js/array.mjs", "get")
-fn internal_get(array: OldArray(t), index: Int) -> t
-
-pub fn get(array: OldArray(t), index: Int) {
-  let t: t = internal_get(array, index)
-  t
-}
-
-@external(javascript, "./js/array.mjs", "set")
-pub fn set(array: OldArray(t), index: Int, val: t) -> OldArray(t)
-
-@external(javascript, "./js/array.mjs", "length")
-pub fn length(array: OldArray(t)) -> Int
-
-@external(javascript, "./js/array.mjs", "push")
-pub fn push(array: OldArray(t), val: t) -> OldArray(t)
-
-/// Empty array will be paired with Nil
-@external(javascript, "./js/array.mjs", "popBack")
-pub fn pop_back(array: OldArray(t)) -> #(OldArray(t), t)
-
-@external(javascript, "./js/array.mjs", "splice")
-pub fn splice(
-  array: OldArray(t),
-  index: Int,
-  amount: Int,
-) -> #(OldArray(t), OldArray(t))
+// Useless
 
 // pub fn get(array: Array(t), index: Int) -> Option(t) {
 //   decode.run(internal_get(array, index), dynamic)
@@ -45,11 +53,6 @@ pub fn splice(
 //     val -> Some(val)
 //   }
 // }
-@external(javascript, "./js/image.mjs", "createNew")
-pub fn create_image(rows: Int, columns: Int) -> Nil
-
-@external(javascript, "./js/image.mjs", "addMovingPixel")
-pub fn add_moving_pixel(column_index: Int, pixel: MovingPixel) -> Nil
 // @external(javascript, "./ffi/array.mjs", "setLast")
 // pub fn set_last(array: Array(t), val: t) -> Array(t)
 

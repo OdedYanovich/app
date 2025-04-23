@@ -1,3 +1,12 @@
+remove from grouped responses every entry that has the id of the init fight in the transition from that state 
+Check group
+rewrite level creation and iteration
+separate the process of checking the fight group and the response
+fight: Will not assume that the type is Fight instead of InitFight
+swap the groups of stay and change
+swap the order of the iteration
+In the start, the buttons will be demonstrated to the player
+
 view 85: Make a const that is shared by the functions that are related to the volume element
 
 Progress:

@@ -15,8 +15,8 @@ pub type FightBody {
   FightBody(
     hp: Float,
     level: Level,
-    last_button_group: ButtonGroup,
-    wanted_action: ButtonGroup,
+    last_action_group: ActionGroup,
+    wanted_choice: Choice,
     initial_presses: Int,
     press_counter: Int,
     // press_per_minute: Int,
@@ -27,19 +27,40 @@ pub type FightBody {
 pub type Level {
   Level(
     sequence_map: Int,
-    length: Int,
-    current_map: Int,
+    finale_bit: Int,
     current_index: Int,
-    curent_counter: Bool,
+    current_counter: Counter,
   )
 }
 
-pub type ButtonGroup {
+pub type Counter {
+  Full
+  Empty
+}
+
+pub type ActionGroup {
+  NorthEast
+  SouthEast
+  SouthWest
+  NorthWest
+  NextLevel
+  LastLevel
+  MuteToggle
+  Transition(Identification)
+  ChangeVolume(Int)
   None
-  ChangeLeft
-  ChangeRight
-  StayLeft
-  StayRight
+}
+
+pub fn transition(model, id) {
+  Model(
+    ..model,
+    mod_transition: Before(model.program_duration +. mod_transition_time, id),
+  )
+}
+
+pub type Choice {
+  Stay
+  Change
 }
 
 pub type ModTransition {
@@ -66,7 +87,8 @@ pub type Model {
     mod: Mods,
     mod_transition: ModTransition,
     volume: RangedVal(Int),
-    responses: Dict(#(Identification, String), fn(Model) -> Model),
+    grouped_responses: Dict(#(Identification, ActionGroup), fn(Model) -> Model),
+    key_groups: Dict(#(Identification, String), ActionGroup),
     selected_level: RangedVal(Int),
     program_duration: Float,
     viewport_width: Int,
@@ -74,11 +96,6 @@ pub type Model {
     sounds: List(Int),
     sound_timer: Float,
   )
-}
-
-pub type T {
-  DoNothing
-  ToHub
 }
 
 pub type RangedVal(t) {

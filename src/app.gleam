@@ -13,11 +13,10 @@ import initialization.{init}
 import level
 import lustre.{dispatch}
 import root.{
-  type FightBody, type Identification, type Model, After, Before, ChangeLeft,
-  ChangeRight, Credit, CreditId, DoNothing, Fight, FightBody, FightId, Frame,
-  Hub, HubBody, HubId, IntroductoryFight, IntroductoryFightId, Keydown, Model,
-  None, Range, Resize, StableMod, StayLeft, StayRight, ToHub,
-  mod_transition_time,
+  type FightBody, type Identification, type Model, After, Before, Credit,
+  CreditId, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
+  IntroductoryFight, IntroductoryFightId, Keydown, Model, None, Resize,
+  StableMod, Stay, mod_transition_time,
 }
 import view/view.{view}
 
@@ -73,84 +72,52 @@ pub fn main() {
         }
         Keydown(latest_key_press) -> {
           let latest_key_press = latest_key_press |> string.lowercase
-          let morph_to = fn(model, id) {
-            Model(
-              ..model,
-              mod_transition: Before(
-                model.program_duration +. mod_transition_time,
-                id,
-              ),
-            )
-          }
           guard(model.mod_transition != StableMod, model, fn() {
-            let response = fn(fight: FightBody, latest_key_press) {
-              let selected = {
-                let change_left = #("4r3e2w", ChangeLeft)
-                let change_right = #("8u9i0o", ChangeRight)
-                let stay_left = #("fvdcsx", StayLeft)
-                let stay_right = #("hbjnkm,", StayRight)
-                [change_left, change_right, stay_left, stay_right]
-                |> list.fold(None, fn(selected, buttons) {
-                  case string.contains(buttons.0, latest_key_press) {
-                    True -> buttons.1
-                    False -> selected
-                  }
-                })
-              }
-              use <- guard(
-                { selected == fight.last_button_group } || { selected == None },
-                fight,
-              )
-              case
-                {
-                  bool.exclusive_nor(
-                    { selected == ChangeLeft || selected == ChangeRight },
-                    {
-                      fight.wanted_action == ChangeLeft
-                      || fight.wanted_action == ChangeRight
-                    },
-                  )
-                }
-              {
-                True -> todo
-                False -> todo
-              }
-            }
             case
-              model.responses
+              model.key_groups
               |> dict.get(#(model.mod |> id, latest_key_press))
             {
-              Ok(response) -> response(model)
-              Error(_) ->
-                case model.mod {
-                  Fight(fight) ->
-                    case fight_response(fight, latest_key_press) {
-                      #(_, ToHub) ->
-                        Model(
-                          ..model,
-                          selected_level: Range(
-                            ..model.selected_level,
-                            max: model.selected_level.max + 1,
-                          ),
-                        )
-                        |> morph_to(HubId)
-                      #(fight, _) -> Model(..model, mod: Fight(fight))
-                    }
-                  IntroductoryFight(fight) ->
-                    case fight_response(fight, latest_key_press) {
-                      #(_, ToHub) ->
-                        Model(
-                          ..model,
-                          responses: model.responses
-                            |> dict.insert(#(FightId, "]"), morph_to(_, HubId)),
-                        )
-                        |> morph_to(HubId)
-                      #(fight, _) ->
-                        Model(..model, mod: IntroductoryFight(fight))
-                    }
-
-                  _ -> model
+              Ok(group) ->
+                case
+                  model.grouped_responses
+                  |> dict.get(#(model.mod |> id, group))
+                {
+                  Ok(response) -> response(model)
+                  Error(_) -> model
+                  // case model.mod {
+                  //   Fight(fight) ->
+                  //     case fight_response(fight, latest_key_press) {
+                  //       #(_, ToHub) ->
+                  //         Model(
+                  //           ..model,
+                  //           selected_level: Range(
+                  //             ..model.selected_level,
+                  //             max: model.selected_level.max + 1,
+                  //           ),
+                  //         )
+                  //         |> transition(HubId)
+                  //       #(fight, _) -> Model(..model, mod: Fight(fight))
+                  //     }
+                  //   IntroductoryFight(fight) ->
+                  //     case fight_response(fight, latest_key_press) {
+                  //       #(_, ToHub) ->
+                  //         Model(
+                  //           ..model,
+                  //           grouped_responses: model.grouped_responses
+                  //             |> dict.insert(
+                  //               #(FightId, Transition(HubId)),
+                  //               transition(_, HubId),
+                  //             ),
+                  //         )
+                  //         |> transition(HubId)
+                  //       #(fight, _) ->
+                  //         Model(..model, mod: IntroductoryFight(fight))
+                  //     }
+                  //
+                  //   _ -> model
+                  // }
                 }
+              _ -> model
             }
           })
         }
@@ -178,15 +145,15 @@ pub fn main() {
   update_the_model(dispatch(Keydown(key))) |> Ok
 }
 
-fn fight_response(fight: FightBody, latest_key_press: String) {
-  use <- guard(level.displayed_button(fight) != latest_key_press, #(
-    FightBody(..fight, hp: fight.hp -. 8.0),
-    DoNothing,
-  ))
-  let fight = level.next_action(fight, fight.last_button_group)
-  use <- guard(fight.hp >. 80.0, #(fight, ToHub))
-  #(FightBody(..fight, hp: fight.hp +. 8.0), DoNothing)
-}
+// fn fight_response(fight: FightBody, latest_key_press: String) {
+//   use <- guard(level.displayed_button(fight) != latest_key_press, #(
+//     FightBody(..fight, hp: fight.hp -. 8.0),
+//     DoNothing,
+//   ))
+//   let fight = level.next_action(fight, fight.last_button_group)
+//   use <- guard(fight.hp >. 80.0, #(fight, ToHub))
+//   #(FightBody(..fight, hp: fight.hp +. 8.0), DoNothing)
+// }
 
 fn id(mod) {
   case mod {
@@ -209,14 +176,13 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
     HubId -> 0.0 |> HubBody |> Hub |> after
     FightId -> {
       set_storage("selected_level", model.selected_level |> get_val)
-      let #(indecies, buttons) = model.selected_level.val |> levels
       FightBody(
         hp: 5.0,
         initial_presses: 20,
         press_counter: 0,
-        level: level.get_level(model.selected_level |> get_val),
-        // last_button_group: ButtonGroup,
-        wanted_action: ButtonGroup,
+        level: model.selected_level |> get_val |> level.get_level,
+        last_action_group: None,
+        wanted_choice: Stay,
       )
       |> Fight
       |> after

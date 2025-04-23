@@ -1,13 +1,16 @@
 import audio.{change_volume, mute_toggle}
 import ffi/main.{get_storage, get_viewport_size}
 import ffi/sound
+import fight
 import gleam/dict
 import gleam/list
+import gleam/string
 import level
 import root.{
-  type FightBody, type Model, Before, CreditId, FightBody, FightId, HubId,
-  IntroductoryFight, IntroductoryFightId, Model, None, Range, StableMod,
-  mod_transition_time, update_ranged_int, volume_buttons_and_changes,
+  ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
+  IntroductoryFightId, LastLevel, Model, MuteToggle, NextLevel, None, NorthEast,
+  NorthWest, Range, SouthEast, SouthWest, StableMod, Stay, Transition,
+  transition, update_ranged_int, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -17,23 +20,28 @@ pub fn init(_flags) {
       initial_presses: 20,
       level: level.get_level(0),
       press_counter: 0,
-      last_button_group: None,
-      wanted_action: None,
+      last_action_group: None,
+      wanted_choice: Stay,
     )
   Model(
     mod: fight |> IntroductoryFight,
     mod_transition: StableMod,
     volume: Range(val: 111, min: 0, max: 100),
-    responses: [
-      #(#(IntroductoryFightId, level.displayed_button(fight)), fn(model) {
+    grouped_responses: [
+      #(#(IntroductoryFightId, None), fn(model) {
         sound.init_audio(0.1)
         Model(
           ..mute_toggle(model),
-          responses: responses(),
+          grouped_responses: grouped_responses(),
+          key_groups: grouped_keys(),
           mod: FightBody(..fight, hp: fight.hp -. 8.0) |> IntroductoryFight,
         )
       }),
     ]
+      |> dict.from_list,
+    key_groups: { stay.0 <> stay.1 }
+      |> string.to_graphemes
+      |> list.map(fn(button) { #(#(IntroductoryFightId, button), None) })
       |> dict.from_list,
     selected_level: case get_storage("selected_level") {
       9999 -> 1
@@ -50,30 +58,67 @@ pub fn init(_flags) {
   )
 }
 
-fn responses() -> dict.Dict(#(root.Identification, String), fn(Model) -> Model) {
+fn grouped_responses() {
   let change_level = fn(model, change) {
     Model(
       ..model,
       selected_level: update_ranged_int(model.selected_level, change),
     )
   }
-  let transition = fn(model, id) {
-    Model(
-      ..model,
-      mod_transition: Before(model.program_duration +. mod_transition_time, id),
-    )
-  }
-  volume_buttons_and_changes
-  |> list.map(fn(key_val) {
-    #(#(HubId, key_val.0), change_volume(_, key_val.1))
-  })
-  |> list.append([
-    #(#(HubId, "k"), change_level(_, -1)),
-    #(#(HubId, "l"), change_level(_, 1)),
-    #(#(HubId, "o"), mute_toggle),
-    #(#(HubId, "]"), transition(_, FightId)),
-    #(#(HubId, "["), transition(_, CreditId)),
-    #(#(CreditId, "["), transition(_, HubId)),
-  ])
+
+  [
+    volume_buttons_and_changes
+      |> list.map(fn(key_val) {
+        #(#(HubId, ChangeVolume(key_val.1)), change_volume(_, key_val.1))
+      }),
+    [
+      #(#(HubId, LastLevel), change_level(_, -1)),
+      #(#(HubId, NextLevel), change_level(_, 1)),
+      #(#(HubId, MuteToggle), mute_toggle),
+      #(#(HubId, Transition(FightId)), transition(_, FightId)),
+      #(#(HubId, Transition(CreditId)), transition(_, CreditId)),
+      #(#(CreditId, Transition(HubId)), transition(_, HubId)),
+    ],
+    [
+      #(#(IntroductoryFightId, NorthEast), fight.progress(_, NorthEast)),
+      #(#(IntroductoryFightId, SouthEast), fight.progress(_, SouthEast)),
+      #(#(IntroductoryFightId, NorthWest), fight.progress(_, NorthWest)),
+      #(#(IntroductoryFightId, SouthWest), fight.progress(_, SouthWest)),
+    ],
+  ]
+  |> list.flatten
+  |> dict.from_list
+}
+
+const stay = #("fvdcsx", "hbjnkm,")
+
+fn grouped_keys() {
+  [
+    volume_buttons_and_changes
+      |> list.map(fn(key_val) {
+        #(#(HubId, key_val.0), ChangeVolume(key_val.1))
+      }),
+    [
+      #(#(HubId, "k"), LastLevel),
+      #(#(HubId, "l"), NextLevel),
+      #(#(HubId, "o"), MuteToggle),
+      #(#(HubId, "]"), Transition(FightId)),
+      #(#(HubId, "["), Transition(CreditId)),
+      #(#(CreditId, "["), Transition(HubId)),
+    ],
+    [
+      #("4r3e2w", NorthWest),
+      #("8u9i0o", NorthEast),
+      #(stay.0, SouthWest),
+      #(stay.1, SouthEast),
+    ]
+      |> list.map(fn(buttons_group) {
+        buttons_group.0
+        |> string.to_graphemes()
+        |> list.map(fn(button) { #(#(FightId, button), buttons_group.1) })
+      })
+      |> list.flatten,
+  ]
+  |> list.flatten
   |> dict.from_list
 }
