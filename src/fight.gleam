@@ -23,7 +23,10 @@ pub fn progress(model: Model, pressed_group) {
             False ->
               Model(
                 ..model,
-                mod: FightBody(..fight, level: fight.level |> level.next_action)
+                mod: FightBody(
+                    ..fight,
+                    level: fight.level |> level.next_element,
+                  )
                   |> mod,
               )
             True -> model |> transition(HubId)

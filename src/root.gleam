@@ -26,16 +26,15 @@ pub type FightBody {
 
 pub type Level {
   Level(
-    sequence_map: Int,
-    finale_bit: Int,
+    // Level constants
+    repeation_map: Int,
+    finale_index: Int,
+    // Level variables
     current_index: Int,
-    current_counter: Counter,
+    loop_index: Int,
+    repeated: Bool,
+    // finale_loop: Int,
   )
-}
-
-pub type Counter {
-  Full
-  Empty
 }
 
 pub type ActionGroup {

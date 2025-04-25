@@ -1,43 +1,11 @@
 import funtil.{fix2}
 import gleam/bool
 import gleam/int
-import gleam/list
-import root.{
-  type FightBody, type Level, Change, Empty, FightBody, Full, Level, NorthWest,
-  Stay,
-}
+import root.{type FightBody, type Level, Change, Level, Stay}
 
 // import gleam/javascript/array
 pub fn get_level(id) {
-  // let pow = fn(v, pow) {
-  //   {
-  //     use f, acc, left_loops <- fix2
-  //     use <- bool.guard(left_loops > 0, acc)
-  //     f(acc * v, left_loops - 1)
-  //   }(0, pow)
-  // }
-  // let #(value_divergence, length) =
-  //   {
-  //     use f, sum, power <- fix2
-  //     let next_power = power + 1
-  //     let next_sum = sum + pow(2, next_power)
-  //     use <- bool.guard(next_sum > selected_level, #(sum, next_power))
-  //     f(next_sum, next_power)
-  //   }(0, 0)
-  // let sequence_map = selected_level - value_divergence
-  // Level(
-  //   sequence_map:,
-  //   length:,
-  //   current_map: sequence_map,
-  //   curent_counter: sequence_map
-  //   |> int.bitwise_and(int.bitwise_shift_left(1, length))
-  //     != 0,
-  //   current_index: length,
-  // )
-
-  // Make a level
-  // use <- bool.guard(id < 2, id)
-  let #(sequence_map, finale_bit) =
+  let #(repeation_map, finale_index) =
     {
       use f, mask, excess <- fix2
       let new_excess = excess + mask
@@ -45,35 +13,57 @@ pub fn get_level(id) {
       f(mask |> int.bitwise_shift_left(1), new_excess)
     }(2, 0)
   Level(
-    sequence_map:,
-    finale_bit:,
+    // Level constants
+    repeation_map:,
+    finale_index:,
+    // Level variables
     current_index: 1,
-    current_counter: case sequence_map |> int.is_odd {
-      True -> Full
-      False -> Empty
-    },
+    loop_index: 2,
+    repeated: 1 % 2 == 0,
   )
 }
 
-pub fn next_action(level: Level) {
-  // Is counter full 
-  use <- bool.guard(level.current_counter == Full, level)
-  case
-    level.current_index == level.finale_bit,
-    level.sequence_map |> int.bitwise_and(level.current_index) != 0
-  {
-    _, _ -> todo
-    _, _ -> todo
-  }
+pub fn next_element(level: Level) {
+  let out_of_indices =
+    level.current_index == level.finale_index
+    && {
+      level.repeation_map |> int.bitwise_and(level.finale_index) != 0
+      || level.current_index == level.finale_index + 1
+    }
+  let out_of_loops = level.loop_index == level.finale_index
+  let repeation_required =
+    level.repeation_map |> int.bitwise_and(level.current_index)
+    != 0
+    != level.repeated
 
-  // use <- bool.guard(
-  //   level.current_index == level.length,
-  //   Level(..level, current_index: 1),
-  // )
-  // use <- bool.guard(level.current_index == 1, level)
-  #(level, Stay)
+  Level(
+    ..level,
+    repeated: repeation_required != level.repeated,
+    loop_index: case !repeation_required && out_of_indices {
+      True -> 2
+      False -> level.loop_index
+    },
+    current_index: case repeation_required {
+      True -> level.current_index
+      False ->
+        case out_of_indices {
+          False -> level.current_index + 1
+          True ->
+            case out_of_loops {
+              False -> level.loop_index
+              True -> 1
+            }
+        }
+    },
+  )
+  // select next bit (current, next or looping bit)
 }
 
+pub fn get_element(level: Level) {
+  level.current_index % 2 == 0
+}
+
+// Belong to groups
 pub fn displayed_button(fight: FightBody) {
   case fight.wanted_choice {
     Stay -> "down"
