@@ -40,3 +40,6 @@ export function getStorage(name) {
 	}
 
 }
+export function log2(val) {
+	return Math.log2(val)
+}

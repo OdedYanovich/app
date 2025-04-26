@@ -10,43 +10,42 @@ pub fn progress(model: Model, pressed_group) {
     IntroductoryFight(fight) -> #(IntroductoryFight, fight)
     _ -> panic
   }
-  case echo fight.last_action_group == pressed_group {
+  case fight.last_action_group == pressed_group {
     False -> {
-      let choice =
-        echo case pressed_group {
-          NorthWest | NorthEast -> Change
-          SouthWest | SouthEast -> Stay
-          _ -> panic
-        }
-      let choice = case choice {
-        Stay -> True
-        Change -> False
+      let choice = case pressed_group {
+        NorthWest | NorthEast -> Change
+        SouthWest | SouthEast -> Stay
+        _ -> panic
       }
-      case choice == { fight.level |> level.get_element() } {
+      let choice = case choice {
+        Stay -> False
+        Change -> True
+      }
+      case choice == level.get_element(fight.level) {
         False ->
           Model(
             ..model,
             mod: FightBody(
                 ..fight,
-                hp: fight.hp -. 8.0,
+                hp: fight.hp -. 4.0,
                 last_action_group: pressed_group,
               )
               |> mod,
           )
         True ->
           case fight.hp >. 80.0 {
+            True -> transition(model, HubId)
             False ->
               Model(
                 ..model,
                 mod: FightBody(
                     ..fight,
-                    hp: fight.hp +. 8.0,
+                    hp: fight.hp +. 4.0,
                     level: fight.level |> level.next_element,
                     last_action_group: pressed_group,
                   )
                   |> mod,
               )
-            True -> model |> transition(HubId)
           }
       }
     }

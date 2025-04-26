@@ -1,16 +1,7 @@
-remove from grouped responses every entry that has the id of the init fight in the transition from that state 
-Check group
-rewrite level creation and iteration
-separate the process of checking the fight group and the response
-fight: Will not assume that the type is Fight instead of InitFight
-swap the groups of stay and change
-swap the order of the iteration
 In the start, the buttons will be demonstrated to the player
-
-make hp tick happened only after the first action
-level 0 seems to be a 01 instead of 0 <-
-
-view 85: Make a const that is shared by the functions that are related to the volume element
+identify runtime assumptions to test. For example, there might be an assumption to reinforce about the groups of the model after init & the first fight.
+in init make a list that will be used to construct grouped_responses and grouped_keys
+The index always return false, return element is the problem
 
 Progress:
   Timestamp/mistake

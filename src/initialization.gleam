@@ -8,20 +8,20 @@ import gleam/string
 import level
 import root.{
   ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
-  IntroductoryFightId, LastLevel, Model, MuteToggle, NextLevel, None, NorthEast,
-  NorthWest, Range, SouthEast, SouthWest, StableMod, Stay, Transition,
-  transition, update_ranged_int, volume_buttons_and_changes,
+  IntroductoryFightId, LastLevel, Model, MuteToggle, NextLevel, NorthEast,
+  NorthWest, Range, SouthEast, SouthWest, StableMod, Transition, transition,
+  update_ranged_int, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
   let fight =
     FightBody(
       hp: 65.0,
+      hp_lose: False,
       initial_presses: 20,
       level: level.get_level(0),
       press_counter: 0,
       last_action_group: SouthWest,
-      // wanted_choice: Stay,
     )
   Model(
     mod: fight |> IntroductoryFight,
@@ -34,11 +34,7 @@ pub fn init(_flags) {
           ..mute_toggle(model),
           grouped_responses: grouped_responses(),
           key_groups: grouped_keys(),
-          mod: FightBody(
-              ..fight,
-              hp: fight.hp -. 8.0,
-              last_action_group: SouthEast,
-            )
+          mod: FightBody(..fight, hp: fight.hp +. 8.0, hp_lose: True)
             |> IntroductoryFight,
         )
       }),
@@ -52,7 +48,7 @@ pub fn init(_flags) {
       9999 -> 1
       lv -> lv
     }
-      |> Range(0, 3),
+      |> Range(0, 8),
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
@@ -82,9 +78,12 @@ fn grouped_responses() {
       #(#(HubId, MuteToggle), mute_toggle),
       #(#(HubId, Transition(FightId)), transition(_, FightId)),
       #(#(HubId, Transition(CreditId)), transition(_, CreditId)),
+      #(#(FightId, Transition(HubId)), transition(_, HubId)),
+      #(#(FightId, NorthEast), fight.progress(_, NorthEast)),
+      #(#(FightId, SouthEast), fight.progress(_, SouthEast)),
+      #(#(FightId, NorthWest), fight.progress(_, NorthWest)),
+      #(#(FightId, SouthWest), fight.progress(_, SouthWest)),
       #(#(CreditId, Transition(HubId)), transition(_, HubId)),
-    ],
-    [
       #(#(IntroductoryFightId, NorthEast), fight.progress(_, NorthEast)),
       #(#(IntroductoryFightId, SouthEast), fight.progress(_, SouthEast)),
       #(#(IntroductoryFightId, NorthWest), fight.progress(_, NorthWest)),
@@ -124,6 +123,7 @@ fn grouped_keys() {
       #(#(HubId, "]"), Transition(FightId)),
       #(#(HubId, "["), Transition(CreditId)),
       #(#(CreditId, "["), Transition(HubId)),
+      #(#(FightId, "]"), Transition(HubId)),
     ],
     group_buttons(IntroductoryFightId),
     group_buttons(FightId),

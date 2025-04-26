@@ -15,8 +15,8 @@ import lustre.{dispatch}
 import root.{
   type FightBody, type Identification, type Model, After, Before, Credit,
   CreditId, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
-  IntroductoryFight, IntroductoryFightId, Keydown, Model, None, Resize,
-  StableMod, Stay, mod_transition_time,
+  IntroductoryFight, IntroductoryFightId, Keydown, Model, None, NorthEast,
+  NorthWest, Resize, SouthEast, SouthWest, StableMod, mod_transition_time,
 }
 import view/view.{view}
 
@@ -37,16 +37,14 @@ pub fn main() {
             False -> model.sound_timer
           }
           let update = fn(fight: FightBody) {
-            case fight.hp {
-              hp if hp >. 0.0 ->
-                FightBody(
-                  ..fight,
-                  hp: hp
-                    -. 0.01
-                    *. { program_duration -. model.program_duration },
-                )
-              _ -> FightBody(..fight, hp: 0.0)
-            }
+            use <- bool.guard(!fight.hp_lose, fight)
+            use <- bool.guard(fight.hp <. 0.0, FightBody(..fight, hp: 0.0))
+            FightBody(
+              ..fight,
+              hp: fight.hp
+                -. 0.001
+                *. { program_duration -. model.program_duration },
+            )
           }
           case model.mod, model.mod_transition {
             _, Before(timer, id) if timer <. model.program_duration ->
@@ -130,12 +128,29 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
     )
   }
   case mod {
-    HubId -> 0.0 |> HubBody |> Hub |> after
+    HubId ->
+      case id(model.mod) {
+        IntroductoryFightId ->
+          Model(
+            ..model,
+            mod: 0.0 |> HubBody |> Hub,
+            mod_transition: After(model.program_duration +. mod_transition_time),
+            grouped_responses: model.grouped_responses
+              |> dict.drop([
+                #(IntroductoryFightId, NorthEast),
+                #(IntroductoryFightId, SouthEast),
+                #(IntroductoryFightId, NorthWest),
+                #(IntroductoryFightId, SouthWest),
+              ]),
+          )
+        _ -> 0.0 |> HubBody |> Hub |> after
+      }
     FightId -> {
       set_storage("selected_level", model.selected_level |> get_val)
       FightBody(
         hp: 5.0,
         initial_presses: 20,
+        hp_lose: True,
         press_counter: 0,
         level: model.selected_level |> get_val |> level.get_level,
         last_action_group: None,

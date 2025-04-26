@@ -13,8 +13,9 @@ pub type HubBody {
 
 pub type FightBody {
   FightBody(
-    hp: Float,
     level: Level,
+    hp: Float,
+    hp_lose: Bool,
     last_action_group: ActionGroup,
     // wanted_choice: Choice,
     initial_presses: Int,

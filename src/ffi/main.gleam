@@ -20,3 +20,6 @@ pub fn set_storage(key: String, val: Int) -> Nil
 
 @external(javascript, "./js/main.mjs", "getStorage")
 pub fn get_storage(key: String) -> Int
+
+@external(javascript, "./js/main.mjs", "log2")
+pub fn log2(val: Int) -> Int

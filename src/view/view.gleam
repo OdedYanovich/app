@@ -171,7 +171,7 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            ["j", model.selected_level.val |> int.to_string, "k"]
+            ["k", model.selected_level.val |> int.to_string, "l"]
               |> text_to_elements([attribute.style([transition_animation])]),
           ),
           html.div(
@@ -220,7 +220,7 @@ pub fn view(model: Model) {
               ),
             ],
             [
-              "z go back",
+              "] hub",
               "required press: " <> displayed_button(fight),
               "current level: " <> model.selected_level.val |> int.to_string,
             ]
