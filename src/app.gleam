@@ -72,54 +72,21 @@ pub fn main() {
         }
         Keydown(latest_key_press) -> {
           let latest_key_press = latest_key_press |> string.lowercase
-          guard(model.mod_transition != StableMod, model, fn() {
-            case
-              model.key_groups
-              |> dict.get(#(model.mod |> id, latest_key_press))
-            {
-              Ok(group) ->
-                case
-                  model.grouped_responses
-                  |> dict.get(#(model.mod |> id, group))
-                {
-                  Ok(response) -> response(model)
-                  Error(_) -> model
-                  // case model.mod {
-                  //   Fight(fight) ->
-                  //     case fight_response(fight, latest_key_press) {
-                  //       #(_, ToHub) ->
-                  //         Model(
-                  //           ..model,
-                  //           selected_level: Range(
-                  //             ..model.selected_level,
-                  //             max: model.selected_level.max + 1,
-                  //           ),
-                  //         )
-                  //         |> transition(HubId)
-                  //       #(fight, _) -> Model(..model, mod: Fight(fight))
-                  //     }
-                  //   IntroductoryFight(fight) ->
-                  //     case fight_response(fight, latest_key_press) {
-                  //       #(_, ToHub) ->
-                  //         Model(
-                  //           ..model,
-                  //           grouped_responses: model.grouped_responses
-                  //             |> dict.insert(
-                  //               #(FightId, Transition(HubId)),
-                  //               transition(_, HubId),
-                  //             ),
-                  //         )
-                  //         |> transition(HubId)
-                  //       #(fight, _) ->
-                  //         Model(..model, mod: IntroductoryFight(fight))
-                  //     }
-                  //
-                  //   _ -> model
-                  // }
-                }
-              _ -> model
-            }
-          })
+          use <- guard(model.mod_transition != StableMod, model)
+          case
+            model.key_groups
+            |> dict.get(#(model.mod |> id, latest_key_press))
+          {
+            Ok(group) ->
+              case
+                model.grouped_responses
+                |> dict.get(#(model.mod |> id, group))
+              {
+                Ok(response) -> response(model)
+                Error(_) -> model
+              }
+            _ -> model
+          }
         }
         Resize(viewport_width, viewport_height) ->
           Model(..model, viewport_width:, viewport_height:)
@@ -144,16 +111,6 @@ pub fn main() {
   use <- guard(repeat, Ok(Nil))
   update_the_model(dispatch(Keydown(key))) |> Ok
 }
-
-// fn fight_response(fight: FightBody, latest_key_press: String) {
-//   use <- guard(level.displayed_button(fight) != latest_key_press, #(
-//     FightBody(..fight, hp: fight.hp -. 8.0),
-//     DoNothing,
-//   ))
-//   let fight = level.next_action(fight, fight.last_button_group)
-//   use <- guard(fight.hp >. 80.0, #(fight, ToHub))
-//   #(FightBody(..fight, hp: fight.hp +. 8.0), DoNothing)
-// }
 
 fn id(mod) {
   case mod {
@@ -182,7 +139,6 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
         press_counter: 0,
         level: model.selected_level |> get_val |> level.get_level,
         last_action_group: None,
-        wanted_choice: Stay,
       )
       |> Fight
       |> after

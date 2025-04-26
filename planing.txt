@@ -7,6 +7,9 @@ swap the groups of stay and change
 swap the order of the iteration
 In the start, the buttons will be demonstrated to the player
 
+make hp tick happened only after the first action
+level 0 seems to be a 01 instead of 0 <-
+
 view 85: Make a const that is shared by the functions that are related to the volume element
 
 Progress:

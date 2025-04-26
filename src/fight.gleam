@@ -10,14 +10,29 @@ pub fn progress(model: Model, pressed_group) {
     IntroductoryFight(fight) -> #(IntroductoryFight, fight)
     _ -> panic
   }
-  case fight.last_action_group == pressed_group {
+  case echo fight.last_action_group == pressed_group {
     False -> {
-      let choice = case pressed_group {
-        NorthWest | NorthEast -> Change
-        SouthWest | SouthEast -> Stay
-        _ -> panic
+      let choice =
+        echo case pressed_group {
+          NorthWest | NorthEast -> Change
+          SouthWest | SouthEast -> Stay
+          _ -> panic
+        }
+      let choice = case choice {
+        Stay -> True
+        Change -> False
       }
-      case fight.wanted_choice == choice {
+      case choice == { fight.level |> level.get_element() } {
+        False ->
+          Model(
+            ..model,
+            mod: FightBody(
+                ..fight,
+                hp: fight.hp -. 8.0,
+                last_action_group: pressed_group,
+              )
+              |> mod,
+          )
         True ->
           case fight.hp >. 80.0 {
             False ->
@@ -25,29 +40,16 @@ pub fn progress(model: Model, pressed_group) {
                 ..model,
                 mod: FightBody(
                     ..fight,
+                    hp: fight.hp +. 8.0,
                     level: fight.level |> level.next_element,
+                    last_action_group: pressed_group,
                   )
                   |> mod,
               )
             True -> model |> transition(HubId)
           }
-        False ->
-          Model(
-            ..model,
-            mod: FightBody(..fight, hp: fight.hp -. 8.0)
-              |> mod,
-          )
       }
     }
     True -> model
   }
 }
-// fn fight_response(fight: FightBody, latest_key_press: String) {
-//   use <- guard(level.displayed_button(fight) != latest_key_press, #(
-//     FightBody(..fight, hp: fight.hp -. 8.0),
-//     DoNothing,
-//   ))
-//   let fight = level.next_action(fight, fight.last_button_group)
-//   use <- guard(fight.hp >. 80.0, #(fight, ToHub))
-//   #(FightBody(..fight, hp: fight.hp +. 8.0), DoNothing)
-// ,}

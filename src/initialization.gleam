@@ -20,28 +20,33 @@ pub fn init(_flags) {
       initial_presses: 20,
       level: level.get_level(0),
       press_counter: 0,
-      last_action_group: None,
-      wanted_choice: Stay,
+      last_action_group: SouthWest,
+      // wanted_choice: Stay,
     )
   Model(
     mod: fight |> IntroductoryFight,
     mod_transition: StableMod,
     volume: Range(val: 111, min: 0, max: 100),
     grouped_responses: [
-      #(#(IntroductoryFightId, None), fn(model) {
+      #(#(IntroductoryFightId, SouthWest), fn(model) {
         sound.init_audio(0.1)
         Model(
           ..mute_toggle(model),
           grouped_responses: grouped_responses(),
           key_groups: grouped_keys(),
-          mod: FightBody(..fight, hp: fight.hp -. 8.0) |> IntroductoryFight,
+          mod: FightBody(
+              ..fight,
+              hp: fight.hp -. 8.0,
+              last_action_group: SouthEast,
+            )
+            |> IntroductoryFight,
         )
       }),
     ]
       |> dict.from_list,
-    key_groups: { stay.0 <> stay.1 }
+    key_groups: { south_west }
       |> string.to_graphemes
-      |> list.map(fn(button) { #(#(IntroductoryFightId, button), None) })
+      |> list.map(fn(button) { #(#(IntroductoryFightId, button), SouthWest) })
       |> dict.from_list,
     selected_level: case get_storage("selected_level") {
       9999 -> 1
@@ -90,9 +95,23 @@ fn grouped_responses() {
   |> dict.from_list
 }
 
-const stay = #("fvdcsx", "hbjnkm,")
+const south_west = "zaxscd"
 
 fn grouped_keys() {
+  let group_buttons = fn(mod_id) {
+    [
+      #("q1w2e3", NorthWest),
+      #("r5t6y7", NorthEast),
+      #("vgbhnj", SouthEast),
+      #(south_west, SouthWest),
+    ]
+    |> list.map(fn(buttons_group) {
+      buttons_group.0
+      |> string.to_graphemes()
+      |> list.map(fn(button) { #(#(mod_id, button), buttons_group.1) })
+    })
+    |> list.flatten
+  }
   [
     volume_buttons_and_changes
       |> list.map(fn(key_val) {
@@ -106,18 +125,8 @@ fn grouped_keys() {
       #(#(HubId, "["), Transition(CreditId)),
       #(#(CreditId, "["), Transition(HubId)),
     ],
-    [
-      #("4r3e2w", NorthWest),
-      #("8u9i0o", NorthEast),
-      #(stay.0, SouthWest),
-      #(stay.1, SouthEast),
-    ]
-      |> list.map(fn(buttons_group) {
-        buttons_group.0
-        |> string.to_graphemes()
-        |> list.map(fn(button) { #(#(FightId, button), buttons_group.1) })
-      })
-      |> list.flatten,
+    group_buttons(IntroductoryFightId),
+    group_buttons(FightId),
   ]
   |> list.flatten
   |> dict.from_list

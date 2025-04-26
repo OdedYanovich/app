@@ -66,7 +66,10 @@ pub fn view(model: Model) {
           |> list.flatten,
         ),
       ],
-      ["required press: " <> displayed_button(fight)]
+      [
+        "required press: " <> displayed_button(fight),
+        fight.hp |> float.to_string,
+      ]
         |> text_to_elements([attribute.style([transition_animation])]),
     )
   }

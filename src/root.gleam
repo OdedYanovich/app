@@ -16,7 +16,7 @@ pub type FightBody {
     hp: Float,
     level: Level,
     last_action_group: ActionGroup,
-    wanted_choice: Choice,
+    // wanted_choice: Choice,
     initial_presses: Int,
     press_counter: Int,
     // press_per_minute: Int,
@@ -32,7 +32,7 @@ pub type Level {
     // Level variables
     current_index: Int,
     loop_index: Int,
-    repeated: Bool,
+    repeation_accrued: Bool,
     // finale_loop: Int,
   )
 }
