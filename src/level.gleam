@@ -1,23 +1,23 @@
 import ffi/main
-import funtil.{fix2}
+import funtil
 import gleam/bool
 import gleam/int
 import root.{type FightBody, type Level, Level}
 
-// import gleam/javascript/array
 const loop_first_index = 2
 
-pub fn get_level(id) {
-  let #(repeation_map, finale_index) =
+pub fn get(id) {
+  let #(repeation_map, msb) =
     {
-      use f, mask, excess <- fix2
-      let new_excess = excess + mask
-      use <- bool.guard(new_excess > id, #(id - excess, mask))
-      f(mask |> int.bitwise_shift_left(1), new_excess)
-    }(2, 0)
+      use f, mask, excess <- funtil.fix2
+      let next_mask = mask |> int.bitwise_shift_left(1)
+      let next_excess = excess + next_mask
+      use <- bool.guard(next_excess > id, #(id - excess, mask))
+      f(next_mask, next_excess)
+    }(1, 0)
   Level(
     repeation_map:,
-    finale_index:,
+    msb:,
     current_index: 1,
     loop_index: loop_first_index,
     repeation_accrued: False,
@@ -27,12 +27,12 @@ pub fn get_level(id) {
 pub fn next_element(level: Level) {
   let index_is_maxed =
     level.current_index
-    == case level.repeation_map |> int.bitwise_and(level.finale_index) != 0 {
-      False -> level.finale_index
-      True -> level.finale_index |> int.bitwise_shift_left(1)
+    == case level.repeation_map |> int.bitwise_and(level.msb) != 0 {
+      False -> level.msb
+      True -> level.msb |> int.bitwise_shift_left(1)
     }
 
-  let out_of_nestead_loops = level.loop_index == level.finale_index
+  let out_of_nestead_loops = level.loop_index == level.msb
   let repeation_required =
     { { level.repeation_map |> int.bitwise_and(level.current_index) } != 0 }
     != level.repeation_accrued
@@ -68,6 +68,6 @@ pub fn get_element(level: Level) {
 }
 
 // Belong to groups
-pub fn displayed_button(fight: FightBody) {
+pub fn displayed_button(_fight: FightBody) {
   "text"
 }

@@ -19,7 +19,7 @@ pub fn init(_flags) {
       hp: 65.0,
       hp_lose: False,
       initial_presses: 20,
-      level: level.get_level(0),
+      level: level.get(0),
       press_counter: 0,
       last_action_group: SouthWest,
     )

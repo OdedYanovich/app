@@ -29,7 +29,7 @@ pub type Level {
   Level(
     // Level constants
     repeation_map: Int,
-    finale_index: Int,
+    msb: Int,
     // Level variables
     current_index: Int,
     loop_index: Int,

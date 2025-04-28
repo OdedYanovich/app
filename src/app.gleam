@@ -152,7 +152,7 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
         initial_presses: 20,
         hp_lose: True,
         press_counter: 0,
-        level: model.selected_level |> get_val |> level.get_level,
+        level: model.selected_level |> get_val |> level.get,
         last_action_group: None,
       )
       |> Fight
