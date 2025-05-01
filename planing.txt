@@ -3,6 +3,11 @@ identify runtime assumptions to test. For example, there might be an assumption 
 in init make a list that will be used to construct grouped_responses and grouped_keys
 The index always return false, return element is the problem
 
+
+Make level loop index reach 1 so the current index could follow it without a check
+current index test
+
+
 Progress:
   Timestamp/mistake
   compute progress in presses instead of abstract points

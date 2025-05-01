@@ -21,55 +21,43 @@ pub fn main() {
 }
 
 fn level_iterator() {
-  let levels = [
-    [False],
-    [False, True],
+  let mock_levels = [
+    [],
+    [True],
+    [True, True],
     [False, True, True],
-    [False, False, True, True],
+    [True, False, True, False],
     [False, True, False, True, False],
-    [False, False, True, False, True, False],
+    [True, False, False, True, False, False],
     [False, True, False, False, True, False, False],
-    [False, False, True, False, False, True, False, False],
+    [True, True, False, False, True, True, False, False],
     [False, True, True, False, False, True, True, False, False],
-    [False, False, True, True, False, False, True, True, False, False],
+    [True, False, True, False, True, True, False, True, False, True],
     [False, True, False, True, False, True, True, False, True, False, True],
-    [
-      False,
-      False,
-      True,
-      False,
-      True,
-      False,
-      True,
-      True,
-      False,
-      True,
-      False,
-      True,
-    ],
   ]
-  use lv, i <- list.index_map(levels)
-  list.index_fold(
-    lv,
-    Ok(level.get(i)),
-    fn(current_level, required, repeation_index) {
+  use mock_level, mock_level_index <- list.index_map(mock_levels)
+  [[False], mock_level, [False]]
+  |> list.flatten
+  |> list.index_fold(
+    level.get(mock_level_index) |> Ok,
+    fn(current_level, required, mock_element_index) {
       use current_level <- result.try(current_level)
-      let outcome = case level.get_element(current_level) == required {
+      let outcome = case level.get_element(echo current_level) == required {
         True -> level.next_element(current_level) |> Ok
         False -> {
           msg(
-            i,
+            mock_level_index,
             "required action",
             required |> bool.to_string,
             level.get_element(current_level) |> bool.to_string,
           )
-          |> list.append(["repeation_index: " <> int.to_string(repeation_index)])
+          |> list.append([
+            "    mock_element_index: " <> int.to_string(mock_element_index),
+          ])
           |> Error
         }
       }
-      use msg <- result.try_recover(outcome)
-      list.map(msg, fn(line) { io.println(line) })
-      Error(Nil)
+      display(outcome)
     },
   )
   |> result.replace(Nil)
@@ -92,47 +80,52 @@ fn level_constructor() {
     #(0b110, 0b100),
     #(0b111, 0b100),
   ]
-  use lv, i <- list.index_map(levels)
-  let level = level.get(i)
-  let outcome = case lv.0 == level.repeation_map, lv.1 == level.msb {
+  use mock_level, mock_level_index <- list.index_map(levels)
+  let level = level.get(mock_level_index)
+  let msg = fn(i, kind, expect, got) {
+    msg(i, kind, expect |> int.to_string, got |> int.to_string)
+  }
+  let outcome = case
+    mock_level.0 == level.repeation_map,
+    mock_level.1 == level.msb
+  {
     True, True -> Ok(Nil)
     False, True -> {
-      msg(
-        i,
-        "repeation_map",
-        lv.0 |> int.to_string,
-        level.repeation_map |> int.to_string,
-      )
+      msg(mock_level_index, "repeation_map", mock_level.0, level.repeation_map)
       |> Error
     }
     True, False -> {
-      msg(i, "msb", lv.1 |> int.to_string, level.msb |> int.to_string)
+      msg(mock_level_index, "msb", mock_level.1, level.msb)
       |> Error
     }
     False, False -> {
       [
         msg(
-          i,
+          mock_level_index,
           "repeation_map",
-          lv.0 |> int.to_string,
-          level.repeation_map |> int.to_string,
+          mock_level.0,
+          level.repeation_map,
         ),
-        msg(i, "msb", lv.1 |> int.to_string, level.msb |> int.to_string),
+        msg(mock_level_index, "msb", mock_level.1, level.msb),
       ]
       |> list.flatten
       |> Error
     }
   }
-  use msg <- result.try_recover(outcome)
-  list.map(msg, fn(line) { io.println(line) })
-  Error(Nil)
+  display(outcome)
 }
 
 fn msg(index, subject, expected, received) {
   [
-    "  index: " <> index |> int.to_string,
+    "  mock_level_index: " <> index |> int.to_string,
     "    " <> subject <> ":",
     "      expected: " <> expected,
     "      received: " <> received,
   ]
+}
+
+fn display(outcome) {
+  use msg <- result.try_recover(outcome)
+  list.map(msg, fn(line) { io.println(line) })
+  Error(Nil)
 }
