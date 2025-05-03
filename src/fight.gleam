@@ -1,7 +1,7 @@
 import level
 import root.{
-  type Model, Change, Fight, FightBody, HubId, IntroductoryFight, Model,
-  NorthEast, NorthWest, SouthEast, SouthWest, Stay, transition,
+  type FightBody, type Model, Change, Fight, FightBody, HubId, IntroductoryFight,
+  Model, NorthEast, NorthWest, SouthEast, SouthWest, Stay, transition,
 }
 
 pub fn progress(model: Model, pressed_group) {
@@ -50,5 +50,13 @@ pub fn progress(model: Model, pressed_group) {
       }
     }
     True -> model
+  }
+}
+
+// Belong to groups
+pub fn displayed_button(fight: FightBody) {
+  case level.get_element(fight.level) {
+    True -> "y"
+    False -> "b"
   }
 }

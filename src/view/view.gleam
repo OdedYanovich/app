@@ -2,7 +2,7 @@ import audio.{get_val, pass_the_limit}
 import gleam/float
 import gleam/int
 import gleam/list
-import level.{displayed_button}
+import fight.{displayed_button}
 import lustre/attribute
 import lustre/element
 import lustre/element/html

@@ -119,7 +119,7 @@ fn id(mod) {
   }
 }
 
-pub fn morphism(model: Model, mod: Identification) -> Model {
+fn morphism(model: Model, mod: Identification) -> Model {
   let after = fn(mod) {
     Model(
       ..model,
@@ -136,6 +136,7 @@ pub fn morphism(model: Model, mod: Identification) -> Model {
             mod: 0.0 |> HubBody |> Hub,
             mod_transition: After(model.program_duration +. mod_transition_time),
             grouped_responses: model.grouped_responses
+              // maybe remove
               |> dict.drop([
                 #(IntroductoryFightId, NorthEast),
                 #(IntroductoryFightId, SouthEast),

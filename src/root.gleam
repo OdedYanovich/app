@@ -32,7 +32,7 @@ pub type Level {
     msb: Int,
     // Level variables
     current_index: Int,
-    loop_index: Int,
+    loop_map: Int,
     repeation_accrued: Bool,
     // finale_loop: Int,
   )
