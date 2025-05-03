@@ -34,15 +34,12 @@ pub fn next_element(level: Level) {
     False, True -> {
       let #(loop_map, current_index) =
         funtil.fix2(fn(f, index_map, loop_index) {
-          // use <- bool.guard(index_map |> int.bitwise_and(1) != 0, #(0, 1))
-          case index_map |> int.bitwise_and(loop_index) {
-            0 -> #(index_map |> int.bitwise_or(loop_index), loop_index)
-            _ ->
-              f(
-                index_map - loop_index,
-                loop_index |> int.bitwise_shift_right(1),
-              )
-          }
+          use <- bool.lazy_guard(
+            index_map |> int.bitwise_and(loop_index) == 0,
+            fn() { #(index_map |> int.bitwise_or(loop_index), loop_index) },
+          )
+          use <- bool.guard(loop_index == 1, #(0, 1))
+          f(index_map - loop_index, loop_index |> int.bitwise_shift_right(1))
         })(level.loop_map, level.msb)
       Level(..level, loop_map:, current_index:)
     }

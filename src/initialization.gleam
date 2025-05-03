@@ -48,7 +48,7 @@ pub fn init(_flags) {
       9999 -> 1
       lv -> lv
     }
-      |> Range(0, 8),
+      |> Range(0, 80),
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,

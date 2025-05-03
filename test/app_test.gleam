@@ -36,24 +36,14 @@ fn level_iterator() {
     [False, True, False, True, False, True, True, False, True, False, True],
   ]
   use mock_level, mock_level_index <- list.index_map(mock_levels)
-  [
-    [False],
-    mock_level,
-    [False],
-    mock_level,
-    // [False],
-  // mock_level,
-  // [False],
-  // mock_level,
-  // [False],
-  // mock_level,
-  ]
+  [False, ..mock_level]
+  |> list.repeat(7560)
   |> list.flatten
   |> list.index_fold(
     level.get(mock_level_index) |> Ok,
     fn(current_level, required, mock_element_index) {
       use current_level <- result.try(current_level)
-      let outcome = case level.get_element(echo current_level) == required {
+      let outcome = case level.get_element(current_level) == required {
         True -> current_level |> level.next_element() |> Ok
         False ->
           msg(

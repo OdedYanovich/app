@@ -1,8 +1,8 @@
 import audio.{get_val, pass_the_limit}
+import fight.{displayed_button}
 import gleam/float
 import gleam/int
 import gleam/list
-import fight.{displayed_button}
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -186,7 +186,7 @@ pub fn view(model: Model) {
             ],
             [
               "] fight",
-              "x reset dungeon",
+              // "x reset dungeon",
               "[ credits",
               "volume: " <> model.volume |> get_val |> int.to_string,
             ]
@@ -197,7 +197,7 @@ pub fn view(model: Model) {
           let line = fn(area) { [options] |> list.append([area, area, area]) }
           [
             line(volume),
-            line(level_selector),
+            // line(level_selector),
             line(level_selector),
             line(level_picker),
           ]

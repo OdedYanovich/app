@@ -1,9 +1,11 @@
-In the start, the buttons will be demonstrated to the player
-identify runtime assumptions to test. For example, there might be an assumption to reinforce about the groups of the model after init & the first fight.
-in init make a list that will be used to construct grouped_responses and grouped_keys
-
-
+IntroductaryFight be in levels 0 and 1
+introductaryFight display the relevant buttons
 make "undo" an exception to the auto-save
+separate the levels into selectable collections
+random start to each collection
+sound for each action
+sound for escalation
+sound for victory
 
 Progress:
   Timestamp/mistake
