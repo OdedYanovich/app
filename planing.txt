@@ -1,11 +1,13 @@
 IntroductaryFight be in levels 0 and 1
 introductaryFight display the relevant buttons
-make "undo" an exception to the auto-save
+keep grouped_keys of introductaryFight
 separate the levels into selectable collections
 random start to each collection
-sound for each action
-sound for escalation
-sound for victory
+visual indication for registering an action
+one hand mod
+local storage string should be a const
+volume stored locally
+range of levels limit only the available levels
 
 Progress:
   Timestamp/mistake
@@ -25,15 +27,15 @@ Visuals:
     fill grid it with selected buttons + reverse button
     update buttons
 
-Input:
-  Mod gives a set of inputs that will be excepted to it's entry point (response)
-  Single map
-
 Timer:
   Don't store
   Shared logic
 
 Audio: 
+  New:
+    sound for each action
+    sound for escalation
+    sound for victory
   Schedule
   Song:
     stored as a stack of pairs of tracks
@@ -46,7 +48,7 @@ Audio:
 Goal:
  Level selector
  Dynamic ost
- persistent memory
+ persistent memory (progress)
 
 Updates:
   cross platform
@@ -58,6 +60,7 @@ Sequel:
 
 Quality Assurance:
   Optimization
+  code optimizer
   
 Far future:
   Image: 
@@ -71,3 +74,5 @@ Far future:
 game mod: Memory challenge, remember the hidden buttons
 Visuals that express the correct io
 Color and background picker with payed customization.
+
+Nvim: make "undo" an exception to the auto-save

@@ -53,5 +53,6 @@ pub fn next_element(level: Level) {
 }
 
 pub fn get_element(level: Level) {
+  // Use a table 
   main.log2(level.current_index) % 2 != 0
 }

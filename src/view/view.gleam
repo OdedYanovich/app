@@ -79,6 +79,13 @@ pub fn view(model: Model) {
       let options = Area("a")
       let volume = Area("c")
       let level_picker = Area("d")
+      let level_picker_text = [
+        "h",
+        "j",
+        model.selected_level.val |> int.to_string,
+        "k",
+        "l",
+      ]
       let level_selector = Area("b")
       let level_selector_buttons = ["a", "s", "d", "f", "z", "x", "c", "v"]
       Dependency(
@@ -141,17 +148,18 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            [[""] |> list.append(level_selector_buttons |> list.take(3))]
-              |> list.append(
-                list.range(1, 3)
-                |> list.map(fn(_row) {
-                  [""]
-                  |> list.append(
-                    list.range(1, 3)
-                    |> list.map(fn(n) { n |> int.to_string }),
-                  )
-                }),
-              )
+            [
+              [""],
+              level_selector_buttons |> list.take(3),
+              ..list.range(1, 3)
+              |> list.map(fn(_row) {
+                [""]
+                |> list.append(
+                  list.range(1, 3)
+                  |> list.map(fn(n) { n |> int.to_string }),
+                )
+              })
+            ]
               |> list.flatten
               |> list.flat_map(fn(level) {
                 [
@@ -171,7 +179,7 @@ pub fn view(model: Model) {
                 |> list.flatten,
               ),
             ],
-            ["k", model.selected_level.val |> int.to_string, "l"]
+            level_picker_text
               |> text_to_elements([attribute.style([transition_animation])]),
           ),
           html.div(
@@ -186,7 +194,6 @@ pub fn view(model: Model) {
             ],
             [
               "] fight",
-              // "x reset dungeon",
               "[ credits",
               "volume: " <> model.volume |> get_val |> int.to_string,
             ]
@@ -194,13 +201,16 @@ pub fn view(model: Model) {
           ),
         ],
         areas: {
-          let line = fn(area) { [options] |> list.append([area, area, area]) }
-          [
-            line(volume),
-            // line(level_selector),
-            line(level_selector),
-            line(level_picker),
-          ]
+          let line = fn(area) {
+            let len = level_picker_text |> list.length
+            [
+              options
+                |> list.repeat(len / 3),
+              area |> list.repeat(len),
+            ]
+            |> list.flatten
+          }
+          [line(volume), line(level_selector), line(level_picker)]
         },
       )
     }
@@ -227,10 +237,7 @@ pub fn view(model: Model) {
               |> text_to_elements([attribute.style([transition_animation])]),
           ),
         ],
-        areas: {
-          let line = [options, fight_area, fight_area, fight_area]
-          [line, line, line]
-        },
+        areas: [options, fight_area, fight_area, fight_area] |> list.repeat(3),
       )
     }
     Credit -> {

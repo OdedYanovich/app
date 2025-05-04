@@ -8,9 +8,9 @@ import gleam/string
 import level
 import root.{
   ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
-  IntroductoryFightId, LastLevel, Model, MuteToggle, NextLevel, NorthEast,
-  NorthWest, Range, SouthEast, SouthWest, StableMod, Transition, transition,
-  update_ranged_int, volume_buttons_and_changes,
+  IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
+  NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, StableMod,
+  Transition, transition, update_ranged_int, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -44,10 +44,8 @@ pub fn init(_flags) {
       |> string.to_graphemes
       |> list.map(fn(button) { #(#(IntroductoryFightId, button), SouthWest) })
       |> dict.from_list,
-    selected_level: case get_storage("selected_level") {
-      9999 -> 1
-      lv -> lv
-    }
+    selected_level: //case 
+    get_storage("selected_level")
       |> Range(0, 80),
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
@@ -75,6 +73,8 @@ fn grouped_responses() {
     [
       #(#(HubId, LastLevel), change_level(_, -1)),
       #(#(HubId, NextLevel), change_level(_, 1)),
+      #(#(HubId, Last5Levels), change_level(_, -5)),
+      #(#(HubId, Next5Levels), change_level(_, 5)),
       #(#(HubId, MuteToggle), mute_toggle),
       #(#(HubId, Transition(FightId)), transition(_, FightId)),
       #(#(HubId, Transition(CreditId)), transition(_, CreditId)),
@@ -94,14 +94,14 @@ fn grouped_responses() {
   |> dict.from_list
 }
 
-const south_west = "zaxscd"
+const south_west = "azsxdcfvgb"
 
 fn grouped_keys() {
   let group_buttons = fn(mod_id) {
     [
-      #("q1w2e3", NorthWest),
-      #("r5t6y7", NorthEast),
-      #("vgbhnj", SouthEast),
+      #("1q2w3e4r5t", NorthWest),
+      #("8u9i0o-p=[", NorthEast),
+      #("jnkml,;.'/", SouthEast),
       #(south_west, SouthWest),
     ]
     |> list.map(fn(buttons_group) {
@@ -117,8 +117,10 @@ fn grouped_keys() {
         #(#(HubId, key_val.0), ChangeVolume(key_val.1))
       }),
     [
-      #(#(HubId, "k"), LastLevel),
-      #(#(HubId, "l"), NextLevel),
+      #(#(HubId, "j"), LastLevel),
+      #(#(HubId, "k"), NextLevel),
+      #(#(HubId, "h"), Last5Levels),
+      #(#(HubId, "l"), Next5Levels),
       #(#(HubId, "o"), MuteToggle),
       #(#(HubId, "]"), Transition(FightId)),
       #(#(HubId, "["), Transition(CreditId)),

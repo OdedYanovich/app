@@ -44,6 +44,8 @@ pub type ActionGroup {
   SouthWest
   NorthWest
   NextLevel
+  Next5Levels
+  Last5Levels
   LastLevel
   MuteToggle
   Transition(Identification)
