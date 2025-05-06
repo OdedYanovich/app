@@ -3,6 +3,7 @@ import ffi/main.{
   init_game_loop, init_keydown_event, init_resize_event, set_storage,
 }
 import ffi/sound
+import fight
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
@@ -16,7 +17,8 @@ import root.{
   type FightBody, type Identification, type Model, After, Before, Credit,
   CreditId, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
   IntroductoryFight, IntroductoryFightId, Keydown, Model, None, NorthEast,
-  NorthWest, Resize, SouthEast, SouthWest, StableMod, mod_transition_time,
+  NorthWest, Progress, Resize, SouthEast, SouthWest, StableMod,
+  mod_transition_time,
 }
 import view/view.{view}
 
@@ -147,14 +149,16 @@ fn morphism(model: Model, mod: Identification) -> Model {
         _ -> 0.0 |> HubBody |> Hub |> after
       }
     FightId -> {
-      set_storage("selected_level", model.selected_level |> get_val)
+      let selected_level = model.selected_level |> get_val
+      set_storage("selected_level", selected_level)
       FightBody(
         hp: 5.0,
         initial_presses: 20,
         hp_lose: True,
         press_counter: 0,
-        level: model.selected_level |> get_val |> level.get,
+        level: selected_level |> level.get,
         last_action_group: None,
+        progress: fight.init_progress(selected_level, model.program_duration),
       )
       |> Fight
       |> after

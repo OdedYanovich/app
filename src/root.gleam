@@ -15,13 +15,11 @@ pub type FightBody {
   FightBody(
     level: Level,
     hp: Float,
+    progress: Progress,
     hp_lose: Bool,
     last_action_group: ActionGroup,
-    // wanted_choice: Choice,
     initial_presses: Int,
     press_counter: Int,
-    // press_per_minute: Int,
-    // press_per_mistake: Int,
   )
 }
 
@@ -35,6 +33,17 @@ pub type Level {
     loop_map: Int,
     repeation_accrued: Bool,
     // finale_loop: Int,
+  )
+}
+
+pub type Progress {
+  Progress(
+    timestemps: List(Float),
+    max_timestemps: Int,
+    required_bpm: Int,
+    press_counter: Int,
+    // press_per_minute: Int,
+    // press_per_mistake: Int,
   )
 }
 
@@ -107,6 +116,7 @@ pub type RangedVal(t) {
 pub type Initialized
 
 pub fn update_ranged_int(range: RangedVal(Int), change) {
+  // use float.clamp
   Range(..range, val: case range.val + change {
     val if val >= range.max -> range.max
     val if val <= range.min -> range.min

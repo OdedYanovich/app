@@ -3,6 +3,7 @@ import fight.{displayed_button}
 import gleam/float
 import gleam/int
 import gleam/list
+import gleam/result
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -68,7 +69,14 @@ pub fn view(model: Model) {
       ],
       [
         "required press: " <> displayed_button(fight),
-        fight.hp |> float.to_string,
+        // fight.hp |> float.to_string,
+        "required bpm: " <> fight.progress.required_bpm |> int.to_string,
+        "get bpm: "
+          <> fight.progress.timestemps |> fight.get_bpm |> float.to_string,
+        "timestemps length: "
+          <> fight.progress.timestemps
+        |> list.length
+        |> int.to_string,
       ]
         |> text_to_elements([attribute.style([transition_animation])]),
     )

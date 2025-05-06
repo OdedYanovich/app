@@ -9,8 +9,9 @@ import level
 import root.{
   ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
   IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
-  NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, StableMod,
-  Transition, transition, update_ranged_int, volume_buttons_and_changes,
+  NextLevel, NorthEast, NorthWest, Progress, Range, SouthEast, SouthWest,
+  StableMod, Transition, transition, update_ranged_int,
+  volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -22,6 +23,7 @@ pub fn init(_flags) {
       level: level.get(0),
       press_counter: 0,
       last_action_group: SouthWest,
+      progress: fight.init_progress(0, 0.0),
     )
   Model(
     mod: fight |> IntroductoryFight,
@@ -44,16 +46,14 @@ pub fn init(_flags) {
       |> string.to_graphemes
       |> list.map(fn(button) { #(#(IntroductoryFightId, button), SouthWest) })
       |> dict.from_list,
-    selected_level: //case 
-    get_storage("selected_level")
+    selected_level: get_storage("selected_level")
       |> Range(0, 80),
     program_duration: 0.0,
     viewport_width: get_viewport_size().0,
     viewport_height: get_viewport_size().1,
     sounds: [0, 1, 2, 3],
     sound_timer: 0.0,
-    // image: image.new(8, 8, #(400.0, 800.0), #(400.0, 400.0)),
-  // seed: seed.random(),
+    // seed: seed.random(),
   )
 }
 
