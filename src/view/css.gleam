@@ -1,6 +1,7 @@
 import gleam/float
 import gleam/int
 import gleam/list
+import gleam/string
 
 pub type Position {
   Absolute
@@ -17,21 +18,34 @@ pub type Color {
   White
   Green
   Blue
-  RGBA(Length, Length, Length, Length)
+  RGB(Int, Int, Int)
+  RGBA(Int, Int, Int, Float)
 }
 
 fn color_to_string(color) {
+  let values = fn(l) {
+    l
+    |> list.fold("", fn(state, element) {
+      state <> element |> int.to_string <> ", "
+    })
+  }
   case color {
     Black -> "black"
     White -> "white"
     Green -> "green"
     Blue -> "blue"
+    RGB(r, g, b) ->
+      "rgb("
+      <> [r, g, b]
+      |> values
+      |> string.drop_end(2)
+      <> ")"
     RGBA(r, g, b, a) ->
       "rgba("
-      <> [r, g, b, a]
-      |> list.fold("", fn(state, element) {
-        state <> { element |> length_to_string }
-      })
+      <> [r, g, b]
+      |> values
+      <> a |> float.to_string
+      <> ")"
   }
 }
 

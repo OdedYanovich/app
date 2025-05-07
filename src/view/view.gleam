@@ -11,11 +11,12 @@ import lustre/element
 import lustre/element/html
 import root.{
   type FightBody, type Model, type Msg, After, Before, Credit, Fight, Hub,
-  IntroductoryFight, StableMod, mod_transition_time, volume_buttons_and_changes,
+  IntroductoryFight, NorthEast, NorthWest, SouthEast, SouthWest, StableMod,
+  mod_transition_time, volume_buttons_and_changes,
 }
 import view/css.{
   type Area, Absolute, Area, Black, Blue, BorderBox, Center, Column, Fr, Green,
-  Grid, Precent, REM, Repeat, SubGrid, White, animation, background,
+  Grid, Precent, REM, RGB, RGBA, Repeat, SubGrid, White, animation, background,
   background_color, display, grid_area, grid_auto_flow, grid_template,
   grid_template_areas, grid_template_columns, grid_template_rows, height,
   padding, place_items, width,
@@ -56,20 +57,19 @@ pub fn view(model: Model) {
         attribute.style(
           [
             [
-              background(
-                "linear-gradient(to left, "
-                <> case level.get_element(fight.level) {
-                  True -> "rgba(0, 255, 0, 0.3)"
-                  False -> "rgba(255, 0, 0, 0.3)"
-                }
-                <> " "
-                <> fight.hp |> float.round |> int.to_string
-                <> "%, rgba(0,0,0,0))",
-              ),
+              // background(
+              //   "linear-gradient(to left, "
+              //   <> case level.get_element(fight.level) {
+              //     True -> "rgba(0, 255, 0, 0.3)"
+              //     False -> "rgba(255, 0, 0, 0.3)"
+              //   }
+              //   <> " "
+              //   <> fight.hp |> float.round |> int.to_string
+              //   <> "%, rgba(0,0,0,0))",
+              // ),
               grid_area(fight_area),
               grid_template(Repeat(2, Fr(1)), Repeat(2, Fr(1))),
-              #("gap", "8rem 8rem"),
-              transition_animation,
+              #("gap", "2rem 2rem"),
             ],
             grid_standard,
           ]
@@ -86,15 +86,29 @@ pub fn view(model: Model) {
         #(
           group.0
             |> string.to_graphemes
-            |> text_to_elements([attribute.style([transition_animation])]),
+            |> text_to_elements([
+              attribute.style([
+                case group.1 == fight.last_action_group, model.mod_transition {
+                  True, _ | _, Before(_, _) ->
+                    animation(
+                      "exiting "
+                      <> mod_transition_time /. 1000.0 |> float.to_string
+                      <> "s ease-out"
+                      <> " forwards",
+                    )
+                  False, _ | _, After(_) ->
+                    animation(
+                      "entrance "
+                      <> mod_transition_time /. 1000.0 |> float.to_string
+                      <> "s ease-out",
+                    )
+                },
+              ]),
+            ]),
           group.1,
         )
       }
         |> list.map(fn(group) {
-          use <- bool.guard(
-            group.1 == fight.last_action_group,
-            html.div([], []),
-          )
           html.div(
             [
               attribute.style(
@@ -102,6 +116,20 @@ pub fn view(model: Model) {
                   [
                     grid_template(Repeat(2, Fr(1)), Repeat(5, Fr(1))),
                     grid_auto_flow(Column),
+                    #(
+                      "text-shadow",
+                      "-1px -1px 0 #000,  
+1px -1px 0 #000,
+-1px 1px 0 #000,
+1px 1px 0 #000;",
+                    ),
+                    background_color(case group.1 {
+                      NorthWest -> RGB(255, 255, 1)
+                      NorthEast -> RGB(102, 0, 102)
+                      SouthWest -> RGB(0, 140, 0)
+                      SouthEast -> RGB(232, 0, 0)
+                      _ -> panic
+                    }),
                   ],
                   grid_standard,
                 ]
@@ -138,16 +166,7 @@ pub fn view(model: Model) {
                   [
                     grid_area(volume),
                     grid_auto_flow(Column),
-                    background_color(
-                      case
-                        hub.volume_animation_timer >. model.program_duration
-                      {
-                        True -> Green
-                        False -> Blue
-                      },
-                    ),
                     grid_template(Repeat(2, Fr(1)), Repeat(8, Fr(1))),
-                    transition_animation,
                   ],
                   grid_standard,
                 ]
@@ -157,6 +176,7 @@ pub fn view(model: Model) {
             volume_buttons_and_changes
               |> list.map(fn(x) { #(x.0, x.1 |> int.to_string) })
               |> list.append([
+                // Change to an icon
                 #("o", case model.volume |> pass_the_limit {
                   False -> "mute"
                   True -> "unmute"
@@ -181,7 +201,6 @@ pub fn view(model: Model) {
                     grid_area(level_selector),
                     grid_auto_flow(Column),
                     grid_template(Repeat(4, Fr(1)), Repeat(4, Fr(1))),
-                    transition_animation,
                   ],
                   grid_standard,
                 ]

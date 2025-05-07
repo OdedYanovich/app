@@ -11,7 +11,7 @@ prize for exceptional play
 remove hp
 should the victory check heppand as soon as the timestemp list is maxed?
 
-transition, outline, color
+outline, color
 
 fight:
   add a color to each block
