@@ -1,9 +1,11 @@
 import audio.{get_val, pass_the_limit}
-import fight.{displayed_button}
+import gleam/bool
 import gleam/float
 import gleam/int
 import gleam/list
-import gleam/result
+import gleam/string
+import initialization
+import level
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -13,9 +15,10 @@ import root.{
 }
 import view/css.{
   type Area, Absolute, Area, Black, Blue, BorderBox, Center, Column, Fr, Green,
-  Grid, Precent, REM, Repeat, SubGrid, White, animation, background_color,
-  display, grid_area, grid_auto_flow, grid_template, grid_template_areas,
-  grid_template_columns, grid_template_rows, height, place_items, width,
+  Grid, Precent, REM, Repeat, SubGrid, White, animation, background,
+  background_color, display, grid_area, grid_auto_flow, grid_template,
+  grid_template_areas, grid_template_columns, grid_template_rows, height,
+  padding, place_items, width,
 }
 
 fn text_to_elements(text: List(String), attributes) {
@@ -53,13 +56,19 @@ pub fn view(model: Model) {
         attribute.style(
           [
             [
-              #(
-                "background",
-                "linear-gradient(to left, rgba(0, 255, 0,0.3) "
-                  <> fight.hp |> float.round |> int.to_string
-                  <> "%, rgba(0,0,0,0))",
+              background(
+                "linear-gradient(to left, "
+                <> case level.get_element(fight.level) {
+                  True -> "rgba(0, 255, 0, 0.3)"
+                  False -> "rgba(255, 0, 0, 0.3)"
+                }
+                <> " "
+                <> fight.hp |> float.round |> int.to_string
+                <> "%, rgba(0,0,0,0))",
               ),
               grid_area(fight_area),
+              grid_template(Repeat(2, Fr(1)), Repeat(2, Fr(1))),
+              #("gap", "8rem 8rem"),
               transition_animation,
             ],
             grid_standard,
@@ -67,18 +76,41 @@ pub fn view(model: Model) {
           |> list.flatten,
         ),
       ],
-      [
-        "required press: " <> displayed_button(fight),
-        // fight.hp |> float.to_string,
-        "required bpm: " <> fight.progress.required_bpm |> int.to_string,
-        "get bpm: "
-          <> fight.progress.timestemps |> fight.get_bpm |> float.to_string,
-        "timestemps length: "
-          <> fight.progress.timestemps
-        |> list.length
-        |> int.to_string,
-      ]
-        |> text_to_elements([attribute.style([transition_animation])]),
+      {
+        use group <- list.map([
+          initialization.north_west,
+          initialization.north_east,
+          initialization.south_west,
+          initialization.south_east,
+        ])
+        #(
+          group.0
+            |> string.to_graphemes
+            |> text_to_elements([attribute.style([transition_animation])]),
+          group.1,
+        )
+      }
+        |> list.map(fn(group) {
+          use <- bool.guard(
+            group.1 == fight.last_action_group,
+            html.div([], []),
+          )
+          html.div(
+            [
+              attribute.style(
+                [
+                  [
+                    grid_template(Repeat(2, Fr(1)), Repeat(5, Fr(1))),
+                    grid_auto_flow(Column),
+                  ],
+                  grid_standard,
+                ]
+                |> list.flatten,
+              ),
+            ],
+            group.0,
+          )
+        }),
     )
   }
 
@@ -239,7 +271,6 @@ pub fn view(model: Model) {
             ],
             [
               "] hub",
-              "required press: " <> displayed_button(fight),
               "current level: " <> model.selected_level.val |> int.to_string,
             ]
               |> text_to_elements([attribute.style([transition_animation])]),
@@ -308,7 +339,7 @@ pub fn view(model: Model) {
               css.grid_auto_flow(Column),
               css.color(White),
               css.font_size(REM(1.6)),
-              css.padding(REM(1.0)),
+              padding(REM(1.0)),
               css.box_sizing(BorderBox),
               css.left(REM(0.0)),
               css.top(REM(0.0)),

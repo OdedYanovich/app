@@ -32,7 +32,6 @@ pub type Level {
     current_index: Int,
     loop_map: Int,
     repeation_accrued: Bool,
-    // finale_loop: Int,
   )
 }
 
@@ -42,8 +41,6 @@ pub type Progress {
     max_timestemps: Int,
     required_bpm: Int,
     press_counter: Int,
-    // press_per_minute: Int,
-    // press_per_mistake: Int,
   )
 }
 

@@ -1,18 +1,31 @@
-IntroductaryFight be in levels 0 and 1
-introductaryFight display the relevant buttons
-keep grouped_keys of introductaryFight
 separate the levels into selectable collections
 random start to each collection
-visual indication for registering an action
 one hand mod
 local storage string should be a const
 volume stored locally
-range of levels limit only the available levels
+limit the available levels
+
+IntroductaryFight will remove the transition button and change the position of the buttons
+document the logic of the level system
+prize for exceptional play
+remove hp
+should the victory check heppand as soon as the timestemp list is maxed?
+
+transition, outline, color
+
+fight:
+  add a color to each block
+  add a outline/transition to the buttons
+
+  mix progress with update
+  change the display to make the transform button will not take so much of the screen
+  tell the sequence to the player in the horizontal gap
+  hide the last group
 
 Progress:
-  Timestamp/mistake
   compute progress in presses instead of abstract points
   set minimum
+  test timing
 
 Animation: 
   transition

@@ -39,6 +39,10 @@ pub fn color(color) {
   #("color", color |> color_to_string)
 }
 
+pub fn background(back) {
+  #("background", back)
+}
+
 pub fn background_color(color: Color) {
   #("background-color", color |> color_to_string)
 }

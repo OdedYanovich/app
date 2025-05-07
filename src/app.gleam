@@ -17,8 +17,7 @@ import root.{
   type FightBody, type Identification, type Model, After, Before, Credit,
   CreditId, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
   IntroductoryFight, IntroductoryFightId, Keydown, Model, None, NorthEast,
-  NorthWest, Progress, Resize, SouthEast, SouthWest, StableMod,
-  mod_transition_time,
+  NorthWest, Resize, SouthEast, SouthWest, StableMod, mod_transition_time,
 }
 import view/view.{view}
 

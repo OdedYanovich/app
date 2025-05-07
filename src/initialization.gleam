@@ -9,9 +9,8 @@ import level
 import root.{
   ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
   IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
-  NextLevel, NorthEast, NorthWest, Progress, Range, SouthEast, SouthWest,
-  StableMod, Transition, transition, update_ranged_int,
-  volume_buttons_and_changes,
+  NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, StableMod,
+  Transition, transition, update_ranged_int, volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
@@ -22,11 +21,12 @@ pub fn init(_flags) {
       initial_presses: 20,
       level: level.get(0),
       press_counter: 0,
-      last_action_group: SouthWest,
+      last_action_group: south_east.1,
       progress: fight.init_progress(0, 0.0),
     )
   Model(
-    mod: fight |> IntroductoryFight,
+    mod: fight
+      |> IntroductoryFight,
     mod_transition: StableMod,
     volume: Range(val: 111, min: 0, max: 100),
     grouped_responses: [
@@ -36,13 +36,18 @@ pub fn init(_flags) {
           ..mute_toggle(model),
           grouped_responses: grouped_responses(),
           key_groups: grouped_keys(),
-          mod: FightBody(..fight, hp: fight.hp +. 8.0, hp_lose: True)
+          mod: FightBody(
+              ..fight,
+              hp: fight.hp +. 8.0,
+              hp_lose: True,
+              last_action_group: south_west.1,
+            )
             |> IntroductoryFight,
         )
       }),
     ]
       |> dict.from_list,
-    key_groups: { south_west }
+    key_groups: south_west.0
       |> string.to_graphemes
       |> list.map(fn(button) { #(#(IntroductoryFightId, button), SouthWest) })
       |> dict.from_list,
@@ -94,16 +99,17 @@ fn grouped_responses() {
   |> dict.from_list
 }
 
-const south_west = "azsxdcfvgb"
+pub const north_west = #("1q2w3e4r5t", NorthWest)
+
+pub const south_west = #("azsxdcfvgb", SouthWest)
+
+pub const north_east = #("8u9i0o-p=[", NorthEast)
+
+pub const south_east = #("jnkml,;.'/", SouthEast)
 
 fn grouped_keys() {
   let group_buttons = fn(mod_id) {
-    [
-      #("1q2w3e4r5t", NorthWest),
-      #("8u9i0o-p=[", NorthEast),
-      #("jnkml,;.'/", SouthEast),
-      #(south_west, SouthWest),
-    ]
+    [north_west, north_east, south_east, south_west]
     |> list.map(fn(buttons_group) {
       buttons_group.0
       |> string.to_graphemes()
