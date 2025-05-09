@@ -1,6 +1,6 @@
 import audio.{get_val}
 import ffi/main.{
-  init_game_loop, init_keydown_event, init_resize_event, set_storage,
+  get_time, init_game_loop, init_keydown_event, init_resize_event, set_storage,
 }
 import ffi/sound
 import fight

@@ -5,8 +5,8 @@ import gleam/list
 import gleam/result
 import level
 import root.{
-  type Model, type Progress, Change, Fight, FightBody, HubId, IntroductoryFight,
-  Model, NorthEast, NorthWest, Progress, SouthEast, SouthWest, Stay, transition,
+  type Model, Change, Fight, FightBody, HubId, IntroductoryFight, Model,
+  NorthEast, NorthWest, Progress, SouthEast, SouthWest, Stay, transition,
 }
 
 pub fn progress(model: Model, pressed_group) {
@@ -26,22 +26,48 @@ pub fn progress(model: Model, pressed_group) {
     Stay -> False
     Change -> True
   }
-  let progress =
-    fight.progress
-    |> update(model.program_duration, choice == level.get_element(fight.level))
-  use <- bool.guard(
-    choice != level.get_element(fight.level),
+  let finish = fn(timestemps) {
+    Progress(
+      ..fight.progress,
+      timestemps: timestemps
+        |> list.append([model.program_duration]),
+      required_bpm: case
+        fight.progress.press_counter > fight.progress.max_timestemps * 2
+      {
+        True -> fight.progress.required_bpm + 10
+        False -> fight.progress.required_bpm
+      },
+      press_counter: fight.progress.press_counter + 1,
+    )
+  }
+  use <- bool.lazy_guard(choice != level.get_element(fight.level), fn() {
     Model(
       ..model,
       mod: FightBody(
           ..fight,
           last_action_group: pressed_group,
           hp: fight.hp -. 4.0,
-          progress:,
+          progress: fight.progress.timestemps
+            |> list.take(list.length(fight.progress.timestemps) - 2)
+            |> finish,
         )
         |> mod,
-    ),
-  )
+    )
+  })
+  let progress = {
+    use <- bool.lazy_guard(
+      fight.progress.timestemps |> list.length <= fight.progress.max_timestemps,
+      fn() {
+        fight.progress.timestemps
+        |> get_bpm
+        fight.progress.timestemps
+        |> finish
+      },
+    )
+    fight.progress.timestemps
+    |> list.drop(1)
+    |> finish
+  }
   use <- bool.guard(
     progress.timestemps |> get_bpm |> float.round <= progress.required_bpm,
     transition(model, HubId),
@@ -57,38 +83,6 @@ pub fn progress(model: Model, pressed_group) {
       )
       |> mod,
   )
-}
-
-fn update(progress: Progress, timestemp, success) {
-  let finish = fn(timestemps) {
-    Progress(
-      ..progress,
-      timestemps: timestemps
-        |> list.append([timestemp]),
-      required_bpm: case progress.press_counter > progress.max_timestemps * 2 {
-        True -> progress.required_bpm + 10
-        False -> progress.required_bpm
-      },
-      press_counter: progress.press_counter + 1,
-    )
-  }
-  use <- bool.lazy_guard(!success, fn() {
-    progress.timestemps
-    |> list.take(list.length(progress.timestemps) - 2)
-    |> finish
-  })
-  use <- bool.lazy_guard(
-    progress.timestemps |> list.length <= progress.max_timestemps,
-    fn() {
-      progress.timestemps
-      |> get_bpm
-      progress.timestemps
-      |> finish
-    },
-  )
-  progress.timestemps
-  |> list.drop(1)
-  |> finish
 }
 
 pub fn get_bpm(timestemps) {

@@ -23,3 +23,6 @@ pub fn get_storage(key: String) -> Int
 
 @external(javascript, "./js/main.mjs", "log2")
 pub fn log2(val: Int) -> Int
+
+@external(javascript, "./js/main.mjs", "getTime")
+pub fn get_time() -> Float

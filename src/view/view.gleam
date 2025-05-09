@@ -69,7 +69,7 @@ pub fn view(model: Model) {
               // ),
               grid_area(fight_area),
               grid_template(Repeat(2, Fr(1)), Repeat(2, Fr(1))),
-              #("gap", "2rem 2rem"),
+              #("gap", "4rem 4rem"),
             ],
             grid_standard,
           ]
@@ -119,10 +119,11 @@ pub fn view(model: Model) {
                     #(
                       "text-shadow",
                       "-1px -1px 0 #000,  
-1px -1px 0 #000,
--1px 1px 0 #000,
-1px 1px 0 #000;",
+                    1px -1px 0 #000,
+                    -1px 1px 0 #000,
+                    1px 1px 0 #000;",
                     ),
+                    // #("font-size", "1.2rem"),
                     background_color(case group.1 {
                       NorthWest -> RGB(255, 255, 1)
                       NorthEast -> RGB(102, 0, 102)

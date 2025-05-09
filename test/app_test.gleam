@@ -112,6 +112,27 @@ fn level_constructor() {
   display(outcome)
 }
 
+fn clue_constructor() {
+  let mock_clue = [
+    [0b0],
+    [0b0, 0b1],
+    [0b11, 0b10],
+    [0b11, 0b10, 0b00],
+    [0b10, 0b01],
+    [0b10, 0b01],
+    [0b010, 0b001],
+    [0b010, 0b001, 0b100],
+    [0b001, 0b011, 0b110],
+    [0b001, 0b011, 0b100, 0b110],
+    [0b010, 0b101],
+    [0b010, 0b101],
+    [0b101, 0b011, 0b010, 0b110],
+    [0b101, 0b011, 0b010, 0b110],
+  ]
+  use mock_clue, i <- list.index_map(mock_clue)
+  let level = level.get(i)
+}
+
 fn msg(index, subject, expected, received) {
   [
     "  mock_level_index: " <> index |> int.to_string,

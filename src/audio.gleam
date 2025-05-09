@@ -1,3 +1,4 @@
+import ffi/main.{get_time}
 import ffi/sound
 import gleam/int
 import root.{
@@ -17,7 +18,7 @@ pub fn change_volume(model: Model, change) {
   sound.change_volume(
     { volume.val |> int.to_float } /. { volume.max |> int.to_float },
   )
-  Model(..model, mod: HubBody(model.program_duration +. 500.0) |> Hub, volume:)
+  Model(..model, mod: HubBody(get_time() +. 500.0) |> Hub, volume:)
 }
 
 pub fn mute_toggle(model: Model) {
