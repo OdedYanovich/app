@@ -4,7 +4,7 @@ import gleam/dynamic/decode
 pub fn start_drawing() -> Nil
 
 @external(javascript, "./js/main.mjs", "initGameLoop")
-pub fn init_game_loop(callback: fn(Float) -> Nil) -> Nil
+pub fn init_game_loop(callback: fn() -> Nil) -> Nil
 
 @external(javascript, "./js/main.mjs", "initKeydownEvent")
 pub fn init_keydown_event(callback: fn(decode.Dynamic) -> any) -> Nil
@@ -19,7 +19,7 @@ pub fn get_viewport_size() -> #(Int, Int)
 pub fn set_storage(key: String, val: Int) -> Nil
 
 @external(javascript, "./js/main.mjs", "getStorage")
-pub fn get_storage(key: String) -> Int
+pub fn get_storage(key: String) -> decode.Dynamic
 
 @external(javascript, "./js/main.mjs", "log2")
 pub fn log2(val: Int) -> Int

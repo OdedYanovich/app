@@ -1,23 +1,20 @@
 import audio.{get_val}
-import ffi/main.{
-  get_time, init_game_loop, init_keydown_event, init_resize_event, set_storage,
-}
+import ffi/main.{init_game_loop, init_keydown_event, set_storage}
 import ffi/sound
 import fight
 import gleam/bool.{guard}
 import gleam/dict
 import gleam/dynamic/decode
-import gleam/list
 import gleam/result.{try}
 import gleam/string
 import initialization.{init}
 import level
 import lustre.{dispatch}
 import root.{
-  type FightBody, type Identification, type Model, After, Before, Credit,
-  CreditId, Fight, FightBody, FightId, Frame, Hub, HubBody, HubId,
-  IntroductoryFight, IntroductoryFightId, Keydown, Model, None, NorthEast,
-  NorthWest, Resize, SouthEast, SouthWest, StableMod, mod_transition_time,
+  type Identification, type Model, After, Before, Credit, CreditId, Fight,
+  FightBody, FightId, Frame, Hub, HubBody, HubId, IntroductoryFight,
+  IntroductoryFightId, Keydown, Model, None, NorthEast, NorthWest, SouthEast,
+  SouthWest, StableMod, mod_transition_time, stored_level_id, stored_volume_id,
 }
 import view/view.{view}
 
@@ -25,80 +22,51 @@ pub fn main() {
   let assert Ok(update_the_model) =
     fn(model: Model, msg) {
       case msg {
-        Frame(program_duration) -> {
-          let sound_timer = case
-            model.sound_timer <. model.program_duration
-            && !audio.pass_the_limit(model.volume)
-          {
-            True -> {
-              model.sounds
-              |> list.map(fn(sound) { sound.play(sound) })
-              model.sound_timer +. 2.0
-            }
-            False -> model.sound_timer
-          }
-          let update = fn(fight: FightBody) {
-            use <- bool.guard(!fight.hp_lose, fight)
-            use <- bool.guard(fight.hp <. 0.0, FightBody(..fight, hp: 0.0))
-            FightBody(
-              ..fight,
-              hp: fight.hp
-                -. 0.001
-                *. { program_duration -. model.program_duration },
-            )
-          }
-          case model.mod, model.mod_transition {
-            _, Before(timer, id) if timer <. model.program_duration ->
-              morphism(model, id)
-            _, After(timer) if timer <. model.program_duration ->
+        Frame -> {
+          let current_time = main.get_time()
+          case model.mod_transition {
+            Before(timer, id) if timer <. current_time -> morphism(model, id)
+            After(timer) if timer <. current_time ->
               Model(..model, mod_transition: StableMod)
-            Fight(fight), _ ->
-              Model(
-                ..model,
-                program_duration:,
-                mod: Fight(update(fight)),
-                sound_timer:,
-              )
-            IntroductoryFight(fight), _ ->
-              Model(
-                ..model,
-                program_duration:,
-                mod: IntroductoryFight(update(fight)),
-                sound_timer:,
-              )
-            _, _ -> Model(..model, program_duration:, sound_timer:)
+            _ -> model
+          }
+          |> fn(model) {
+            case model.mod {
+              Hub(hub) if hub.volume_timer <. current_time -> {
+                set_storage(stored_volume_id, model.volume |> get_val)
+                model
+              }
+              _ -> model
+            }
           }
         }
         Keydown(latest_key_press) -> {
-          let latest_key_press = latest_key_press |> string.lowercase
           use <- guard(model.mod_transition != StableMod, model)
-          case
-            model.key_groups
-            |> dict.get(#(model.mod |> id, latest_key_press))
-          {
-            Ok(group) ->
-              case
-                model.grouped_responses
-                |> dict.get(#(model.mod |> id, group))
-              {
-                Ok(response) -> response(model)
-                Error(_) -> model
-              }
-            _ -> model
+          case model.volume |> audio.pass_the_limit {
+            False -> sound.play(0)
+            True -> Nil
           }
+          {
+            use group <- result.try(
+              model.key_groups
+              |> dict.get(#(
+                model.mod |> id,
+                latest_key_press |> string.lowercase,
+              )),
+            )
+            use response <- result.try(
+              model.grouped_responses
+              |> dict.get(#(model.mod |> id, group)),
+            )
+            response(model) |> Ok
+          }
+          |> result.unwrap(model)
         }
-        Resize(viewport_width, viewport_height) ->
-          Model(..model, viewport_width:, viewport_height:)
       }
     }
     |> lustre.simple(init, _, view)
     |> lustre.start("#app", Nil)
-  init_game_loop(fn(program_duration) {
-    update_the_model(dispatch(Frame(program_duration)))
-  })
-  init_resize_event(fn(viewport_x, viewport_y) {
-    update_the_model(dispatch(Resize(viewport_x, viewport_y)))
-  })
+  init_game_loop(fn() { update_the_model(dispatch(Frame)) })
   use event <- init_keydown_event
   use #(key, repeat) <- try(
     decode.run(event, {
@@ -108,7 +76,7 @@ pub fn main() {
     }),
   )
   use <- guard(repeat, Ok(Nil))
-  update_the_model(dispatch(Keydown(key))) |> Ok
+  update_the_model(dispatch(key |> Keydown)) |> Ok
 }
 
 fn id(mod) {
@@ -125,7 +93,7 @@ fn morphism(model: Model, mod: Identification) -> Model {
     Model(
       ..model,
       mod:,
-      mod_transition: After(model.program_duration +. mod_transition_time),
+      mod_transition: After(main.get_time() +. mod_transition_time),
     )
   }
   case mod {
@@ -135,9 +103,8 @@ fn morphism(model: Model, mod: Identification) -> Model {
           Model(
             ..model,
             mod: 0.0 |> HubBody |> Hub,
-            mod_transition: After(model.program_duration +. mod_transition_time),
+            mod_transition: After(main.get_time() +. mod_transition_time),
             grouped_responses: model.grouped_responses
-              // maybe remove
               |> dict.drop([
                 #(IntroductoryFightId, NorthEast),
                 #(IntroductoryFightId, SouthEast),
@@ -149,15 +116,12 @@ fn morphism(model: Model, mod: Identification) -> Model {
       }
     FightId -> {
       let selected_level = model.selected_level |> get_val
-      set_storage("selected_level", selected_level)
+      set_storage(stored_level_id, selected_level)
+      let #(level, _level_length) = selected_level |> level.get
       FightBody(
-        hp: 5.0,
-        initial_presses: 20,
-        hp_lose: True,
-        press_counter: 0,
-        level: selected_level |> level.get,
+        level:,
         last_action_group: None,
-        progress: fight.init_progress(selected_level, model.program_duration),
+        progress: fight.init_progress(selected_level, main.get_time()),
       )
       |> Fight
       |> after

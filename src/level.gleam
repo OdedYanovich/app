@@ -6,19 +6,21 @@ import root.{type Level, Level}
 
 pub fn get(id) {
   let #(repeation_map, msb) =
-    {
-      use f, mask, excess <- funtil.fix2
+    funtil.fix2(fn(f, mask, excess) {
       let next_mask = mask |> int.bitwise_shift_left(1)
       let next_excess = excess + next_mask
       use <- bool.guard(next_excess > id, #(id - excess, mask))
       f(next_mask, next_excess)
-    }(1, 0)
-  Level(
-    repeation_map:,
-    msb:,
-    current_index: 1,
-    loop_map: 0,
-    repeation_accrued: False,
+    })(1, 0)
+  #(
+    Level(
+      repeation_map:,
+      msb:,
+      current_index: 1,
+      loop_map: 0,
+      repeation_accrued: False,
+    ),
+    { msb |> main.log2 } + 1,
   )
 }
 

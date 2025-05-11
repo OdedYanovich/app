@@ -1,26 +1,32 @@
 import audio.{change_volume, mute_toggle}
-import ffi/main.{get_storage, get_viewport_size}
+import ffi/main.{get_storage}
 import ffi/sound
 import fight
 import gleam/dict
+import gleam/dynamic/decode
+import gleam/int
 import gleam/list
+import gleam/result
 import gleam/string
 import level
 import root.{
   ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
   IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
   NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, StableMod,
-  Transition, transition, update_ranged_int, volume_buttons_and_changes,
+  Transition, stored_level_id, stored_volume_id, transition, update_ranged_int,
+  volume_buttons_and_changes,
 }
 
 pub fn init(_flags) {
+  let #(level, _level_length) = level.get(0)
+  let volume =
+    get_storage(stored_volume_id)
+    |> decode.run(decode.int)
+    |> result.unwrap(111)
+    |> Range(val: _, min: 0, max: 100)
   let fight =
     FightBody(
-      hp: 65.0,
-      hp_lose: False,
-      initial_presses: 20,
-      level: level.get(0),
-      press_counter: 0,
+      level:,
       last_action_group: south_east.1,
       progress: fight.init_progress(0, 0.0),
     )
@@ -28,20 +34,15 @@ pub fn init(_flags) {
     mod: fight
       |> IntroductoryFight,
     mod_transition: StableMod,
-    volume: Range(val: 111, min: 0, max: 100),
+    volume:,
     grouped_responses: [
       #(#(IntroductoryFightId, SouthWest), fn(model) {
-        sound.init_audio(0.1)
+        sound.init_audio({ volume.val |> int.to_float } /. 100.0)
         Model(
           ..mute_toggle(model),
           grouped_responses: grouped_responses(),
           key_groups: grouped_keys(),
-          mod: FightBody(
-              ..fight,
-              hp: fight.hp +. 8.0,
-              hp_lose: True,
-              last_action_group: south_west.1,
-            )
+          mod: FightBody(..fight, last_action_group: south_west.1)
             |> IntroductoryFight,
         )
       }),
@@ -51,13 +52,10 @@ pub fn init(_flags) {
       |> string.to_graphemes
       |> list.map(fn(button) { #(#(IntroductoryFightId, button), SouthWest) })
       |> dict.from_list,
-    selected_level: get_storage("selected_level")
+    selected_level: get_storage(stored_level_id)
+      |> decode.run(decode.int)
+      |> result.unwrap(1)
       |> Range(0, 80),
-    program_duration: 0.0,
-    viewport_width: get_viewport_size().0,
-    viewport_height: get_viewport_size().1,
-    sounds: [0, 1, 2, 3],
-    sound_timer: 0.0,
     // seed: seed.random(),
   )
 }
@@ -84,15 +82,15 @@ fn grouped_responses() {
       #(#(HubId, Transition(FightId)), transition(_, FightId)),
       #(#(HubId, Transition(CreditId)), transition(_, CreditId)),
       #(#(FightId, Transition(HubId)), transition(_, HubId)),
-      #(#(FightId, NorthEast), fight.progress(_, NorthEast)),
-      #(#(FightId, SouthEast), fight.progress(_, SouthEast)),
-      #(#(FightId, NorthWest), fight.progress(_, NorthWest)),
-      #(#(FightId, SouthWest), fight.progress(_, SouthWest)),
+      #(#(FightId, NorthEast), fight.update(_, NorthEast)),
+      #(#(FightId, SouthEast), fight.update(_, SouthEast)),
+      #(#(FightId, NorthWest), fight.update(_, NorthWest)),
+      #(#(FightId, SouthWest), fight.update(_, SouthWest)),
       #(#(CreditId, Transition(HubId)), transition(_, HubId)),
-      #(#(IntroductoryFightId, NorthEast), fight.progress(_, NorthEast)),
-      #(#(IntroductoryFightId, SouthEast), fight.progress(_, SouthEast)),
-      #(#(IntroductoryFightId, NorthWest), fight.progress(_, NorthWest)),
-      #(#(IntroductoryFightId, SouthWest), fight.progress(_, SouthWest)),
+      #(#(IntroductoryFightId, NorthEast), fight.update(_, NorthEast)),
+      #(#(IntroductoryFightId, SouthEast), fight.update(_, SouthEast)),
+      #(#(IntroductoryFightId, NorthWest), fight.update(_, NorthWest)),
+      #(#(IntroductoryFightId, SouthWest), fight.update(_, SouthWest)),
     ],
   ]
   |> list.flatten

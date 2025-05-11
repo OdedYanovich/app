@@ -1,7 +1,7 @@
 export function initGameLoop(callback) {
 	function main() {
 		requestAnimationFrame(main);
-		callback(performance.now());
+		callback();
 	}
 	main();
 }
@@ -28,13 +28,7 @@ export function setStorage(name, val) {
 	localStorage.setItem(name, val)
 }
 export function getStorage(name) {
-	let val = parseInt(localStorage.getItem(name))
-	if (val) {
-		return val
-	} else {
-		return 9999
-	}
-
+	return parseInt(localStorage.getItem(name))
 }
 export function log2(val) {
 	return Math.log2(val)

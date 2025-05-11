@@ -1,11 +1,10 @@
 import audio.{get_val, pass_the_limit}
-import gleam/bool
+import ffi/main
 import gleam/float
 import gleam/int
 import gleam/list
 import gleam/string
 import initialization
-import level
 import lustre/attribute
 import lustre/element
 import lustre/element/html
@@ -15,11 +14,10 @@ import root.{
   mod_transition_time, volume_buttons_and_changes,
 }
 import view/css.{
-  type Area, Absolute, Area, Black, Blue, BorderBox, Center, Column, Fr, Green,
-  Grid, Precent, REM, RGB, RGBA, Repeat, SubGrid, White, animation, background,
-  background_color, display, grid_area, grid_auto_flow, grid_template,
-  grid_template_areas, grid_template_columns, grid_template_rows, height,
-  padding, place_items, width,
+  type Area, Absolute, Area, Black, BorderBox, Center, Column, Fr, Grid, Precent,
+  REM, RGB, Repeat, SubGrid, White, animation, background_color, display,
+  grid_area, grid_auto_flow, grid_template, grid_template_areas,
+  grid_template_columns, grid_template_rows, height, padding, place_items, width,
 }
 
 fn text_to_elements(text: List(String), attributes) {
@@ -144,7 +142,7 @@ pub fn view(model: Model) {
   }
 
   let Dependency(content, areas) = case model.mod {
-    Hub(hub) -> {
+    Hub(_hub) -> {
       let options = Area("a")
       let volume = Area("c")
       let level_picker = Area("d")
@@ -341,8 +339,8 @@ pub fn view(model: Model) {
   [
     html.canvas([
       attribute.id("canvas"),
-      attribute.width(model.viewport_width),
-      attribute.height(model.viewport_height),
+      attribute.width(main.get_viewport_size().0),
+      attribute.height(main.get_viewport_size().1),
       attribute.style([
         css.position(Absolute),
         css.background_color(Black),

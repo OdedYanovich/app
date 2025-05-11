@@ -9,6 +9,7 @@ pub fn main() {
   let tests = [
     #(level_constructor, "level constructor"),
     #(level_iterator, "level iterator"),
+    #(clue_constructor, "clue_constructor"),
   ]
   use #(test_, name) <- list.map(tests)
   case test_() |> result.all {
@@ -40,7 +41,7 @@ fn level_iterator() {
   |> list.repeat(7560)
   |> list.flatten
   |> list.index_fold(
-    level.get(mock_level_index) |> Ok,
+    level.get(mock_level_index).0 |> Ok,
     fn(current_level, required, mock_element_index) {
       use current_level <- result.try(current_level)
       let outcome = case level.get_element(current_level) == required {
@@ -78,7 +79,7 @@ fn level_constructor() {
     #(0b111, 0b100),
   ]
   use mock_level, mock_level_index <- list.index_map(levels)
-  let level = level.get(mock_level_index)
+  let level = level.get(mock_level_index).0
   let msg = fn(i, kind, expect, got) {
     msg(i, kind, expect |> int.to_string, got |> int.to_string)
   }
@@ -129,8 +130,9 @@ fn clue_constructor() {
     [0b101, 0b011, 0b010, 0b110],
     [0b101, 0b011, 0b010, 0b110],
   ]
-  use mock_clue, i <- list.index_map(mock_clue)
-  let level = level.get(i)
+  use _mock_clue, i <- list.index_map(mock_clue)
+  let #(_level, _level_length) = level.get(i)
+  Ok(Nil)
 }
 
 fn msg(index, subject, expected, received) {

@@ -1,3 +1,4 @@
+import ffi/main
 import gleam/dict.{type Dict}
 
 pub type Mods {
@@ -8,27 +9,19 @@ pub type Mods {
 }
 
 pub type HubBody {
-  HubBody(volume_animation_timer: Float)
+  HubBody(volume_timer: Float)
 }
 
 pub type FightBody {
-  FightBody(
-    level: Level,
-    hp: Float,
-    progress: Progress,
-    hp_lose: Bool,
-    last_action_group: ActionGroup,
-    initial_presses: Int,
-    press_counter: Int,
-  )
+  FightBody(level: Level, progress: Progress, last_action_group: ActionGroup)
 }
 
 pub type Level {
   Level(
-    // Level constants
+    // constants
     repeation_map: Int,
     msb: Int,
-    // Level variables
+    // variables
     current_index: Int,
     loop_map: Int,
     repeation_accrued: Bool,
@@ -41,6 +34,7 @@ pub type Progress {
     max_timestemps: Int,
     required_bpm: Int,
     press_counter: Int,
+    // last_bpm_check
   )
 }
 
@@ -62,7 +56,7 @@ pub type ActionGroup {
 pub fn transition(model, id) {
   Model(
     ..model,
-    mod_transition: Before(model.program_duration +. mod_transition_time, id),
+    mod_transition: Before(main.get_time() +. mod_transition_time, id),
   )
 }
 
@@ -85,9 +79,9 @@ pub type Identification {
 }
 
 pub type Msg {
+  Frame
   Keydown(String)
-  Frame(Float)
-  Resize(Int, Int)
+  // Resize(Int, Int)
 }
 
 pub type Model {
@@ -98,11 +92,10 @@ pub type Model {
     grouped_responses: Dict(#(Identification, ActionGroup), fn(Model) -> Model),
     key_groups: Dict(#(Identification, String), ActionGroup),
     selected_level: RangedVal(Int),
-    program_duration: Float,
-    viewport_width: Int,
-    viewport_height: Int,
-    sounds: List(Int),
-    sound_timer: Float,
+    // viewport_width: Int,
+    // viewport_height: Int,
+    // sounds: List(Int),
+    // sound_timer: Float,
   )
 }
 
@@ -143,3 +136,7 @@ pub const volume_buttons_and_changes = [
 pub const mod_transition_time = 400.0
 
 pub const animation_end_time = 3000.0
+
+pub const stored_level_id = "a"
+
+pub const stored_volume_id = "b"

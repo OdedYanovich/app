@@ -1,3 +1,4 @@
+import ffi/main
 import gleam/bool
 import gleam/float
 import gleam/int
@@ -9,7 +10,7 @@ import root.{
   NorthEast, NorthWest, Progress, SouthEast, SouthWest, Stay, transition,
 }
 
-pub fn progress(model: Model, pressed_group) {
+pub fn update(model: Model, pressed_group) {
   let #(mod, fight) = case model.mod {
     Fight(fight) -> #(Fight, fight)
     IntroductoryFight(fight) -> #(IntroductoryFight, fight)
@@ -26,17 +27,18 @@ pub fn progress(model: Model, pressed_group) {
     Stay -> False
     Change -> True
   }
-  let finish = fn(timestemps) {
+  let add_stemp = fn(timestemps) {
     Progress(
       ..fight.progress,
       timestemps: timestemps
-        |> list.append([model.program_duration]),
-      required_bpm: case
-        fight.progress.press_counter > fight.progress.max_timestemps * 2
-      {
-        True -> fight.progress.required_bpm + 10
-        False -> fight.progress.required_bpm
-      },
+        |> list.append([main.get_time()]),
+      required_bpm: fight.progress.required_bpm
+        + case
+          fight.progress.press_counter > fight.progress.max_timestemps * 2
+        {
+          True -> 5
+          False -> 0
+        },
       press_counter: fight.progress.press_counter + 1,
     )
   }
@@ -46,27 +48,24 @@ pub fn progress(model: Model, pressed_group) {
       mod: FightBody(
           ..fight,
           last_action_group: pressed_group,
-          hp: fight.hp -. 4.0,
           progress: fight.progress.timestemps
             |> list.take(list.length(fight.progress.timestemps) - 2)
-            |> finish,
+            |> add_stemp,
         )
         |> mod,
     )
   })
   let progress = {
     use <- bool.lazy_guard(
-      fight.progress.timestemps |> list.length <= fight.progress.max_timestemps,
+      fight.progress.timestemps |> list.length == fight.progress.max_timestemps,
       fn() {
         fight.progress.timestemps
-        |> get_bpm
-        fight.progress.timestemps
-        |> finish
+        |> add_stemp
       },
     )
     fight.progress.timestemps
     |> list.drop(1)
-    |> finish
+    |> add_stemp
   }
   use <- bool.guard(
     progress.timestemps |> get_bpm |> float.round <= progress.required_bpm,
@@ -75,8 +74,6 @@ pub fn progress(model: Model, pressed_group) {
   Model(
     ..model,
     mod: FightBody(
-        ..fight,
-        hp: fight.hp +. 4.0,
         level: fight.level |> level.next_element,
         last_action_group: pressed_group,
         progress:,
