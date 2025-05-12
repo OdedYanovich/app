@@ -11,7 +11,7 @@ prize for exceptional play
 remove hp
 should the victory check heppand as soon as the timestemp list is maxed?
 
-outline, color
+make mute the fisrt action that is silent and unmute the first action that isn't
 
 fight:
   add a color to each block

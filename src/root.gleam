@@ -1,5 +1,6 @@
 import ffi/main
 import gleam/dict.{type Dict}
+import prng/seed
 
 pub type Mods {
   Hub(HubBody)
@@ -13,11 +14,16 @@ pub type HubBody {
 }
 
 pub type FightBody {
-  FightBody(level: Level, progress: Progress, last_action_group: ActionGroup)
+  FightBody(
+    sequence_provider: SequenceProvider,
+    progress: Progress,
+    last_action_group: ActionGroup,
+    direction_randomizer: Bool,
+  )
 }
 
-pub type Level {
-  Level(
+pub type SequenceProvider {
+  SequenceProvider(
     // constants
     repeation_map: Int,
     msb: Int,
@@ -60,11 +66,6 @@ pub fn transition(model, id) {
   )
 }
 
-pub type Choice {
-  Stay
-  Change
-}
-
 pub type ModTransition {
   Before(timer: Float, new_mod: Identification)
   StableMod
@@ -92,6 +93,7 @@ pub type Model {
     grouped_responses: Dict(#(Identification, ActionGroup), fn(Model) -> Model),
     key_groups: Dict(#(Identification, String), ActionGroup),
     selected_level: RangedVal(Int),
+    seed: seed.Seed,
     // viewport_width: Int,
     // viewport_height: Int,
     // sounds: List(Int),

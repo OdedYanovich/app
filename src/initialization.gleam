@@ -8,7 +8,7 @@ import gleam/int
 import gleam/list
 import gleam/result
 import gleam/string
-import level
+import prng/seed
 import root.{
   ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
   IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
@@ -16,9 +16,10 @@ import root.{
   Transition, stored_level_id, stored_volume_id, transition, update_ranged_int,
   volume_buttons_and_changes,
 }
+import sequence_provider
 
 pub fn init(_flags) {
-  let #(level, _level_length) = level.get(0)
+  let #(sequence_provider, _clue) = sequence_provider.get(0)
   let volume =
     get_storage(stored_volume_id)
     |> decode.run(decode.int)
@@ -26,9 +27,10 @@ pub fn init(_flags) {
     |> Range(val: _, min: 0, max: 100)
   let fight =
     FightBody(
-      level:,
+      sequence_provider:,
       last_action_group: south_east.1,
-      progress: fight.init_progress(0, 0.0),
+      progress: fight.init_progress(0),
+      direction_randomizer: False,
     )
   Model(
     mod: fight
@@ -56,7 +58,7 @@ pub fn init(_flags) {
       |> decode.run(decode.int)
       |> result.unwrap(1)
       |> Range(0, 80),
-    // seed: seed.random(),
+    seed: seed.random(),
   )
 }
 

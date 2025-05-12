@@ -2,7 +2,7 @@ import ffi/main
 import funtil
 import gleam/bool
 import gleam/int
-import root.{type Level, Level}
+import root.{type SequenceProvider, SequenceProvider}
 
 pub fn get(id) {
   let #(repeation_map, msb) =
@@ -13,7 +13,7 @@ pub fn get(id) {
       f(next_mask, next_excess)
     })(1, 0)
   #(
-    Level(
+    SequenceProvider(
       repeation_map:,
       msb:,
       current_index: 1,
@@ -24,14 +24,14 @@ pub fn get(id) {
   )
 }
 
-pub fn next_element(level: Level) {
+pub fn next_element(level: SequenceProvider) {
   let index_is_maxed = level.current_index >= level.msb
   let repeation_required =
     level.repeation_map
     |> int.bitwise_and(level.current_index)
     != 0
     && !level.repeation_accrued
-  let level = case repeation_required, index_is_maxed {
+  let sequence_provider = case repeation_required, index_is_maxed {
     True, False -> level
     False, True -> {
       let #(loop_map, current_index) =
@@ -43,18 +43,18 @@ pub fn next_element(level: Level) {
           use <- bool.guard(loop_index == 1, #(0, 1))
           f(index_map - loop_index, loop_index |> int.bitwise_shift_right(1))
         })(level.loop_map, level.msb)
-      Level(..level, loop_map:, current_index:)
+      SequenceProvider(..level, loop_map:, current_index:)
     }
     False, False | True, True ->
-      Level(
+      SequenceProvider(
         ..level,
         current_index: level.current_index |> int.bitwise_shift_left(1),
       )
   }
-  Level(..level, repeation_accrued: repeation_required)
+  SequenceProvider(..level, repeation_accrued: repeation_required)
 }
 
-pub fn get_element(level: Level) {
+pub fn get_element(level: SequenceProvider) {
   // Use a table 
   main.log2(level.current_index) % 2 != 0
 }

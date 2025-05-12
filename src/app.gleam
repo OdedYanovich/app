@@ -8,14 +8,15 @@ import gleam/dynamic/decode
 import gleam/result.{try}
 import gleam/string
 import initialization.{init}
-import level
 import lustre.{dispatch}
+import prng/random
 import root.{
   type Identification, type Model, After, Before, Credit, CreditId, Fight,
   FightBody, FightId, Frame, Hub, HubBody, HubId, IntroductoryFight,
   IntroductoryFightId, Keydown, Model, None, NorthEast, NorthWest, SouthEast,
   SouthWest, StableMod, mod_transition_time, stored_level_id, stored_volume_id,
 }
+import sequence_provider
 import view/view.{view}
 
 pub fn main() {
@@ -42,10 +43,6 @@ pub fn main() {
         }
         Keydown(latest_key_press) -> {
           use <- guard(model.mod_transition != StableMod, model)
-          case model.volume |> audio.pass_the_limit {
-            False -> sound.play(0)
-            True -> Nil
-          }
           {
             use group <- result.try(
               model.key_groups
@@ -58,6 +55,10 @@ pub fn main() {
               model.grouped_responses
               |> dict.get(#(model.mod |> id, group)),
             )
+            case model.volume |> audio.pass_the_limit {
+              False -> sound.play(0)
+              True -> Nil
+            }
             response(model) |> Ok
           }
           |> result.unwrap(model)
@@ -89,10 +90,11 @@ fn id(mod) {
 }
 
 fn morphism(model: Model, mod: Identification) -> Model {
-  let after = fn(mod) {
+  let after = fn(mod, seed) {
     Model(
       ..model,
       mod:,
+      seed:,
       mod_transition: After(main.get_time() +. mod_transition_time),
     )
   }
@@ -112,21 +114,25 @@ fn morphism(model: Model, mod: Identification) -> Model {
                 #(IntroductoryFightId, SouthWest),
               ]),
           )
-        _ -> 0.0 |> HubBody |> Hub |> after
+        _ -> 0.0 |> HubBody |> Hub |> after(model.seed)
       }
     FightId -> {
+      let #(direction_randomizer, seed) =
+        random.choose(True, False) |> random.step(model.seed)
       let selected_level = model.selected_level |> get_val
       set_storage(stored_level_id, selected_level)
-      let #(level, _level_length) = selected_level |> level.get
+      let #(sequence_provider, _sequence_provider_length) =
+        selected_level |> sequence_provider.get
       FightBody(
-        level:,
+        sequence_provider:,
         last_action_group: None,
-        progress: fight.init_progress(selected_level, main.get_time()),
+        progress: fight.init_progress(selected_level),
+        direction_randomizer:,
       )
       |> Fight
-      |> after
+      |> after(seed)
     }
-    CreditId -> after(Credit)
+    CreditId -> after(Credit, model.seed)
     IntroductoryFightId -> panic
   }
 }
