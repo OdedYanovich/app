@@ -53,8 +53,15 @@ pub fn color(color) {
   #("color", color |> color_to_string)
 }
 
-pub fn background(back) {
-  #("background", back)
+pub fn background(left: Color, right: Color) {
+  #(
+    "background",
+    "linear-gradient(to left, "
+      <> right |> color_to_string
+      <> " 60%, "
+      <> left |> color_to_string
+      <> ")",
+  )
 }
 
 pub fn background_color(color: Color) {

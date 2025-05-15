@@ -34,13 +34,20 @@ pub type SequenceProvider {
   )
 }
 
+pub type Mask {
+  Mask(val: Int)
+}
+
+pub type BitRepresentation {
+  BitRepresentation(val: Int)
+}
+
 pub type Progress {
   Progress(
     timestemps: List(Float),
     max_timestemps: Int,
     required_bpm: Int,
     press_counter: Int,
-    // last_bpm_check
   )
 }
 

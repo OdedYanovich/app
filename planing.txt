@@ -1,67 +1,23 @@
-separate the levels into selectable collections
-random start to each collection
-one hand mod
-local storage string should be a const
-volume stored locally
-limit the available levels
+demo:
+  separate the levels into selectable collections with a random start
+  limit the available level collections
+  remove the side menu
+  the 4 colored blocks will be not stop by a transition
+  In IntroductaryFight, only 2 blocks will be shown untill the animated transition
+  responses are responsible to make a sound
+  options in the vertical gap
+  fight:
+    clue in the horizontal gap
+  audio:
+    response, bpm, victory
+  clear characters
+  the id string of local storage will be a const
 
-IntroductaryFight will remove the transition button and change the position of the buttons
-document the logic of the level system
-prize for exceptional play
-remove hp
-should the victory check heppand as soon as the timestemp list is maxed?
-
-make mute the fisrt action that is silent and unmute the first action that isn't
-
-fight:
-  add a color to each block
-  add a outline/transition to the buttons
-
-  mix progress with update
-  change the display to make the transform button will not take so much of the screen
-  tell the sequence to the player in the horizontal gap
-  hide the last group
-
-Progress:
-  compute progress in presses instead of abstract points
-  set minimum
-  test timing
-
-Animation: 
-  transition
-  menu
-  characters in fight
-  victory 
-
-Visuals:
-  Transparent letter behind each letter to prevent the audio visualizer from hiding them.
-  Level selector:
-    selected row by gets a grid/area
-    fill grid it with selected buttons + reverse button
-    update buttons
-
-Timer:
-  Don't store
-  Shared logic
-
-Audio: 
-  New:
-    sound for each action
-    sound for escalation
-    sound for victory
-  Schedule
-  Song:
-    stored as a stack of pairs of tracks
-    played as a stuck of tracks from the stored stack
-    transition:
-      temporary response to a stack change
-      can be a track or a effect
-    a track can be accelerated to a shared maximum as a response to good play
-
-Goal:
- Level selector
- Dynamic ost
- persistent memory (progress)
+release:
+  one hand mod
+  recognize beating the highest bpm
+  change colors brightness
+  grid level selector
 
 Updates:
   cross platform
@@ -89,3 +45,17 @@ Visuals that express the correct io
 Color and background picker with payed customization.
 
 Nvim: make "undo" an exception to the auto-save
+
+Audio: 
+  sound for each action
+  sound for escalation
+  sound for victory
+  Schedule
+  Song:
+    stored as a stack of pairs of tracks
+    played as a stuck of tracks from the stored stack
+    transition:
+      temporary response to a stack change
+      can be a track or a effect
+    a track can be accelerated to a shared maximum as a response to good play
+ Dynamic ost

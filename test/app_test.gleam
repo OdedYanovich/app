@@ -1,3 +1,4 @@
+import bit_representation.{get, next, previuos, set}
 import gleam/bool
 import gleam/int
 import gleam/io.{print}
@@ -22,7 +23,7 @@ pub fn main() {
 }
 
 fn sequence_provider_iterator() {
-  let mock_levels = [
+  let mock_providers = [
     [],
     [True],
     [True, True],
@@ -36,21 +37,21 @@ fn sequence_provider_iterator() {
     [True, False, True, False, True, True, False, True, False, True],
     [False, True, False, True, False, True, True, False, True, False, True],
   ]
-  use mock_level, mock_level_index <- list.index_map(mock_levels)
-  [False, ..mock_level]
-  |> list.repeat(7560)
-  |> list.flatten
+  use mock_provider, mock_provider_index <- list.index_map(mock_providers)
+  [False, ..mock_provider]
+  // |> list.repeat(7560)
+  // |> list.flatten
   |> list.index_fold(
-    sequence_provider.get(mock_level_index).0 |> Ok,
-    fn(current_level, required, mock_element_index) {
-      use current_level <- result.try(current_level)
+    sequence_provider.get(mock_provider_index).0 |> Ok,
+    fn(current_provider, required, mock_element_index) {
+      use current_level <- result.try(current_provider)
       let outcome = case
         sequence_provider.get_element(current_level) == required
       {
         True -> current_level |> sequence_provider.next_element() |> Ok
         False ->
           msg(
-            mock_level_index,
+            mock_provider_index,
             "    mock_element_index: " <> int.to_string(mock_element_index),
             required |> bool.to_string,
             sequence_provider.get_element(current_level) |> bool.to_string,
@@ -58,6 +59,17 @@ fn sequence_provider_iterator() {
           |> Error
       }
       display(outcome)
+      // use provider <- result.try(outcome)
+      // use <- bool.guard(provider == current_level, provider |> Ok)
+      // msg(
+      //   mock_provider_index,
+      //   "    provider isn't cyclical",
+      //   "before itaration "<> current_level|>,
+      //   sequence_provider.get_element(current_level) |> bool.to_string,
+      // )
+      // echo provider
+      // echo outcome
+      //   |> Error
     },
   )
   |> result.replace(Nil)
@@ -80,50 +92,40 @@ fn sequence_provider_constructor() {
     #(0b110, 0b100),
     #(0b111, 0b100),
   ]
-  use mock_sequence_provider, mock_sequence_provider_index <- list.index_map(
+  use mock_provider, mock_provider_index <- list.index_map(
     mock_sequence_providers,
   )
-  let sequence_provider = sequence_provider.get(mock_sequence_provider_index).0
+  let provider = sequence_provider.get(mock_provider_index).0
   let msg = fn(i, kind, expect, got) {
     msg(i, kind, expect |> int.to_string, got |> int.to_string)
   }
   let outcome = case
-    mock_sequence_provider.0 == sequence_provider.repeation_map,
-    mock_sequence_provider.1 == sequence_provider.msb
+    mock_provider.0 == provider.repeation_map,
+    mock_provider.1 == provider.msb
   {
     True, True -> Ok(Nil)
     False, True -> {
       msg(
-        mock_sequence_provider_index,
+        mock_provider_index,
         "repeation_map",
-        mock_sequence_provider.0,
-        sequence_provider.repeation_map,
+        mock_provider.0,
+        provider.repeation_map,
       )
       |> Error
     }
     True, False -> {
-      msg(
-        mock_sequence_provider_index,
-        "msb",
-        mock_sequence_provider.1,
-        sequence_provider.msb,
-      )
+      msg(mock_provider_index, "msb", mock_provider.1, provider.msb)
       |> Error
     }
     False, False -> {
       [
         msg(
-          mock_sequence_provider_index,
+          mock_provider_index,
           "repeation_map",
-          mock_sequence_provider.0,
-          sequence_provider.repeation_map,
+          mock_provider.0,
+          provider.repeation_map,
         ),
-        msg(
-          mock_sequence_provider_index,
-          "msb",
-          mock_sequence_provider.1,
-          sequence_provider.msb,
-        ),
+        msg(mock_provider_index, "msb", mock_provider.1, provider.msb),
       ]
       |> list.flatten
       |> Error

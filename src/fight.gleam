@@ -1,4 +1,5 @@
 import ffi/main
+import funtil
 import gleam/bool
 import gleam/float
 import gleam/int
@@ -17,7 +18,7 @@ pub fn update(model: Model, pressed_group) {
     _ -> panic
   }
   use <- bool.guard(fight.last_action_group == pressed_group, model)
-  let progress = fight.progress
+  let old_progress = fight.progress
   let progress =
     {
       let action =
@@ -26,16 +27,20 @@ pub fn update(model: Model, pressed_group) {
           _ -> False
         }
         |> bool.exclusive_or(fight.direction_randomizer)
-      let timestemps = progress.timestemps
+      let timestemps = old_progress.timestemps
       use <- bool.lazy_guard(
         fight.sequence_provider |> instraction != action,
         fn() {
-          timestemps
-          |> list.take(list.length(timestemps) - 2)
+          funtil.fix(fn(shorter, tail) {
+            case tail {
+              [head, ..tail] -> [head] |> list.append(shorter(tail))
+              [] | [_] -> []
+            }
+          })(timestemps)
         },
       )
       use <- bool.guard(
-        timestemps |> list.length < progress.max_timestemps,
+        timestemps |> list.length < old_progress.max_timestemps,
         timestemps,
       )
       timestemps
@@ -44,16 +49,18 @@ pub fn update(model: Model, pressed_group) {
     |> list.append([main.get_time()])
     |> Progress(
       timestemps: _,
-      required_bpm: progress.required_bpm
-        + case progress.press_counter > progress.max_timestemps * 2 {
-        True -> 5
+      required_bpm: old_progress.required_bpm
+        + case old_progress.press_counter > old_progress.max_timestemps * 2 {
+        True -> 10
         False -> 0
       },
-      press_counter: progress.press_counter + 1,
-      max_timestemps: progress.max_timestemps,
+      press_counter: old_progress.press_counter + 1,
+      max_timestemps: old_progress.max_timestemps,
     )
   use <- bool.guard(
-    progress.timestemps |> get_bpm |> float.round <= progress.required_bpm,
+    progress.timestemps |> get_bpm |> float.round <= progress.required_bpm
+      && progress.timestemps |> list.length
+      == old_progress.timestemps |> list.length,
     transition(model, HubId),
   )
   Model(
@@ -69,15 +76,15 @@ pub fn update(model: Model, pressed_group) {
   )
 }
 
-fn get_bpm(timestemps) {
+pub fn get_bpm(timestemps) {
   let offset = timestemps |> list.first |> result.unwrap(0.0)
-  let last = timestemps |> list.last |> result.unwrap(0.0)
+  let last = timestemps |> list.last |> result.unwrap(1.0)
   { last -. offset } /. int.to_float(list.length(timestemps) - 1)
 }
 
 pub fn init_progress(level_id) {
   Progress(
-    timestemps: [main.get_time()],
+    timestemps: [main.get_time(), main.get_time() +. 1.0],
     max_timestemps: level_id + 2,
     required_bpm: 350,
     press_counter: 0,

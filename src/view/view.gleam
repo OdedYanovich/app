@@ -1,5 +1,7 @@
 import audio.{get_val, pass_the_limit}
 import ffi/main
+import fight.{get_bpm}
+import gleam/bool
 import gleam/float
 import gleam/int
 import gleam/list
@@ -10,14 +12,16 @@ import lustre/element
 import lustre/element/html
 import root.{
   type FightBody, type Model, type Msg, After, Before, Credit, Fight, Hub,
-  IntroductoryFight, NorthEast, NorthWest, SouthEast, SouthWest, StableMod,
+  IntroductoryFight, None, NorthEast, NorthWest, SouthEast, SouthWest, StableMod,
   mod_transition_time, volume_buttons_and_changes,
 }
+import sequence_provider.{get_element}
 import view/css.{
   type Area, Absolute, Area, Black, BorderBox, Center, Column, Fr, Grid, Precent,
-  REM, RGB, Repeat, SubGrid, White, animation, background_color, display,
-  grid_area, grid_auto_flow, grid_template, grid_template_areas,
-  grid_template_columns, grid_template_rows, height, padding, place_items, width,
+  REM, RGB, RGBA, Repeat, SubGrid, White, animation, background,
+  background_color, display, grid_area, grid_auto_flow, grid_template,
+  grid_template_areas, grid_template_columns, grid_template_rows, height,
+  padding, place_items, width,
 }
 
 fn text_to_elements(text: List(String), attributes) {
@@ -55,16 +59,6 @@ pub fn view(model: Model) {
         attribute.style(
           [
             [
-              // background(
-              //   "linear-gradient(to left, "
-              //   <> case level.get_element(fight.level) {
-              //     True -> "rgba(0, 255, 0, 0.3)"
-              //     False -> "rgba(255, 0, 0, 0.3)"
-              //   }
-              //   <> " "
-              //   <> fight.hp |> float.round |> int.to_string
-              //   <> "%, rgba(0,0,0,0))",
-              // ),
               grid_area(fight_area),
               grid_template(Repeat(2, Fr(1)), Repeat(2, Fr(1))),
               #("gap", "4rem 4rem"),
@@ -81,12 +75,13 @@ pub fn view(model: Model) {
           initialization.south_west,
           initialization.south_east,
         ])
+        let group_is_ignored = group.1 == fight.last_action_group
         #(
           group.0
             |> string.to_graphemes
             |> text_to_elements([
               attribute.style([
-                case group.1 == fight.last_action_group, model.mod_transition {
+                case group_is_ignored, model.mod_transition {
                   True, _ | _, Before(_, _) ->
                     animation(
                       "exiting "
@@ -103,7 +98,22 @@ pub fn view(model: Model) {
                 },
               ]),
             ]),
-          group.1,
+          case
+            {
+              fight.sequence_provider
+              |> get_element
+              == case group.1 {
+                NorthWest | NorthEast -> True
+                SouthWest | SouthEast -> False
+                _ -> panic
+              }
+              |> bool.exclusive_or(fight.direction_randomizer)
+            }
+            && { !group_is_ignored }
+          {
+            True -> None
+            False -> group.1
+          },
         )
       }
         |> list.map(fn(group) {
@@ -127,7 +137,7 @@ pub fn view(model: Model) {
                       NorthEast -> RGB(102, 0, 102)
                       SouthWest -> RGB(0, 140, 0)
                       SouthEast -> RGB(232, 0, 0)
-                      _ -> panic
+                      _ -> White
                     }),
                   ],
                   grid_standard,
@@ -290,11 +300,13 @@ pub fn view(model: Model) {
             [
               "] hub",
               "current level: " <> model.selected_level.val |> int.to_string,
+              fight.progress.timestemps |> get_bpm |> float.to_string,
+              fight.progress.timestemps |> list.length |> int.to_string,
             ]
               |> text_to_elements([attribute.style([transition_animation])]),
           ),
         ],
-        areas: [options, fight_area, fight_area, fight_area] |> list.repeat(3),
+        areas: [options, fight_area, fight_area, fight_area] |> list.repeat(4),
       )
     }
     Credit -> {
@@ -362,6 +374,7 @@ pub fn view(model: Model) {
               css.left(REM(0.0)),
               css.top(REM(0.0)),
               grid_template_areas(areas),
+              // background_color(case )
             ],
             grid_standard,
           ]
