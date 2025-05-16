@@ -1,4 +1,6 @@
 demo:
+  add grid-row-start
+  why I won by pressing top-bottom quickly?
   separate the levels into selectable collections with a random start
   limit the available level collections
   remove the side menu
@@ -7,7 +9,12 @@ demo:
   responses are responsible to make a sound
   options in the vertical gap
   fight:
-    clue in the horizontal gap
+    basic clue in the horizontal gap
+    sequence randomization:
+      order
+      random commands
+      swapped commands
+      random level skips
   audio:
     response, bpm, victory
   clear characters
@@ -18,6 +25,7 @@ release:
   recognize beating the highest bpm
   change colors brightness
   grid level selector
+  clue will use the bit representation types
 
 Updates:
   cross platform
@@ -32,6 +40,8 @@ Quality Assurance:
   code optimizer
   
 Far future:
+  make a public css library that uses the builder pattern as explained in https://www.youtube.com/watch?v=3lYHFctx2Ks 
+
   Image: 
     With arrays
     Transparent pixels for non square images

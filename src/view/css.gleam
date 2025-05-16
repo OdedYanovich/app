@@ -73,8 +73,11 @@ pub type Length {
   Px(Int)
   VW(Int)
   VH(Int)
+  // Fr is grid exclusive
   Fr(Int)
   Precent(Int)
+  MinMax(Length, Length)
+  Auto
 }
 
 fn length_to_string(length) {
@@ -85,6 +88,13 @@ fn length_to_string(length) {
     VH(i) -> int.to_string(i) <> "vh"
     Fr(i) -> int.to_string(i) <> "fr"
     Precent(i) -> int.to_string(i) <> "%"
+    MinMax(min, max) ->
+      "minmax("
+      <> min |> length_to_string
+      <> ", "
+      <> max |> length_to_string
+      <> ")"
+    Auto -> "auto"
   }
 }
 
@@ -116,6 +126,8 @@ pub fn display(display) {
 
 pub type TrackList {
   Repeat(Int, Length)
+  RepeatFill(Length)
+  RepeatFit(Length)
   Unique(List(Length))
   SubGrid
 }
@@ -128,7 +140,10 @@ fn track_list_to_string(track_list) {
       <> ","
       <> length |> length_to_string
       <> ")"
-
+    RepeatFill(length) ->
+      "repeat(auto-fill, " <> length |> length_to_string <> ")"
+    RepeatFit(length) ->
+      "repeat(auto-fit, " <> length |> length_to_string <> ")"
     Unique(lengths) ->
       list.fold(lengths, "", fn(return, added) {
         return <> " " <> added |> length_to_string
@@ -146,6 +161,13 @@ pub fn grid_template(grid_template_rows, grid_template_column) {
   )
 }
 
+pub fn grid_row(start, end) {
+  #("grid-row", start |> int.to_string <> " / " <> end |> int.to_string)
+}
+
+pub fn grid_column(start, end) {
+  #("grid-column", start |> int.to_string <> " / " <> end |> int.to_string)
+}
 pub fn grid_template_rows(grid_template_rows) {
   #("grid-template-rows", grid_template_rows |> track_list_to_string)
 }

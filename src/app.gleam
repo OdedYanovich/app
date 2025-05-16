@@ -11,8 +11,8 @@ import initialization.{init}
 import lustre.{dispatch}
 import prng/random
 import root.{
-  type Identification, type Model, After, Before, Credit, CreditId, Fight,
-  FightBody, FightId, Frame, Hub, HubBody, HubId, IntroductoryFight,
+  type Identification, type Model, After, Attack, Before, Credit, CreditId,
+  Fight, FightBody, FightId, Frame, Hub, HubBody, HubId, IntroductoryFight,
   IntroductoryFightId, Keydown, Model, None, NorthEast, NorthWest, SouthEast,
   SouthWest, StableMod, mod_transition_time, stored_level_id, stored_volume_id,
 }
@@ -108,10 +108,10 @@ fn morphism(model: Model, mod: Identification) -> Model {
             mod_transition: After(main.get_time() +. mod_transition_time),
             grouped_responses: model.grouped_responses
               |> dict.drop([
-                #(IntroductoryFightId, NorthEast),
-                #(IntroductoryFightId, SouthEast),
-                #(IntroductoryFightId, NorthWest),
-                #(IntroductoryFightId, SouthWest),
+                #(IntroductoryFightId, Attack(NorthEast)),
+                #(IntroductoryFightId, Attack(SouthEast)),
+                #(IntroductoryFightId, Attack(NorthWest)),
+                #(IntroductoryFightId, Attack(SouthWest)),
               ]),
           )
         _ -> 0.0 |> HubBody |> Hub |> after(model.seed)
@@ -125,7 +125,7 @@ fn morphism(model: Model, mod: Identification) -> Model {
         selected_level |> sequence_provider.get
       FightBody(
         sequence_provider:,
-        last_action_group: None,
+        last_action_group: Attack(None),
         progress: fight.init_progress(selected_level),
         direction_randomizer:,
       )

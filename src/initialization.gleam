@@ -10,7 +10,7 @@ import gleam/result
 import gleam/string
 import prng/seed
 import root.{
-  ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
+  Attack, ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
   IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
   NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, StableMod,
   Transition, stored_level_id, stored_volume_id, transition, update_ranged_int,
@@ -38,7 +38,7 @@ pub fn init(_flags) {
     mod_transition: StableMod,
     volume:,
     grouped_responses: [
-      #(#(IntroductoryFightId, SouthWest), fn(model) {
+      #(#(IntroductoryFightId, Attack(SouthWest)), fn(model) {
         sound.init_audio({ volume.val |> int.to_float } /. 100.0)
         Model(
           ..mute_toggle(model),
@@ -52,7 +52,9 @@ pub fn init(_flags) {
       |> dict.from_list,
     key_groups: south_west.0
       |> string.to_graphemes
-      |> list.map(fn(button) { #(#(IntroductoryFightId, button), SouthWest) })
+      |> list.map(fn(button) {
+        #(#(IntroductoryFightId, button), Attack(SouthWest))
+      })
       |> dict.from_list,
     selected_level: get_storage(stored_level_id)
       |> decode.run(decode.int)
@@ -84,28 +86,40 @@ fn grouped_responses() {
       #(#(HubId, Transition(FightId)), transition(_, FightId)),
       #(#(HubId, Transition(CreditId)), transition(_, CreditId)),
       #(#(FightId, Transition(HubId)), transition(_, HubId)),
-      #(#(FightId, NorthEast), fight.update(_, NorthEast)),
-      #(#(FightId, SouthEast), fight.update(_, SouthEast)),
-      #(#(FightId, NorthWest), fight.update(_, NorthWest)),
-      #(#(FightId, SouthWest), fight.update(_, SouthWest)),
+      #(#(FightId, Attack(NorthEast)), fight.update(_, Attack(NorthEast))),
+      #(#(FightId, Attack(SouthEast)), fight.update(_, Attack(SouthEast))),
+      #(#(FightId, Attack(NorthWest)), fight.update(_, Attack(NorthWest))),
+      #(#(FightId, Attack(SouthWest)), fight.update(_, Attack(SouthWest))),
       #(#(CreditId, Transition(HubId)), transition(_, HubId)),
-      #(#(IntroductoryFightId, NorthEast), fight.update(_, NorthEast)),
-      #(#(IntroductoryFightId, SouthEast), fight.update(_, SouthEast)),
-      #(#(IntroductoryFightId, NorthWest), fight.update(_, NorthWest)),
-      #(#(IntroductoryFightId, SouthWest), fight.update(_, SouthWest)),
+      #(#(IntroductoryFightId, Attack(NorthEast)), fight.update(
+        _,
+        Attack(NorthEast),
+      )),
+      #(#(IntroductoryFightId, Attack(SouthEast)), fight.update(
+        _,
+        Attack(SouthEast),
+      )),
+      #(#(IntroductoryFightId, Attack(NorthWest)), fight.update(
+        _,
+        Attack(NorthWest),
+      )),
+      #(#(IntroductoryFightId, Attack(SouthWest)), fight.update(
+        _,
+        Attack(SouthWest),
+      )),
     ],
   ]
   |> list.flatten
   |> dict.from_list
 }
 
-pub const north_west = #("1q2w3e4r5t", NorthWest)
+pub const north_west = #("1q2w3e4r5t", Attack(NorthWest))
 
-pub const south_west = #("azsxdcfvgb", SouthWest)
+pub const south_west = #("azsxdcfvgb", Attack(SouthWest))
 
-pub const north_east = #("8u9i0o-p=[", NorthEast)
+pub const north_east = #("8u9i0o-p=[", Attack(NorthEast))
 
-pub const south_east = #("jnkml,;.'/", SouthEast)
+pub const south_east = #("jnkml,;.'/", Attack(SouthEast))
 
 fn grouped_keys() {
   let group_buttons = fn(mod_id) {

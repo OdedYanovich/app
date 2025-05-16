@@ -51,11 +51,16 @@ pub type Progress {
   )
 }
 
-pub type ActionGroup {
+pub type FightDirections {
   NorthEast
   SouthEast
   SouthWest
   NorthWest
+  None
+}
+
+pub type ActionGroup {
+  Attack(FightDirections)
   NextLevel
   Next5Levels
   Last5Levels
@@ -63,7 +68,6 @@ pub type ActionGroup {
   MuteToggle
   Transition(Identification)
   ChangeVolume(Int)
-  None
 }
 
 pub fn transition(model, id) {

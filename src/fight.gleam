@@ -6,8 +6,8 @@ import gleam/int
 import gleam/list
 import gleam/result
 import root.{
-  type Model, Fight, FightBody, HubId, IntroductoryFight, Model, NorthEast,
-  NorthWest, Progress, transition,
+  type Model, Attack, Fight, FightBody, HubId, IntroductoryFight, Model,
+  NorthEast, NorthWest, Progress, transition,
 }
 import sequence_provider.{get_element as instraction, next_element}
 
@@ -23,7 +23,7 @@ pub fn update(model: Model, pressed_group) {
     {
       let action =
         case pressed_group {
-          NorthWest | NorthEast -> True
+          Attack(NorthWest) | Attack(NorthEast) -> True
           _ -> False
         }
         |> bool.exclusive_or(fight.direction_randomizer)

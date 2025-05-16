@@ -11,17 +11,17 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import root.{
-  type FightBody, type Model, type Msg, After, Before, Credit, Fight, Hub,
-  IntroductoryFight, None, NorthEast, NorthWest, SouthEast, SouthWest, StableMod,
-  mod_transition_time, volume_buttons_and_changes,
+  type FightBody, type Model, type Msg, After, Attack, Before, Credit, Fight,
+  Hub, IntroductoryFight, None, NorthEast, NorthWest, SouthEast, SouthWest,
+  StableMod, mod_transition_time, volume_buttons_and_changes,
 }
 import sequence_provider.{get_element}
 import view/css.{
-  type Area, Absolute, Area, Black, BorderBox, Center, Column, Fr, Grid, Precent,
-  REM, RGB, RGBA, Repeat, SubGrid, White, animation, background,
-  background_color, display, grid_area, grid_auto_flow, grid_template,
-  grid_template_areas, grid_template_columns, grid_template_rows, height,
-  padding, place_items, width,
+  type Area, Absolute, Area, Auto, Black, BorderBox, Center, Column, Fr, Grid,
+  MinMax, Precent, Px, REM, RGB, Repeat, RepeatFill, RepeatFit, SubGrid, Unique,
+  White, animation, background_color, display, font_size, grid_area,
+  grid_auto_flow, grid_column, grid_row, grid_template, grid_template_areas,
+  grid_template_columns, grid_template_rows, height, padding, place_items, width,
 }
 
 fn text_to_elements(text: List(String), attributes) {
@@ -52,7 +52,7 @@ pub fn view(model: Model) {
       )
     StableMod -> #("", "")
   }
-  let fight_area = Area("b")
+  let fight_area = Area("f")
   let fight_main_body = fn(fight: FightBody) {
     html.div(
       [
@@ -60,94 +60,128 @@ pub fn view(model: Model) {
           [
             [
               grid_area(fight_area),
-              grid_template(Repeat(2, Fr(1)), Repeat(2, Fr(1))),
-              #("gap", "4rem 4rem"),
+              grid_template(
+                RepeatFit(MinMax(Px(30), Fr(1))),
+                // Unique([Fr(1), MinMax(Auto, Fr(1)), Fr(1)]),
+                Repeat(2, Fr(1)),
+              ),
+              #("gap", "0rem 4rem"),
             ],
             grid_standard,
           ]
           |> list.flatten,
         ),
       ],
-      {
-        use group <- list.map([
-          initialization.north_west,
-          initialization.north_east,
-          initialization.south_west,
-          initialization.south_east,
-        ])
-        let group_is_ignored = group.1 == fight.last_action_group
-        #(
-          group.0
-            |> string.to_graphemes
-            |> text_to_elements([
-              attribute.style([
-                case group_is_ignored, model.mod_transition {
-                  True, _ | _, Before(_, _) ->
-                    animation(
-                      "exiting "
-                      <> mod_transition_time /. 1000.0 |> float.to_string
-                      <> "s ease-out"
-                      <> " forwards",
-                    )
-                  False, _ | _, After(_) ->
-                    animation(
-                      "entrance "
-                      <> mod_transition_time /. 1000.0 |> float.to_string
-                      <> "s ease-out",
-                    )
-                },
+      [
+        {
+          use group <- list.map([
+            initialization.north_west,
+            initialization.north_east,
+            initialization.south_west,
+            initialization.south_east,
+          ])
+          let group_is_ignored = group.1 == fight.last_action_group
+          let assert Attack(direction) = group.1
+          #(
+            group.0
+              |> string.to_graphemes
+              |> text_to_elements([
+                attribute.style([
+                  case group_is_ignored, model.mod_transition {
+                    True, _ | _, Before(_, _) ->
+                      animation(
+                        "exiting "
+                        <> mod_transition_time /. 1000.0 |> float.to_string
+                        <> "s ease-out"
+                        <> " forwards",
+                      )
+                    False, _ | _, After(_) ->
+                      animation(
+                        "entrance "
+                        <> mod_transition_time /. 1000.0 |> float.to_string
+                        <> "s ease-out",
+                      )
+                  },
+                ]),
               ]),
-            ]),
-          case
-            {
-              fight.sequence_provider
-              |> get_element
-              == case group.1 {
-                NorthWest | NorthEast -> True
-                SouthWest | SouthEast -> False
-                _ -> panic
+            case
+              {
+                fight.sequence_provider
+                |> get_element
+                == case group.1 {
+                  Attack(NorthWest) | Attack(NorthEast) -> True
+                  Attack(SouthWest) | Attack(SouthEast) -> False
+                  _ -> panic
+                }
+                |> bool.exclusive_or(fight.direction_randomizer)
               }
-              |> bool.exclusive_or(fight.direction_randomizer)
-            }
-            && { !group_is_ignored }
-          {
-            True -> None
-            False -> group.1
-          },
-        )
-      }
-        |> list.map(fn(group) {
-          html.div(
-            [
-              attribute.style(
-                [
+              && { !group_is_ignored }
+            {
+              True -> None
+              False -> direction
+            },
+            case direction {
+              NorthWest | NorthEast -> grid_row(1, 1)
+              SouthWest | SouthEast -> grid_row(3, 3)
+              _ -> panic
+            },
+          )
+        }
+          |> list.map(fn(group) {
+            html.div(
+              [
+                attribute.style(
                   [
-                    grid_template(Repeat(2, Fr(1)), Repeat(5, Fr(1))),
-                    grid_auto_flow(Column),
-                    #(
-                      "text-shadow",
-                      "-1px -1px 0 #000,  
+                    [
+                      grid_template(Repeat(2, Fr(1)), Repeat(5, Fr(1))),
+                      grid_auto_flow(Column),
+                      #(
+                        "text-shadow",
+                        "-1px -1px 0 #000,  
                     1px -1px 0 #000,
                     -1px 1px 0 #000,
                     1px 1px 0 #000;",
-                    ),
-                    // #("font-size", "1.2rem"),
-                    background_color(case group.1 {
-                      NorthWest -> RGB(255, 255, 1)
-                      NorthEast -> RGB(102, 0, 102)
-                      SouthWest -> RGB(0, 140, 0)
-                      SouthEast -> RGB(232, 0, 0)
-                      _ -> White
-                    }),
-                  ],
-                  grid_standard,
-                ]
-                |> list.flatten,
-              ),
+                      ),
+                      font_size(REM(2.2)),
+                      group.2,
+                      background_color(case group.1 {
+                        NorthWest -> RGB(255, 255, 1)
+                        NorthEast -> RGB(102, 0, 102)
+                        SouthWest -> RGB(0, 140, 0)
+                        SouthEast -> RGB(232, 0, 0)
+                        _ -> White
+                      }),
+                    ],
+                    grid_standard,
+                  ]
+                  |> list.flatten,
+                ),
+              ],
+              group.0,
+            )
+          }),
+        [
+          html.div(
+            [
+              attribute.style([
+                #(
+                  "text-shadow",
+                  "-1px -1px 0 #000,  
+                    1px -1px 0 #000,
+                    -1px 1px 0 #000,
+                    1px 1px 0 #000;",
+                ),
+                font_size(REM(2.2)),
+                background_color(White),
+                grid_row(2, 2),
+                grid_column(1, 3),
+              ]),
             ],
-            group.0,
-          )
-        }),
+            ["test"] |> text_to_elements([]),
+          ),
+        ],
+      ]
+        |> list.flatten,
     )
   }
 

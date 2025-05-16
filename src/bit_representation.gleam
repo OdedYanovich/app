@@ -16,3 +16,11 @@ pub fn get(representation: BitRepresentation, mask: Mask) {
 pub fn set(representation: BitRepresentation, mask: Mask) {
   representation.val |> int.bitwise_or(mask.val) |> BitRepresentation
 }
+// /// Callback for every positive bit
+// pub fn fold(
+//   state: t,
+//   representation: BitRepresentation,
+//   callback: fn(t, Int) -> t,
+// ) {
+//   let mask = 1
+// }
