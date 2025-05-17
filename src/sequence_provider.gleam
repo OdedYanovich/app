@@ -2,6 +2,7 @@ import ffi/main
 import funtil
 import gleam/bool
 import gleam/int
+import gleam/list
 import root.{type SequenceProvider, SequenceProvider}
 
 pub fn get(id) {
@@ -13,15 +14,26 @@ pub fn get(id) {
       use <- bool.guard(next_excess > id, #(id - excess, mask))
       make_constant(next_mask, next_excess)
     }(1, 0)
-  #(
+  let sequence_provider =
     SequenceProvider(
       repeation_map:,
       msb:,
       current_index: 1,
       loop_map: 0,
       repeation_accrued: False,
-    ),
-    { msb |> main.log2 } + 1,
+    )
+  #(
+    sequence_provider,
+    {
+      let len = id
+      use fold, current_provider, elements, i <- funtil.fix3
+      use <- bool.guard(i == len, elements)
+      fold(
+        current_provider |> next_element,
+        elements |> list.append([current_provider |> get_element]),
+        i + 1,
+      )
+    }(sequence_provider |> next_element, [sequence_provider |> get_element], 0),
   )
 }
 

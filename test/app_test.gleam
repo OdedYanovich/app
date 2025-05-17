@@ -1,4 +1,3 @@
-import bit_representation.{get, next, previuos, set}
 import gleam/bool
 import gleam/int
 import gleam/io.{println}
@@ -32,9 +31,10 @@ fn sequence_provider_iterator() {
   let new_provider = sequence_provider.get(mock_provider_index).0
   let current_provider = {
     use current_provider, required, mock_element_index <- list.index_fold(
-      [False, ..mock_provider],
+      [False, ..mock_provider] |> list.repeat(2) |> list.flatten,
       new_provider,
     )
+    // echo current_provider
     use <- bool.guard(
       sequence_provider.get_element(current_provider) == required,
       current_provider |> next_element,
@@ -48,15 +48,16 @@ fn sequence_provider_iterator() {
     |> display
     current_provider
   }
-  use <- bool.guard(current_provider != new_provider, [Nil])
+  use <- bool.guard(current_provider != new_provider, Nil)
   [
     ["wanted sequence_provider: "],
     new_provider |> sequence_provider_to_massage,
-    ["given sequence_provider: "],
+    [" given sequence_provider: "],
     current_provider |> sequence_provider_to_massage,
   ]
   |> list.flatten
   |> display
+  Nil
 }
 
 fn sequence_provider_to_massage(provider: SequenceProvider) {

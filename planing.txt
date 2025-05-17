@@ -1,4 +1,7 @@
 demo:
+  disco font
+  Add bloom
+  change the text by turning the light off
   add grid-row-start
   why I won by pressing top-bottom quickly?
   separate the levels into selectable collections with a random start
@@ -9,7 +12,11 @@ demo:
   responses are responsible to make a sound
   options in the vertical gap
   fight:
-    basic clue in the horizontal gap
+    clue show progress with the background off the arrow hides it
+    xor breaks the visuals (and maybe the logic)
+    move side menu to the vertical gap
+    quick mistakes followed by a correct action will win
+    sufficiently low bpm may not cause a victory 
     sequence randomization:
       order
       random commands
@@ -19,6 +26,25 @@ demo:
     response, bpm, victory
   clear characters
   the id string of local storage will be a const
+  view:
+    write a function for the icons
+    arrows need more space
+    icons and fonts will take equal areas
+
+Credits:
+  arrow:
+<a href="https://www.flaticon.com/free-icons/down-arrow" title="down arrow icons">Down arrow icons created by Roundicons Premium - Flaticon</a>
+source:
+https://www.flaticon.com/free-icon/down-arrow_608258?term=arrow&page=1&position=11&origin=search&related_id=608258
+  volume on:
+<a href="https://www.flaticon.com/free-icons/volume" title="volume icons">Volume icons created by apien - Flaticon</a>source:
+https://www.flaticon.com/free-icon/down-arrow_608258?term=arrow&page=1&position=11&origin=search&related_id=608258
+source:
+https://www.flaticon.com/free-icon/medium-volume_4024628?term=volume&page=1&position=3&origin=search&related_id=4024628
+  volume off:
+https://www.flaticon.com/free-icon/down-arrow_608258?term=arrow&page=1&position=11&origin=search&related_id=608258
+source:
+https://www.flaticon.com/free-icon/mute_727240?term=volume&page=1&position=7&origin=search&related_id=727240
 
 release:
   one hand mod
@@ -26,6 +52,10 @@ release:
   change colors brightness
   grid level selector
   clue will use the bit representation types
+  unlockable visual effects
+  sand keys to reviewers
+  view:
+    volume cut image
 
 Updates:
   cross platform
@@ -34,6 +64,7 @@ Updates:
 
 Sequel:
   Migrate to Wisp
+  change visuals in a way that may look like an improvement
 
 Quality Assurance:
   Optimization

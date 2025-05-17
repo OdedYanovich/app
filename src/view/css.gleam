@@ -18,6 +18,9 @@ pub type Color {
   White
   Green
   Blue
+  Orange
+  Tan
+  RebeccaPurple
   RGB(Int, Int, Int)
   RGBA(Int, Int, Int, Float)
 }
@@ -34,6 +37,9 @@ fn color_to_string(color) {
     White -> "white"
     Green -> "green"
     Blue -> "blue"
+    Orange -> "orange"
+    Tan -> "tan"
+    RebeccaPurple -> "rebeccapurple"
     RGB(r, g, b) ->
       "rgb("
       <> [r, g, b]
@@ -53,6 +59,8 @@ pub fn color(color) {
   #("color", color |> color_to_string)
 }
 
+// #("column-gap", "1rem"),
+// #("row-gap", "1rem"),
 pub fn background(left: Color, right: Color) {
   #(
     "background",
@@ -77,6 +85,7 @@ pub type Length {
   Fr(Int)
   Precent(Int)
   MinMax(Length, Length)
+  MinContent
   Auto
 }
 
@@ -95,6 +104,7 @@ fn length_to_string(length) {
       <> max |> length_to_string
       <> ")"
     Auto -> "auto"
+    MinContent -> "min-content"
   }
 }
 
@@ -161,6 +171,10 @@ pub fn grid_template(grid_template_rows, grid_template_column) {
   )
 }
 
+pub fn grid_row_start(row) {
+  #("grid-row-start", row |> int.to_string)
+}
+
 pub fn grid_row(start, end) {
   #("grid-row", start |> int.to_string <> " / " <> end |> int.to_string)
 }
@@ -168,6 +182,7 @@ pub fn grid_row(start, end) {
 pub fn grid_column(start, end) {
   #("grid-column", start |> int.to_string <> " / " <> end |> int.to_string)
 }
+
 pub fn grid_template_rows(grid_template_rows) {
   #("grid-template-rows", grid_template_rows |> track_list_to_string)
 }

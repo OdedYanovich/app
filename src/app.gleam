@@ -12,9 +12,10 @@ import lustre.{dispatch}
 import prng/random
 import root.{
   type Identification, type Model, After, Attack, Before, Credit, CreditId,
-  Fight, FightBody, FightId, Frame, Hub, HubBody, HubId, IntroductoryFight,
-  IntroductoryFightId, Keydown, Model, None, NorthEast, NorthWest, SouthEast,
-  SouthWest, StableMod, mod_transition_time, stored_level_id, stored_volume_id,
+  Fight, FightBody, FightId, Frame, Hub, HubBody, HubId, Ignored,
+  IntroductoryFight, IntroductoryFightId, Keydown, Model, NorthEast, NorthWest,
+  SouthEast, SouthWest, StableMod, mod_transition_time, stored_level_id,
+  stored_volume_id,
 }
 import sequence_provider
 import view/view.{view}
@@ -121,13 +122,13 @@ fn morphism(model: Model, mod: Identification) -> Model {
         random.choose(True, False) |> random.step(model.seed)
       let selected_level = model.selected_level |> get_val
       set_storage(stored_level_id, selected_level)
-      let #(sequence_provider, _sequence_provider_length) =
-        selected_level |> sequence_provider.get
+      let #(sequence_provider, clue) = selected_level |> sequence_provider.get
       FightBody(
         sequence_provider:,
-        last_action_group: Attack(None),
+        last_action_group: Attack(Ignored),
         progress: fight.init_progress(selected_level),
         direction_randomizer:,
+        clue:,
       )
       |> Fight
       |> after(seed)

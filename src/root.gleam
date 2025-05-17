@@ -19,6 +19,7 @@ pub type FightBody {
     progress: Progress,
     last_action_group: ActionGroup,
     direction_randomizer: Bool,
+    clue: List(Bool),
   )
 }
 
@@ -56,7 +57,8 @@ pub type FightDirections {
   SouthEast
   SouthWest
   NorthWest
-  None
+  Wanted
+  Ignored
 }
 
 pub type ActionGroup {

@@ -19,7 +19,7 @@ import root.{
 import sequence_provider
 
 pub fn init(_flags) {
-  let #(sequence_provider, _clue) = sequence_provider.get(0)
+  let #(sequence_provider, clue) = sequence_provider.get(0)
   let volume =
     get_storage(stored_volume_id)
     |> decode.run(decode.int)
@@ -28,9 +28,10 @@ pub fn init(_flags) {
   let fight =
     FightBody(
       sequence_provider:,
-      last_action_group: south_east.1,
+      last_action_group: Attack(south_east.1),
       progress: fight.init_progress(0),
       direction_randomizer: False,
+      clue:,
     )
   Model(
     mod: fight
@@ -44,7 +45,7 @@ pub fn init(_flags) {
           ..mute_toggle(model),
           grouped_responses: grouped_responses(),
           key_groups: grouped_keys(),
-          mod: FightBody(..fight, last_action_group: south_west.1)
+          mod: FightBody(..fight, last_action_group: Attack(south_west.1))
             |> IntroductoryFight,
         )
       }),
@@ -113,13 +114,13 @@ fn grouped_responses() {
   |> dict.from_list
 }
 
-pub const north_west = #("1q2w3e4r5t", Attack(NorthWest))
+pub const north_west = #("1q2w3e4r5t", NorthWest)
 
-pub const south_west = #("azsxdcfvgb", Attack(SouthWest))
+pub const south_west = #("azsxdcfvgb", SouthWest)
 
-pub const north_east = #("8u9i0o-p=[", Attack(NorthEast))
+pub const north_east = #("8u9i0o-p=[", NorthEast)
 
-pub const south_east = #("jnkml,;.'/", Attack(SouthEast))
+pub const south_east = #("jnkml,;.'/", SouthEast)
 
 fn grouped_keys() {
   let group_buttons = fn(mod_id) {
@@ -127,7 +128,7 @@ fn grouped_keys() {
     |> list.map(fn(buttons_group) {
       buttons_group.0
       |> string.to_graphemes()
-      |> list.map(fn(button) { #(#(mod_id, button), buttons_group.1) })
+      |> list.map(fn(button) { #(#(mod_id, button), Attack(buttons_group.1)) })
     })
     |> list.flatten
   }
