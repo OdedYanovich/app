@@ -10,10 +10,9 @@ import lustre/attribute
 import lustre/element
 import lustre/element/html
 import root.{
-  type FightBody, type Model, type Msg, After, Attack, Before, Credit, Fight,
-  FromMod, Hub, Ignored, IntroductoryFight, NorthEast, NorthWest, SouthEast,
-  SouthWest, StableMod, ToMod, Wanted, mod_transition_time,
-  volume_buttons_and_changes,
+  type FightBody, type Model, type Msg, Attack, Credit, Fight, FromMod, Hub,
+  Ignored, IntroductoryFight, NorthEast, NorthWest, SouthEast, SouthWest, ToMod,
+  Wanted, mod_transition_time, volume_buttons_and_changes,
 }
 import sequence_provider.{get_element}
 import view/css.{
@@ -39,20 +38,20 @@ pub fn view(model: Model) {
     place_items(Center),
   ]
   let transition_animation = case model.mod_transition {
-    After(_) | ToMod ->
+    ToMod ->
       animation(
         "entrance "
         <> mod_transition_time /. 1000.0 |> float.to_string
         <> "s ease-out",
       )
-    Before(_, _) | FromMod(_) ->
+    FromMod(_) ->
       animation(
         "exiting "
         <> mod_transition_time /. 1000.0 |> float.to_string
         <> "s ease-out"
         <> " forwards",
       )
-    StableMod | _ -> #("", "")
+    // _ -> #("", "")
   }
   let image = fn(src, width, height, attributes) {
     html.div([attributes], [
@@ -95,14 +94,14 @@ pub fn view(model: Model) {
               |> text_to_elements([
                 attribute.styles([
                   case group_is_ignored, model.mod_transition {
-                    True, _ | _, Before(_, _) ->
+                    True, _ | _, FromMod(_) ->
                       animation(
                         "exiting "
                         <> mod_transition_time /. 1000.0 |> float.to_string
                         <> "s ease-out"
                         <> " forwards",
                       )
-                    False, _ | _, After(_) ->
+                    False, _ | _, ToMod ->
                       animation(
                         "entrance "
                         <> mod_transition_time /. 1000.0 |> float.to_string
@@ -210,7 +209,7 @@ pub fn view(model: Model) {
   }
 
   let Dependency(content, areas) = case model.mod {
-    Hub(hub) -> {
+    Hub -> {
       let options = Area("a")
       let volume = Area("c")
       let level_picker = Area("d")
@@ -277,7 +276,8 @@ pub fn view(model: Model) {
                     },
                     REM(7.0),
                     REM(7.0),
-                    attribute.styles([#("filter", "invert(1)")]),
+                    attribute.none(),
+                    //styles([#("filter", "invert(1)")]),
                   ),
                 ]
                   |> html.div([attribute.styles([#("filter", "invert(1)")])], _),

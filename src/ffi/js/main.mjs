@@ -1,15 +1,17 @@
-export function initGameLoop(callback) {
-	function main() {
-		requestAnimationFrame(main);
-		callback();
-	}
-	main();
+let modeLink
+export function initGameLoop(model_link, callback) {
+	modeLink = model_link
+	// function main() {
+	// 	requestAnimationFrame(main);
+	// 	callback();
+	// }
+	// main();
 }
 export function initKeydownEvent(callback) {
 	addEventListener("keydown", callback);
 }
 export function timer(callback, delay) {
-	setTimeout(callback, delay)
+	setTimeout(() => { callback(modeLink) }, delay)
 }
 export function initResizeEvent(callback) {
 	addEventListener(

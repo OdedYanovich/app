@@ -11,46 +11,20 @@ import initialization.{init}
 import lustre.{dispatch}
 import prng/random
 import root.{
-  type Identification, type Model, After, Attack, Before, Credit, CreditId,
-  Fight, FightBody, FightId, Frame, Hub, HubBody, HubId, Ignored,
-  IntroductoryFight, IntroductoryFightId, Keydown, Model, NorthEast, NorthWest,
-  SouthEast, SouthWest, StableMod, ToMod, TransitionAnimation,
-  mod_transition_time, stored_level_id, stored_volume_id,
+  type Identification, type Model, Attack, Credit, CreditId, Fight, FightBody,
+  FightId, Hub, HubId, Ignored, IntroductoryFight, IntroductoryFightId, Keydown,
+  Model, NorthEast, NorthWest, SouthEast, SouthWest, ToMod, TransitionAnimation,
+  stored_level_id, stored_volume_id,
 }
 import sequence_provider
 import view/view.{view}
 
 pub fn main() {
-  let assert Ok(update_the_model) =
+  let assert Ok(model_link) =
     fn(model: Model, msg) {
       case msg {
-        Frame -> {
-          let current_time = main.get_time()
-          case model.mod_transition {
-            Before(timer, id) if timer <. current_time -> morphism(model, id)
-            After(timer) if timer <. current_time ->
-              Model(..model, mod_transition: StableMod)
-            _ -> model
-          }
-          |> fn(model) {
-            case model.mod {
-              Hub(hub) if hub.volume_save_timer <. current_time -> {
-                set_storage(stored_volume_id, model.volume |> get_val)
-                model
-              }
-              _ -> model
-            }
-          }
-        }
         Keydown(latest_key_press) -> {
-          // main.timer(
-          //   fn() {
-          //     echo 1
-          //     Nil
-          //   },
-          //   500,
-          // )
-          use <- guard(model.mod_transition != StableMod, model)
+          use <- guard(model.mod_transition != ToMod, model)
           {
             use group <- result.try(
               model.key_groups
@@ -71,16 +45,12 @@ pub fn main() {
           }
           |> result.unwrap(model)
         }
-        TransitionAnimation(mod) -> Model(..model, mod_transition: ToMod)
+        TransitionAnimation(mod) -> morphism(model, mod)
       }
     }
     |> lustre.simple(init, _, view)
     |> lustre.start("#app", Nil)
-  init_game_loop(fn() {
-    update_the_model
-    |> lustre.send(dispatch(Frame))
-    Nil
-  })
+  init_game_loop(model_link)
   use event <- init_keydown_event
   use #(key, repeat) <- try(
     decode.run(event, {
@@ -90,12 +60,12 @@ pub fn main() {
     }),
   )
   use <- guard(repeat, Ok(Nil))
-  update_the_model |> lustre.send(dispatch(key |> Keydown)) |> Ok
+  model_link |> lustre.send(dispatch(key |> Keydown)) |> Ok
 }
 
 fn id(mod) {
   case mod {
-    Hub(_) -> HubId
+    Hub -> HubId
     Fight(_) -> FightId
     Credit -> CreditId
     IntroductoryFight(_) -> IntroductoryFightId
@@ -104,12 +74,7 @@ fn id(mod) {
 
 fn morphism(model: Model, mod: Identification) -> Model {
   let after = fn(mod, seed) {
-    Model(
-      ..model,
-      mod:,
-      seed:,
-      mod_transition: After(main.get_time() +. mod_transition_time),
-    )
+    Model(..model, mod:, seed:, mod_transition: ToMod)
   }
   case mod {
     HubId ->
@@ -117,8 +82,8 @@ fn morphism(model: Model, mod: Identification) -> Model {
         IntroductoryFightId ->
           Model(
             ..model,
-            mod: HubBody(0.0, 0.0) |> Hub,
-            mod_transition: After(main.get_time() +. mod_transition_time),
+            mod:  Hub,
+            mod_transition: ToMod,
             grouped_responses: model.grouped_responses
               |> dict.drop([
                 #(IntroductoryFightId, Attack(NorthEast)),
@@ -127,9 +92,10 @@ fn morphism(model: Model, mod: Identification) -> Model {
                 #(IntroductoryFightId, Attack(SouthWest)),
               ]),
           )
-        _ -> HubBody(0.0, 0.0) |> Hub |> after(model.seed)
+        _ -> Hub |> after(model.seed)
       }
     FightId -> {
+      set_storage(stored_volume_id, model.volume |> get_val)
       let #(direction_randomizer, seed) =
         random.choose(True, False) |> random.step(model.seed)
       let selected_level = model.selected_level |> get_val

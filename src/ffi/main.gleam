@@ -1,13 +1,14 @@
 import gleam/dynamic/decode
 
 @external(javascript, "./js/main.mjs", "timer")
-pub fn timer(callback: fn() -> Nil, delay: Int) -> Nil
+pub fn timer(callback: fn(any) -> Nil, delay: Int) -> Nil
 
 @external(javascript, "./js/main.mjs", "startDrawing")
 pub fn start_drawing() -> Nil
 
 @external(javascript, "./js/main.mjs", "initGameLoop")
-pub fn init_game_loop(callback: fn() -> Nil) -> Nil
+pub fn init_game_loop(model_link: any,// callback: fn() -> Nil
+) -> Nil
 
 @external(javascript, "./js/main.mjs", "initKeydownEvent")
 pub fn init_keydown_event(callback: fn(decode.Dynamic) -> any) -> Nil

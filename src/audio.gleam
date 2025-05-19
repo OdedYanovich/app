@@ -2,7 +2,7 @@ import ffi/main.{get_time}
 import ffi/sound
 import gleam/int
 import root.{
-  type Model, type RangedVal, Hub, HubBody, Model, Range, mod_transition_time,
+  type Model, type RangedVal, Hub, Model, Range, mod_transition_time,
   update_ranged_int,
 }
 
@@ -19,13 +19,14 @@ pub fn change_volume(model: Model, change) {
   sound.change_volume(
     { volume.val |> int.to_float } /. { volume.max |> int.to_float },
   )
-  let assert Hub(HubBody(_, mute_animation_timer)) = model.mod
-  Model(
-    ..model,
-    mod: HubBody(mute_animation_timer:, volume_save_timer: get_time() +. 500.0)
-      |> Hub,
-    volume:,
-  )
+  // let assert Hub(HubBody(_, mute_animation_timer)) = model.mod
+  // Model(
+  //   ..model,
+  //   mod: HubBody(mute_animation_timer:, volume_save_timer: get_time() +. 500.0)
+  //     |> Hub,
+  //   volume:,
+  // )
+  model
 }
 
 pub fn mute_toggle(model: Model) {

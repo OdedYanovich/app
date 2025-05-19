@@ -12,9 +12,10 @@ import prng/seed
 import root.{
   Attack, ChangeVolume, CreditId, FightBody, FightId, HubId, IntroductoryFight,
   IntroductoryFightId, Last5Levels, LastLevel, Model, MuteToggle, Next5Levels,
-  NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, StableMod,
+  NextLevel, NorthEast, NorthWest, Range, SouthEast, SouthWest, 
   Transition, stored_level_id, stored_volume_id, transition, update_ranged_int,
   volume_buttons_and_changes,
+  ToMod
 }
 import sequence_provider
 
@@ -36,7 +37,7 @@ pub fn init(_flags) {
   Model(
     mod: fight
       |> IntroductoryFight,
-    mod_transition: StableMod,
+    mod_transition: ToMod,
     volume:,
     grouped_responses: [
       #(#(IntroductoryFightId, Attack(SouthWest)), fn(model) {

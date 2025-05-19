@@ -1,16 +1,13 @@
 import ffi/main
 import gleam/dict.{type Dict}
+import lustre
 import prng/seed
 
 pub type Mods {
-  Hub(HubBody)
+  Hub
   Fight(FightBody)
   IntroductoryFight(FightBody)
   Credit
-}
-
-pub type HubBody {
-  HubBody(volume_save_timer: Float, mute_animation_timer: Float)
 }
 
 pub type FightBody {
@@ -72,20 +69,23 @@ pub type ActionGroup {
   ChangeVolume(Int)
 }
 
+pub fn dispatch(msg){}
 pub fn transition(model, id) {
-  Model(
-    ..model,
-    mod_transition: Before(main.get_time() +. mod_transition_time, id),
+  main.timer(
+    fn(model_link) {
+      model_link
+      |> lustre.send(lustre.dispatch(TransitionAnimation(id)))
+      Nil
+    },
+    500,
   )
+  Model(..model, mod_transition: FromMod(id))
 }
 
 pub type ModTransition {
-  Before(timer: Float, new_mod: Identification)
-  StableMod
-  After(timer: Float)
   FromMod(to_mod: Identification)
   ToMod
-  None
+  // None
 }
 
 pub type Identification {
@@ -96,9 +96,7 @@ pub type Identification {
 }
 
 pub type Msg {
-  Frame
   Keydown(String)
-  // Transition Resize(Int, Int)
   TransitionAnimation(Identification)
 }
 
