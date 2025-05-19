@@ -14,8 +14,8 @@ import root.{
   type Identification, type Model, After, Attack, Before, Credit, CreditId,
   Fight, FightBody, FightId, Frame, Hub, HubBody, HubId, Ignored,
   IntroductoryFight, IntroductoryFightId, Keydown, Model, NorthEast, NorthWest,
-  SouthEast, SouthWest, StableMod, mod_transition_time, stored_level_id,
-  stored_volume_id,
+  SouthEast, SouthWest, StableMod, ToMod, TransitionAnimation,
+  mod_transition_time, stored_level_id, stored_volume_id,
 }
 import sequence_provider
 import view/view.{view}
@@ -34,7 +34,7 @@ pub fn main() {
           }
           |> fn(model) {
             case model.mod {
-              Hub(hub) if hub.volume_timer <. current_time -> {
+              Hub(hub) if hub.volume_save_timer <. current_time -> {
                 set_storage(stored_volume_id, model.volume |> get_val)
                 model
               }
@@ -43,6 +43,13 @@ pub fn main() {
           }
         }
         Keydown(latest_key_press) -> {
+          // main.timer(
+          //   fn() {
+          //     echo 1
+          //     Nil
+          //   },
+          //   500,
+          // )
           use <- guard(model.mod_transition != StableMod, model)
           {
             use group <- result.try(
@@ -64,11 +71,16 @@ pub fn main() {
           }
           |> result.unwrap(model)
         }
+        TransitionAnimation(mod) -> Model(..model, mod_transition: ToMod)
       }
     }
     |> lustre.simple(init, _, view)
     |> lustre.start("#app", Nil)
-  init_game_loop(fn() { update_the_model(dispatch(Frame)) })
+  init_game_loop(fn() {
+    update_the_model
+    |> lustre.send(dispatch(Frame))
+    Nil
+  })
   use event <- init_keydown_event
   use #(key, repeat) <- try(
     decode.run(event, {
@@ -78,7 +90,7 @@ pub fn main() {
     }),
   )
   use <- guard(repeat, Ok(Nil))
-  update_the_model(dispatch(key |> Keydown)) |> Ok
+  update_the_model |> lustre.send(dispatch(key |> Keydown)) |> Ok
 }
 
 fn id(mod) {
@@ -105,7 +117,7 @@ fn morphism(model: Model, mod: Identification) -> Model {
         IntroductoryFightId ->
           Model(
             ..model,
-            mod: 0.0 |> HubBody |> Hub,
+            mod: HubBody(0.0, 0.0) |> Hub,
             mod_transition: After(main.get_time() +. mod_transition_time),
             grouped_responses: model.grouped_responses
               |> dict.drop([
@@ -115,7 +127,7 @@ fn morphism(model: Model, mod: Identification) -> Model {
                 #(IntroductoryFightId, Attack(SouthWest)),
               ]),
           )
-        _ -> 0.0 |> HubBody |> Hub |> after(model.seed)
+        _ -> HubBody(0.0, 0.0) |> Hub |> after(model.seed)
       }
     FightId -> {
       let #(direction_randomizer, seed) =

@@ -1,7 +1,6 @@
 import audio.{get_val, pass_the_limit}
 import ffi/main
 import fight.{get_bpm}
-import gleam/bool
 import gleam/float
 import gleam/int
 import gleam/list
@@ -12,8 +11,9 @@ import lustre/element
 import lustre/element/html
 import root.{
   type FightBody, type Model, type Msg, After, Attack, Before, Credit, Fight,
-  Hub, Ignored, IntroductoryFight, NorthEast, NorthWest, SouthEast, SouthWest,
-  StableMod, Wanted, mod_transition_time, volume_buttons_and_changes,
+  FromMod, Hub, Ignored, IntroductoryFight, NorthEast, NorthWest, SouthEast,
+  SouthWest, StableMod, ToMod, Wanted, mod_transition_time,
+  volume_buttons_and_changes,
 }
 import sequence_provider.{get_element}
 import view/css.{
@@ -26,6 +26,7 @@ import view/css.{
 }
 
 fn text_to_elements(text: List(String), attributes) {
+  // [html.div(attributes, list.map(text, html.text))]
   use text <- list.map(text)
   html.div(attributes, [html.text(text)])
 }
@@ -38,26 +39,38 @@ pub fn view(model: Model) {
     place_items(Center),
   ]
   let transition_animation = case model.mod_transition {
-    After(_) ->
+    After(_) | ToMod ->
       animation(
         "entrance "
         <> mod_transition_time /. 1000.0 |> float.to_string
         <> "s ease-out",
       )
-    Before(_, _) ->
+    Before(_, _) | FromMod(_) ->
       animation(
         "exiting "
         <> mod_transition_time /. 1000.0 |> float.to_string
         <> "s ease-out"
         <> " forwards",
       )
-    StableMod -> #("", "")
+    StableMod | _ -> #("", "")
+  }
+  let image = fn(src, width, height, attributes) {
+    html.div([attributes], [
+      html.img([
+        attribute.styles([
+          transition_animation,
+          css.width(width),
+          css.height(height),
+        ]),
+        attribute.src(src),
+      ]),
+    ])
   }
   let fight_area = Area("f")
   let fight_main_body = fn(fight: FightBody) {
     html.div(
       [
-        attribute.style(
+        attribute.styles(
           [
             grid_area(fight_area),
             grid_template(Unique([Fr(1), MinContent, Fr(1)]), Repeat(2, Fr(1))),
@@ -80,7 +93,7 @@ pub fn view(model: Model) {
             buttons_directions.0
               |> string.to_graphemes
               |> text_to_elements([
-                attribute.style([
+                attribute.styles([
                   case group_is_ignored, model.mod_transition {
                     True, _ | _, Before(_, _) ->
                       animation(
@@ -123,7 +136,7 @@ pub fn view(model: Model) {
           |> list.map(fn(group) {
             html.div(
               [
-                attribute.style(
+                attribute.styles(
                   [
                     grid_template(Repeat(2, Fr(1)), Repeat(5, Fr(1))),
                     grid_auto_flow(Column),
@@ -154,7 +167,7 @@ pub fn view(model: Model) {
         [
           html.div(
             [
-              attribute.style(
+              attribute.styles(
                 [
                   #(
                     "text-shadow",
@@ -167,35 +180,26 @@ pub fn view(model: Model) {
                   grid_row_start(2),
                   grid_column(1, 3),
                   grid_template_columns(RepeatFit(MinMax(REM(8.2), Fr(1)))),
+                  #("row-gap", "1rem"),
+                  padding(REM(2.0)),
                 ]
                 |> list.append(grid_standard),
               ),
             ],
             fight.clue
               |> list.map(fn(direction) {
-                [
-                  html.img([
-                    attribute.style([
-                      transition_animation,
-                      width(REM(20.0)),
-                      height(REM(10.0)),
-                    ]),
-                    attribute.src("/assets/down-arrow.png"),
-                    // attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg"),
+                image(
+                  "/assets/down-arrow.png",
+                  REM(10.0),
+                  REM(10.0),
+                  attribute.styles([
+                    #("filter", "invert(1)"),
+                    case direction {
+                      // |> bool.exclusive_or(fight.direction_randomizer)
+                      True -> #("transform", "rotate(180deg)")
+                      False -> #("", "")
+                    },
                   ]),
-                ]
-                |> html.div(
-                  [
-                    attribute.style([
-                      #("filter", "invert(1)"),
-                      case direction {
-                        // |> bool.exclusive_or(fight.direction_randomizer)
-                        True -> #("transform", "rotate(180deg)")
-                        False -> #("", "")
-                      },
-                    ]),
-                  ],
-                  _,
                 )
               }),
           ),
@@ -206,7 +210,7 @@ pub fn view(model: Model) {
   }
 
   let Dependency(content, areas) = case model.mod {
-    Hub(_hub) -> {
+    Hub(hub) -> {
       let options = Area("a")
       let volume = Area("c")
       let level_picker = Area("d")
@@ -219,12 +223,28 @@ pub fn view(model: Model) {
       ]
       let level_selector = Area("b")
       let level_selector_buttons = ["a", "s", "d", "f", "z", "x", "c", "v"]
+      // let unmute_animation = case hub.mute_animation_timer -. get_time() {
+      //   timer if timer >. mod_transition_time ->
+      //     animation(
+      //       "entrance "
+      //       <> mod_transition_time /. 1000.0 |> float.to_string
+      //       <> "s ease-out",
+      //     )
+      //   timer if timer <. mod_transition_time ->
+      //     animation(
+      //       "exiting "
+      //       <> mod_transition_time /. 1000.0 |> float.to_string
+      //       <> "s ease-out"
+      //       <> " forwards",
+      //     )
+      //   _ -> #("", "")
+      // }
       Dependency(
         content: [
           html.div(
             [
               attribute.id("volume"),
-              attribute.style(
+              attribute.styles(
                 [
                   grid_area(volume),
                   grid_auto_flow(Column),
@@ -237,37 +257,35 @@ pub fn view(model: Model) {
               |> list.map(fn(x) { #(x.0, x.1 |> int.to_string) })
               |> list.flat_map(fn(button_volume_change) {
                 [
-                  html.div([attribute.style([transition_animation])], [
+                  html.div([attribute.styles([transition_animation])], [
                     button_volume_change.0 |> html.text,
                   ]),
-                  html.div([attribute.style([transition_animation])], [
+                  html.div([attribute.styles([transition_animation])], [
                     button_volume_change.1 |> html.text,
                   ]),
                 ]
               })
               |> list.append([
-                html.div([attribute.style([transition_animation])], [
+                html.div([attribute.styles([transition_animation])], [
                   "o" |> html.text,
                 ]),
                 [
-                  html.img([
-                    attribute.style([
-                      width(REM(7.0)),
-                      height(REM(7.0)),
-                      transition_animation,
-                    ]),
-                    attribute.src(case model.volume |> pass_the_limit {
+                  image(
+                    case model.volume |> pass_the_limit {
                       False -> "/assets/medium-volume.png"
                       True -> "/assets/mute.png"
-                    }),
-                  ]),
+                    },
+                    REM(7.0),
+                    REM(7.0),
+                    attribute.styles([#("filter", "invert(1)")]),
+                  ),
                 ]
-                  |> html.div([attribute.style([#("filter", "invert(1)")])], _),
+                  |> html.div([attribute.styles([#("filter", "invert(1)")])], _),
               ]),
           ),
           html.div(
             [
-              attribute.style(
+              attribute.styles(
                 [
                   grid_area(level_selector),
                   grid_auto_flow(Column),
@@ -291,7 +309,7 @@ pub fn view(model: Model) {
               |> list.flatten
               |> list.flat_map(fn(level) {
                 [
-                  html.div([attribute.style([transition_animation])], [
+                  html.div([attribute.styles([transition_animation])], [
                     level |> html.text,
                   ]),
                 ]
@@ -299,17 +317,17 @@ pub fn view(model: Model) {
           ),
           html.div(
             [
-              attribute.style(
+              attribute.styles(
                 [grid_area(level_picker), grid_template_columns(SubGrid)]
                 |> list.append(grid_standard),
               ),
             ],
             level_picker_text
-              |> text_to_elements([attribute.style([transition_animation])]),
+              |> text_to_elements([attribute.styles([transition_animation])]),
           ),
           html.div(
             [
-              attribute.style(
+              attribute.styles(
                 [grid_area(options), grid_template_rows(SubGrid)]
                 |> list.append(grid_standard),
               ),
@@ -319,7 +337,7 @@ pub fn view(model: Model) {
               "[ credits",
               "volume: " <> model.volume |> get_val |> int.to_string,
             ]
-              |> text_to_elements([attribute.style([transition_animation])]),
+              |> text_to_elements([attribute.styles([transition_animation])]),
           ),
         ],
         areas: {
@@ -343,7 +361,7 @@ pub fn view(model: Model) {
           fight_main_body(fight),
           html.div(
             [
-              attribute.style(
+              attribute.styles(
                 [grid_area(options), grid_template_rows(SubGrid)]
                 |> list.append(grid_standard),
               ),
@@ -354,7 +372,7 @@ pub fn view(model: Model) {
               fight.progress.timestemps |> get_bpm |> float.to_string,
               fight.progress.timestemps |> list.length |> int.to_string,
             ]
-              |> text_to_elements([attribute.style([transition_animation])]),
+              |> text_to_elements([attribute.styles([transition_animation])]),
           ),
         ],
         areas: [options, fight_area, fight_area, fight_area] |> list.repeat(4),
@@ -365,31 +383,26 @@ pub fn view(model: Model) {
       let credit = Area("b")
       Dependency(
         content: [
-          [
-            html.img([
-              attribute.style([
-                grid_area(credit),
-                transition_animation,
-                width(REM(20.0)),
-                height(REM(10.0)),
-              ]),
-              attribute.src("/assets/down-arrow.png"),
-              // attribute.src("https://cdn2.thecatapi.com/images/b7k.jpg"),
-            ]),
-          ]
-            |> html.div([attribute.style([#("filter", "invert(1)")])], _),
+          image(
+            "https://picsum.photos/200/300",
+            REM(25.0),
+            REM(20.0),
+            attribute.styles([#("filter", "invert(1)")]),
+          ),
           html.div(
             [
-              attribute.style(
+              attribute.styles(
                 [grid_area(options), grid_template_rows(SubGrid)]
                 |> list.append(grid_standard),
               ),
             ],
             ["[ Hub", "todo"]
-              |> text_to_elements([attribute.style([transition_animation])])
+              |> text_to_elements([attribute.styles([transition_animation])])
               |> list.append([
                 html.div(
-                  [attribute.style([place_items(Center), transition_animation])],
+                  [
+                    attribute.styles([place_items(Center), transition_animation]),
+                  ],
                   ["made by", "oded yanovich"]
                     |> text_to_elements([]),
                 ),
@@ -410,7 +423,7 @@ pub fn view(model: Model) {
       attribute.id("canvas"),
       attribute.width(main.get_viewport_size().0),
       attribute.height(main.get_viewport_size().1),
-      attribute.style([
+      attribute.styles([
         css.position(Absolute),
         css.background_color(Black),
         css.left(REM(0.0)),
@@ -419,7 +432,7 @@ pub fn view(model: Model) {
     ]),
     html.div(
       [
-        attribute.style(
+        attribute.styles(
           [
             css.position(Absolute),
             css.grid_auto_flow(Column),

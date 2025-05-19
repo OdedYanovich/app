@@ -1,5 +1,8 @@
 import gleam/dynamic/decode
 
+@external(javascript, "./js/main.mjs", "timer")
+pub fn timer(callback: fn() -> Nil, delay: Int) -> Nil
+
 @external(javascript, "./js/main.mjs", "startDrawing")
 pub fn start_drawing() -> Nil
 

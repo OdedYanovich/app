@@ -8,6 +8,9 @@ export function initGameLoop(callback) {
 export function initKeydownEvent(callback) {
 	addEventListener("keydown", callback);
 }
+export function timer(callback, delay) {
+	setTimeout(callback, delay)
+}
 export function initResizeEvent(callback) {
 	addEventListener(
 		"resize",

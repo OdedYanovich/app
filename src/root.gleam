@@ -10,7 +10,7 @@ pub type Mods {
 }
 
 pub type HubBody {
-  HubBody(volume_timer: Float)
+  HubBody(volume_save_timer: Float, mute_animation_timer: Float)
 }
 
 pub type FightBody {
@@ -83,6 +83,9 @@ pub type ModTransition {
   Before(timer: Float, new_mod: Identification)
   StableMod
   After(timer: Float)
+  FromMod(to_mod: Identification)
+  ToMod
+  None
 }
 
 pub type Identification {
@@ -95,7 +98,8 @@ pub type Identification {
 pub type Msg {
   Frame
   Keydown(String)
-  // Resize(Int, Int)
+  // Transition Resize(Int, Int)
+  TransitionAnimation(Identification)
 }
 
 pub type Model {
@@ -107,10 +111,6 @@ pub type Model {
     key_groups: Dict(#(Identification, String), ActionGroup),
     selected_level: RangedVal(Int),
     seed: seed.Seed,
-    // viewport_width: Int,
-    // viewport_height: Int,
-    // sounds: List(Int),
-    // sound_timer: Float,
   )
 }
 
